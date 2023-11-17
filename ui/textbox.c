@@ -4,14 +4,14 @@
 	RERENDER_TEXT(); RERENDER_ATEX();\
 }
 #define RERENDER_TEXT(){\
+	char* text = strdup(o->text);\
 	o->space_w = text_width(o->fnt, "_", o->font_size);\
-	pthread_mutex_lock(&o->text_mut);\
-	o->text_w = text_width(o->fnt, o->text, o->font_size) + o->space_w;\
+	o->text_w = text_width(o->fnt, text, o->font_size) + o->space_w;\
 	int alflags = UI_ALIGN_CENTER_V | (o->text_w >= o->size.x ? UI_ALIGN_RIGHT : 0);\
 	render_obj_free(&o->ro_text); render_obj_free(&o->ro_cursor);\
-	o->ro_text = ui_render_aligned_text((ui_element*)o, o->fnt, o->text, o->font_size, o->text_clr, alflags);\
-	pthread_mutex_unlock(&o->text_mut);\
+	o->ro_text = ui_render_aligned_text((ui_element*)o, o->fnt, text, o->font_size, o->text_clr, alflags);\
 	o->ro_cursor = ui_render_aligned_text((ui_element*)o, o->fnt, "|", o->font_size, o->text_clr, UI_ALIGN_CENTER_V);\
+	free(text);\
 }
 #define RERENDER_ATEX(){\
 	render_obj_free(&o->ro_atex);\
@@ -66,9 +66,7 @@ static void _textbox_key_char(ui_element* _o, utf_char c)
 	if(!o->focused)
 		return;
 	char out[9]; utf_encode_char(c, out);
-	pthread_mutex_lock(&o->text_mut);
 	o->text = str_append(o->text, &o->text_ln, out);
-	pthread_mutex_unlock(&o->text_mut);
 	o->rerender = 1;
 }
 
@@ -84,7 +82,6 @@ void textbox_create(textbox* o, vec2f pos, vec2f size, vec2f font_size,
 	o->font_size = font_size;
 	o->fnt = fnt;
 	o->text_ln = 32; o->text = malloc(o->text_ln + 1);
-	pthread_mutex_init(&o->text_mut, NULL);
 	o->text[0] = '\0';
 	o->text_clr = (vec3f){0.5, 0, 0};
 

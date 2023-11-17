@@ -15,7 +15,6 @@ struct textbox {
 
 	char* text; size_t text_ln;
 	float text_w; float space_w;
-	pthread_mutex_t text_mut;
 
 	vec3f text_clr;
 	atlas_texture *left, *right, *mid;
