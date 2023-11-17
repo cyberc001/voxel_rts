@@ -1,0 +1,10 @@
+fonts/DejaVuSans.ttf
+{
+	size: 64,
+	chars: [basic, russian]
+}
+fonts/courbd.ttf
+{
+	size: 32,
+	chars: [basic, russian]
+}

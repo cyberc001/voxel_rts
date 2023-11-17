@@ -1,0 +1,16 @@
+{
+	menu_up: up,
+	menu_down: down,
+	menu_right: right,
+	menu_left: left,
+
+	camera_up: up,
+	camera_down: down,
+	camera_right: right,
+	camera_left: left,
+	camera_rotate: mouse3,
+	camera_zoom_in: mouse_up,
+	camera_zoom_out: mouse_down,
+
+	select: mouse1
+}

@@ -1,0 +1,11 @@
+texture_atlases/test_atlas.png
+[
+	{ id: cobblestone,
+		x: 0, y: 0,
+		w: 16, h: 16 },
+	{ id: dirt },
+	{ id: grass_side },
+	{ id: grass_top },
+	{ id: gravel,
+		x: 32 }
+]
