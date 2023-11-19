@@ -11,7 +11,7 @@
 #include "ui/textbox.h"
 #include "ui/button.h"
 #include "ui/scrollbar.h"
-#include "ui/listbox.h"
+#include "ui/itembox.h"
 
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
@@ -93,30 +93,35 @@ int main()
 
 	resources_scan();
 	
-	button bt; button_create(&bt, (vec2f){0, 1}, (vec2f){0.4, 0.06}, (vec2f){0.05, 0.05},
-					atlas_texture_find("button_l"), atlas_texture_find("button_r"), atlas_texture_find("button_m"),
-					atlas_texture_find("button_l_pressed"), atlas_texture_find("button_r_pressed"), atlas_texture_find("button_m_pressed"),
-					font_find("courbd"), "нажми меня");
-	textbox tb; textbox_create(&tb, (vec2f){0, 1 - 0.07}, (vec2f){0.4, 0.06}, (vec2f){0.05, 0.05},
-					atlas_texture_find("textbox_l"), atlas_texture_find("textbox_r"), atlas_texture_find("textbox_m"),
-					font_find("courbd"));
 	scrollbar sb; scrollbar_create(&sb, (vec2f){0.0, 0.0}, (vec2f){0.05, 1.0},
 					atlas_texture_find("scrollbar_u"), atlas_texture_find("scrollbar_d"), atlas_texture_find("scrollbar_m"), atlas_texture_find("scrollbar_s"),
 					0, 10);
 
-	label l; label_create(&l, (vec2f){0, 0}, (vec2f){0.05, 0.05}, font_find("courbd"), "Совсем непонятно, что делать. Кому-то хочется плакать, кому-то хочется стучать... К ВАМ. ЗАЧЕМ вы славите ДЪЯВОЛА? Каждая травинка, и листочек, и каждое животное... оно хвалит БОГА. Молодёжь наша, юноши и девушки. ЗАЧЕМ вы славите ДЪЯВОЛА? Это ЕГО музыка. Это ОНА звучит в АДУ. Именно под эту музыку... истязают грешников.");
-	label_set_color(&l, (vec3f){0.5, 0.5, 0.5});
-	label_set_wrap(&l, WRAP_WORD, 0.65);
-
-	listbox lb; listbox_create(&lb, (vec2f){0.1, 0.1}, (vec2f){0.8, 0.8}, (vec2f){0.05, 0.05},
+	itembox lb; itembox_create(&lb, (vec2f){0.1, 0.1}, (vec2f){0.8, 0.8}, (vec2f){0.05, 0.05},
+					(vec2f){0.05, 0.05}, font_find("courbd"), (vec2f){0, 0.07},
 					atlas_texture_find("listbox_lt"), atlas_texture_find("listbox_rt"), atlas_texture_find("listbox_lb"), atlas_texture_find("listbox_rb"),
 					atlas_texture_find("listbox_u"), atlas_texture_find("listbox_d"), atlas_texture_find("listbox_l"), atlas_texture_find("listbox_r"),
-					atlas_texture_find("listbox_m"));
-	listbox_set_scrollbar(&lb, &sb);
-	label_set_in_listbox(&l, 1);
-	ui_element_add_child((ui_element*)&lb, (ui_element*)&l);
-	ui_element_add_child((ui_element*)&lb, (ui_element*)&bt);
-	ui_element_add_child((ui_element*)&lb, (ui_element*)&tb);
+					atlas_texture_find("listbox_m"),
+					atlas_texture_find("itembox_item_l"), atlas_texture_find("itembox_item_r"), atlas_texture_find("itembox_item_m"),
+					atlas_texture_find("itembox_item_l_s"), atlas_texture_find("itembox_item_r_s"), atlas_texture_find("itembox_item_m_s"));
+
+	itembox_set_scrollbar(&lb, &sb);
+	itembox_add_item(&lb, "hello");
+	itembox_add_item(&lb, "my luv");
+	itembox_add_item(&lb, "fiat 1.6l TDI");
+	itembox_add_item(&lb, "engine");
+	itembox_add_item(&lb, "flat tire");
+	itembox_add_item(&lb, "HAMMOND YOU IDIOT");
+	itembox_add_item(&lb, "James");
+	itembox_add_item(&lb, "Hammock");
+	itembox_add_item(&lb, "Jeremy");
+	itembox_add_item(&lb, "Clarckson you pillock");
+	itembox_add_item(&lb, "oi");
+	itembox_add_item(&lb, "my mates");
+	itembox_add_item(&lb, "car crash in aGAin?");
+	itembox_add_item(&lb, "supa kicka");
+	itembox_add_item(&lb, "uganda bruce u");
+
 	ui_add_element((ui_element*)&lb);
 	ui_add_element((ui_element*)&sb);
 
