@@ -15,7 +15,7 @@
 }
 #define RERENDER_ATEX(){\
 	render_obj_free(&o->ro_atex);\
-	o->ro_atex = ui_render_lrm_box((ui_element*)o, o->left, o->right, o->mid);\
+	o->ro_atex = ui_render_lrm_box((ui_element*)o, o->box_tex);\
 }
 
 static void _textbox_render(ui_element* _o)
@@ -71,7 +71,7 @@ static void _textbox_key_char(ui_element* _o, utf_char c)
 }
 
 void textbox_create(textbox* o, vec2f pos, vec2f size, vec2f font_size,
-			atlas_texture* left, atlas_texture* right, atlas_texture* mid,
+			struct ui_lrm_box_textures box_tex,
 			font* fnt)
 {
 	ui_element_create((ui_element*)o, pos, size);
@@ -85,7 +85,7 @@ void textbox_create(textbox* o, vec2f pos, vec2f size, vec2f font_size,
 	o->text[0] = '\0';
 	o->text_clr = (vec3f){0.5, 0, 0};
 
-	o->left = left; o->right = right; o->mid = mid;
+	o->box_tex = box_tex;
 
 	o->ro_text = o->ro_cursor = o->ro_atex = RENDER_OBJ_EMPTY;
 	RERENDER_ALL();

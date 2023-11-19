@@ -72,11 +72,11 @@ void ui_element_add_child(ui_element* o, ui_element* child)
 }
 
 /* Common functions */
-render_obj ui_render_lrm_box(ui_element* o, atlas_texture* l, atlas_texture* r, atlas_texture* m)
+render_obj ui_render_lrm_box(ui_element* o, struct ui_lrm_box_textures tex)
 {
-	atlas_texture* arr_tex[3] = {l, r, m};
-	float left_w = atlas_texture_aspect_w(l, o->size.y);
-	float right_w = atlas_texture_aspect_w(r, o->size.y);
+	atlas_texture* arr_tex[3] = {tex.l, tex.r, tex.m};
+	float left_w = atlas_texture_aspect_w(tex.l, o->size.y);
+	float right_w = atlas_texture_aspect_w(tex.r, o->size.y);
 	vec2f right_edge = {o->pos.x + o->size.x, o->pos.y};
 	vec2f left_size = {left_w, o->size.y};
 	vec2f right_off = {right_w, 0}, right_size = {right_w, o->size.y};
@@ -98,12 +98,9 @@ render_obj ui_render_udm_box(ui_element* o, atlas_texture* u, atlas_texture* d, 
 	vec2f arr_size[3] = {down_size, mid_size, up_size};
 	return render_atlas_textures(arr_tex, arr_coords, arr_size, 3);
 }
-render_obj ui_render_full_box(ui_element* o, vec2f corner_size,
-			atlas_texture* lt, atlas_texture* rt, atlas_texture* lb, atlas_texture* rb,
-			atlas_texture* u, atlas_texture* d, atlas_texture* l, atlas_texture* r,
-			atlas_texture* m)
+render_obj ui_render_full_box(ui_element* o, vec2f corner_size, struct ui_full_box_textures tex)
 {
-	atlas_texture* arr_tex[9] = {lb, d, rb, r, rt, u, lt, l, m};
+	atlas_texture* arr_tex[9] = {tex.lb, tex.d, tex.rb, tex.r, tex.rt, tex.u, tex.lt, tex.l, tex.m};
 
 	vec2f lb_off = {corner_size.x, 0};
 	vec2f d_off = {o->size.x - corner_size.x, 0};

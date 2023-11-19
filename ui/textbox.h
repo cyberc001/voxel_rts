@@ -17,13 +17,14 @@ struct textbox {
 	float text_w; float space_w;
 
 	vec3f text_clr;
+	struct ui_lrm_box_textures box_tex;
 	atlas_texture *left, *right, *mid;
 
 	render_obj ro_text, ro_cursor, ro_atex;
 };
 
 void textbox_create(textbox* o, vec2f pos, vec2f size, vec2f font_size,
-			atlas_texture* left, atlas_texture* right, atlas_texture* mid,
+			struct ui_lrm_box_textures box_tex,
 			font* fnt);
 
 #endif

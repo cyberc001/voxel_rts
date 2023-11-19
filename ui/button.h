@@ -13,8 +13,7 @@ struct button {
 	font* fnt;
 	const char* text;
 	vec3f text_clr, text_clr_p;
-	atlas_texture *left, *right, *mid;
-	atlas_texture *left_p, *right_p, *mid_p;
+	struct ui_lrm_box_textures box_tex, box_tex_p;
 
 	render_obj ro_text, ro_text_p,
 		   ro_atex, ro_atex_p;
@@ -23,8 +22,7 @@ struct button {
 };
 
 void button_create(button* o, vec2f pos, vec2f size, vec2f font_size,
-			atlas_texture* left, atlas_texture* right, atlas_texture* mid,
-			atlas_texture* left_pressed, atlas_texture* right_pressed, atlas_texture* mid_pressed,
+			struct ui_lrm_box_textures box_tex, struct ui_lrm_box_textures box_tex_p,
 			font* fnt, const char* text);
 
 void button_set_pos(button* o, vec2f pos);

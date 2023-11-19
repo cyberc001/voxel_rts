@@ -2,7 +2,7 @@
 
 #define RERENDER(){\
 	render_obj_free(&o->ro_atex);\
-	o->ro_atex = ui_render_full_box((ui_element*)o, o->corner_size, o->lt, o->rt, o->lb, o->rb, o->u, o->d, o->l, o->r, o->m);\
+	o->ro_atex = ui_render_full_box((ui_element*)o, o->corner_size, o->box_tex);\
 	float min_y = INFINITY, max_y = -INFINITY;\
 	ui_element_list_node* n = o->child_list.head.next;\
 	while(n != &o->child_list.tail){\
@@ -44,18 +44,14 @@ static void _listbox_render(ui_element* _o)
 }
 
 void listbox_create(listbox* o, vec2f pos, vec2f size, vec2f corner_size,
-			atlas_texture* lt, atlas_texture* rt, atlas_texture* lb, atlas_texture* rb,
-			atlas_texture* u, atlas_texture* d, atlas_texture* l, atlas_texture* r,
-			atlas_texture* m)
+			struct ui_full_box_textures box_tex)
 {
 	ui_element_create((ui_element*)o, pos, size);
 	vt_init(o->vt, vt_insert(&vt, ui_element_render, _listbox_render));
 
 	o->orig_size = size;
 	o->corner_size = corner_size;
-	o->lt = lt; o->rt = rt; o->lb = lb; o->rb = rb;
-	o->u = u; o->d = d; o->l = l; o->r = r;
-	o->m = m;
+	o->box_tex = box_tex;
 	o->sb = NULL;
 
 	o->ro_atex = RENDER_OBJ_EMPTY;

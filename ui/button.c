@@ -10,8 +10,8 @@
 }
 #define RERENDER_ATEX(){\
 	render_obj_free(&o->ro_atex); render_obj_free(&o->ro_atex_p);\
-	o->ro_atex = ui_render_lrm_box((ui_element*)o, o->left, o->right, o->mid);\
-	o->ro_atex_p = ui_render_lrm_box((ui_element*)o, o->left_p, o->right_p, o->mid_p);\
+	o->ro_atex = ui_render_lrm_box((ui_element*)o, o->box_tex);\
+	o->ro_atex_p = ui_render_lrm_box((ui_element*)o, o->box_tex_p);\
 }
 
 static void _button_render(ui_element* _o)
@@ -41,8 +41,7 @@ static void _button_key_up(ui_element* _o, key_code key, int mods)
 }
 
 void button_create(button* o, vec2f pos, vec2f size, vec2f font_size,
-			atlas_texture* left, atlas_texture* right, atlas_texture* mid,
-			atlas_texture* left_pressed, atlas_texture* right_pressed, atlas_texture* mid_pressed,
+			struct ui_lrm_box_textures box_tex, struct ui_lrm_box_textures box_tex_p,
 			font* fnt, const char* text)
 {
 	ui_element_create((ui_element*)o, pos, size);
@@ -56,9 +55,7 @@ void button_create(button* o, vec2f pos, vec2f size, vec2f font_size,
 	o->text_clr = (vec3f){0, 0, 0};
 	o->text_clr_p = (vec3f){0.8, 0.8, 0.8};
 
-	o->left = left; o->right = right; o->mid = mid;
-	o->left_p = left_pressed; o->right_p = right_pressed; o->mid_p = mid_pressed;
-
+	o->box_tex = box_tex; o->box_tex_p = box_tex_p;
 	o->ro_text = o->ro_text_p = o->ro_atex = o->ro_atex_p = RENDER_OBJ_EMPTY;
 	RERENDER_ALL();
 

@@ -45,13 +45,18 @@ void _ui_element_mouse_move(ui_element* o, float x, float y);
 		o->rerender = 0;\
 	}
 
+/* Helper structures to lessen amount of arguments */
+struct ui_lrm_box_textures {
+	atlas_texture *l, *r, *m;
+};
+struct ui_full_box_textures {
+	atlas_texture *lt, *rt, *lb, *rb, *u, *d, *l, *r, *m;
+};
+
 /* Common functions */
-render_obj ui_render_lrm_box(ui_element* o, atlas_texture* l, atlas_texture* r, atlas_texture* m); // Render a box consisting from left, right and middle textures
+render_obj ui_render_lrm_box(ui_element* o, struct ui_lrm_box_textures tex); // Render a box consisting from left, right and middle textures
 render_obj ui_render_udm_box(ui_element* o, atlas_texture* u, atlas_texture* d, atlas_texture* m); // Render a box consisting from up, down and middle textures
-render_obj ui_render_full_box(ui_element* o, vec2f corner_size,
-			atlas_texture* lt, atlas_texture* rt, atlas_texture* lb, atlas_texture* rb,
-			atlas_texture* u, atlas_texture* d, atlas_texture* l, atlas_texture* r,
-			atlas_texture* m);
+render_obj ui_render_full_box(ui_element* o, vec2f corner_size, struct ui_full_box_textures tex);
 
 #define UI_ALIGN_CENTER_V	0x1
 #define UI_ALIGN_CENTER_H	0x2
