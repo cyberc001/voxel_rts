@@ -12,6 +12,7 @@
 #include "ui/button.h"
 #include "ui/scrollbar.h"
 #include "ui/itembox.h"
+#include "ui/hslider.h"
 
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
@@ -92,37 +93,17 @@ int main()
 	controls_add_mouse_move(camera_mouse_move);
 
 	resources_scan();
-	
+
 	scrollbar sb; scrollbar_create(&sb, (vec2f){0.0, 0.0}, (vec2f){0.05, 1.0},
 					atlas_texture_find("scrollbar_u"), atlas_texture_find("scrollbar_d"), atlas_texture_find("scrollbar_m"), atlas_texture_find("scrollbar_s"),
 					0, 10);
-
-	itembox lb;
-	itembox_create(&lb, (vec2f){0.1, 0.1}, (vec2f){0.8, 0.8}, (vec2f){0.05, 0.05},
-					(vec2f){0.05, 0.05}, font_find("courbd"), 0.07,
-					(struct ui_full_box_textures){atlas_texture_find("listbox_lt"), atlas_texture_find("listbox_rt"), atlas_texture_find("listbox_lb"), atlas_texture_find("listbox_rb"), atlas_texture_find("listbox_u"), atlas_texture_find("listbox_d"), atlas_texture_find("listbox_l"), atlas_texture_find("listbox_r"), atlas_texture_find("listbox_m")},
-					(struct ui_lrm_box_textures){atlas_texture_find("itembox_item_l"), atlas_texture_find("itembox_item_r"), atlas_texture_find("itembox_item_m")},
-					(struct ui_lrm_box_textures){atlas_texture_find("itembox_item_l_s"), atlas_texture_find("itembox_item_r_s"), atlas_texture_find("itembox_item_m_s")});
-
-	itembox_set_scrollbar(&lb, &sb);
-	itembox_add_item(&lb, "hello");
-	itembox_add_item(&lb, "my luv");
-	itembox_add_item(&lb, "fiat 1.6l TDI");
-	itembox_add_item(&lb, "engine");
-	itembox_add_item(&lb, "flat tire");
-	itembox_add_item(&lb, "HAMMOND YOU IDIOT");
-	itembox_add_item(&lb, "James");
-	itembox_add_item(&lb, "Hammock");
-	itembox_add_item(&lb, "Jeremy");
-	itembox_add_item(&lb, "Clarkson you pillock");
-	itembox_add_item(&lb, "oi");
-	itembox_add_item(&lb, "my mates");
-	itembox_add_item(&lb, "car crash in aGAin?");
-	itembox_add_item(&lb, "supa kicka");
-	itembox_add_item(&lb, "uganda bruce u");
-
-	ui_add_element((ui_element*)&lb);
 	ui_add_element((ui_element*)&sb);
+	
+	hslider hs; hslider_create(&hs, (vec2f){0.2, 0.5}, (vec2f){0.6, 0.02},
+					atlas_texture_find("hslider_line"), atlas_texture_find("hslider_tick"), atlas_texture_find("hslider_slider"),
+					0.005, 0.015, 0.02,
+					2, 0, 10);
+	ui_add_element((ui_element*)&hs);
 
 	audio_play_sound(sound_find("its a jhonny"));
 

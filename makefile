@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o  audio.o resources.o controls.o ticker.o utf.o object.o more_math.o ui.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o  audio.o resources.o controls.o ticker.o utf.o object.o more_math.o ui.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -56,6 +56,8 @@ ui/scrollbar.o: ui/scrollbar.c ui/scrollbar.h ui/ui_element.h
 ui/listbox.o: ui/listbox.c ui/listbox.h ui/ui_element.h
 	$(CCO) $< -o $@
 ui/itembox.o: ui/itembox.c ui/itembox.h ui/ui_element.h
+	$(CCO) $< -o $@
+ui/hslider.o: ui/hslider.c ui/hslider.h ui/ui_element.h
 	$(CCO) $< -o $@
 
 audio.o: audio.c audio.h

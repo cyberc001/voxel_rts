@@ -80,6 +80,7 @@ render_obj ui_render_lrm_box(ui_element* o, struct ui_lrm_box_textures tex)
 	vec2f right_edge = {o->pos.x + o->size.x, o->pos.y};
 	vec2f left_size = {left_w, o->size.y};
 	vec2f right_off = {right_w, 0}, right_size = {right_w, o->size.y};
+
 	vec2f arr_coords[3] = {o->pos, vec2_sub(right_edge, right_off), {o->pos.x + left_w, o->pos.y}};
 	vec2f arr_size[3] = {left_size, right_size, {o->size.x - left_w - right_w, o->size.y}};
 	return render_atlas_textures(arr_tex, arr_coords, arr_size, 3);
