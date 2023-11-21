@@ -13,5 +13,6 @@ texture_atlases/test_ui.png
 	{ id: itembox_item_l, x: 60, y: 0, w: 3, h: 20 }, { id: itembox_item_r }, { id: itembox_item_m, w: 1 },
 	{ id: itembox_item_l_s, w: 3}, { id: itembox_item_r_s }, { id: itembox_item_m_s, w: 1 },
 
-	{ id: hslider_line, x: 74, y: 0, w: 1, h: 1 }, { id: hslider_tick, h: 3 }, { id: hslider_slider, w: 6, h: 3 }
+	{ id: hslider_line, x: 74, y: 0, w: 1, h: 1 }, { id: hslider_tick, h: 3 }, { id: hslider_slider, w: 6, h: 3 },
+	{ id: vslider_line, w: 1, h: 1 }, { id: vslider_tick, w: 3 }, { id: vslider_slider, w: 3, h: 6 }
 ]
