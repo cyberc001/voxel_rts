@@ -37,7 +37,6 @@ static void _hslider_render(ui_element* _o)
 		o->slider_pos = clamp(o->slider_pos, o->slider_min, o->slider_max);
 		float slider_x = o->size.x * ((o->slider_pos - o->slider_min) / (float)(o->slider_max - o->slider_min));
 		if(o->slider_pos == o->slider_max) slider_x -= o->slider_w;
-		//else if(o->slider_pos != o->slider_min)	slider_x -= o->slider_w / 2;
 		ui_offset(slider_x, 0);
 		render_obj_draw(&o->ro_slider);
 		ui_offset(-slider_x, 0);
@@ -50,6 +49,7 @@ static void _hslider_key_down(ui_element* _o, key_code key, int mods)
 	if(key == MOUSE_LEFT){
 		vec2f mc = get_mouse_coords();
 		float slider_x = o->size.x * ((o->slider_pos - o->slider_min) / (float)(o->slider_max - o->slider_min));
+		if(o->slider_pos == o->slider_max) slider_x -= o->slider_w;
 		if(is_point_in_rect2f(mc, (vec2f){o->pos.x + slider_x, o->pos.y - o->slider_h + o->line_h}, (vec2f){o->slider_w, o->slider_h}))
 			o->dragging_slider = 1;
 	}
