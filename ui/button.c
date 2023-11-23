@@ -57,9 +57,9 @@ void button_create(button* o, vec2f pos, vec2f size, vec2f font_size,
 
 	o->box_tex = box_tex; o->box_tex_p = box_tex_p;
 	o->ro_text = o->ro_text_p = o->ro_atex = o->ro_atex_p = RENDER_OBJ_EMPTY;
-	RERENDER_ALL();
 
 	o->pressed = 0;
+	RERENDER_ALL();
 }
 
 void button_set_pos(button* o, vec2f pos)

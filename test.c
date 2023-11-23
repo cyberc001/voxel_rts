@@ -14,6 +14,7 @@
 #include "ui/itembox.h"
 #include "ui/hslider.h"
 #include "ui/vslider.h"
+#include "ui/checkbox.h"
 
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
@@ -95,17 +96,14 @@ int main()
 
 	resources_scan();
 
-	vslider vs; vslider_create(&vs, (vec2f){0.85, 0.2}, (vec2f){0.02, 0.6},
-					atlas_texture_find("vslider_line"), atlas_texture_find("vslider_tick"), atlas_texture_find("vslider_slider"),
-					0.005, 0.015, 0.02,
-					2, 0, 10);
-	ui_add_element((ui_element*)&vs);
-
-	hslider hs; hslider_create(&hs, (vec2f){0.15, 0.5}, (vec2f){0.6, 0.02},
-					atlas_texture_find("hslider_line"), atlas_texture_find("hslider_tick"), atlas_texture_find("hslider_slider"),
-					0.005, 0.015, 0.02,
-					2, 0, 10);
-	ui_add_element((ui_element*)&hs);
+	checkbox cb; checkbox_create(&cb, (vec2f){0.05, 0.92}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
+					font_find("courbd"), "enable Jhonny",
+					atlas_texture_find("checkbox_c"), atlas_texture_find("checkbox_uc"));
+	checkbox cb2; checkbox_create(&cb2, (vec2f){0.05, 0.87}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
+font_find("courbd"), "find Tema",
+atlas_texture_find("checkbox_c"), atlas_texture_find("checkbox_uc"));
+	ui_add_element((ui_element*)&cb);
+	ui_add_element((ui_element*)&cb2);
 
 	audio_play_sound(sound_find("its a jhonny"));
 
