@@ -7,14 +7,8 @@
 #include "audio.h"
 
 // TEST
-#include "ui/label.h"
-#include "ui/textbox.h"
-#include "ui/button.h"
-#include "ui/scrollbar.h"
-#include "ui/itembox.h"
-#include "ui/hslider.h"
-#include "ui/vslider.h"
-#include "ui/checkbox.h"
+#include "ui/radiobox.h"
+#include "ui/radiobox.h"
 
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
@@ -96,14 +90,17 @@ int main()
 
 	resources_scan();
 
-	checkbox cb; checkbox_create(&cb, (vec2f){0.05, 0.92}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
+	radiobox rb; radiobox_create(&rb, (vec2f){0.05, 0.92}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
 					font_find("courbd"), "enable Jhonny",
-					atlas_texture_find("checkbox_c"), atlas_texture_find("checkbox_uc"));
-	checkbox cb2; checkbox_create(&cb2, (vec2f){0.05, 0.87}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
+					atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
+	radiobox rb2; radiobox_create(&rb2, (vec2f){0.05, 0.87}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
 font_find("courbd"), "find Tema",
-atlas_texture_find("checkbox_c"), atlas_texture_find("checkbox_uc"));
-	ui_add_element((ui_element*)&cb);
-	ui_add_element((ui_element*)&cb2);
+atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
+	ui_add_element((ui_element*)&rb);
+	ui_add_element((ui_element*)&rb2);
+	radiobox_group rbgrp; radiobox_group_create(&rbgrp);
+	radiobox_group_push(&rbgrp, &rb);
+	radiobox_group_push(&rbgrp, &rb2);
 
 	audio_play_sound(sound_find("its a jhonny"));
 

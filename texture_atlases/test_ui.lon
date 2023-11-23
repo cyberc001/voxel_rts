@@ -16,5 +16,7 @@ texture_atlases/test_ui.png
 	{ id: hslider_line, x: 74, y: 0, w: 1, h: 1 }, { id: hslider_tick, h: 3 }, { id: hslider_slider, w: 6, h: 3 },
 	{ id: vslider_line, w: 1, h: 1 }, { id: vslider_tick, w: 3 }, { id: vslider_slider, w: 3, h: 6 },
 
-	{ id: checkbox_c, w: 8, h: 8 }, { id: checkbox_uc }
+	{ id: checkbox_c, w: 8, h: 8 }, { id: checkbox_uc },
+
+	{ id: radiobox_c }, { id: radiobox_uc }
 ]
