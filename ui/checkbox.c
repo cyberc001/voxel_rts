@@ -47,3 +47,34 @@ void checkbox_create(checkbox* o, vec2f pos, vec2f size, vec2f font_size,
 	o->checked = 0;
 	RERENDER();
 }
+
+void checkbox_set_pos(checkbox* o, vec2f pos)
+{
+	o->pos = pos;
+	o->rerender = 1;
+}
+void checkbox_set_size(checkbox* o, vec2f size)
+{
+	o->size = size;
+	o->rerender = 1;
+}
+void checkbox_set_font_size(checkbox* o, vec2f font_size)
+{
+	o->font_size = font_size;
+	o->rerender = 1;
+}
+void checkbox_set_font(checkbox* o, font* fnt)
+{
+	o->fnt = fnt;
+	o->rerender = 1;
+}
+void checkbox_set_text(checkbox* o, const char* text)
+{
+	o->text = text;
+	o->rerender = 1;
+}
+void checkbox_set_text_color(checkbox* o, vec3f clr)
+{
+	o->text_clr = clr;
+	o->rerender = 1;
+}

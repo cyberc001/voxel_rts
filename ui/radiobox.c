@@ -88,3 +88,33 @@ void radiobox_set_group(radiobox* o, radiobox_group* rg)
 		radiobox_group_select(rg, o);
 	o->group = rg;
 }
+void radiobox_set_pos(radiobox* o, vec2f pos)
+{
+	o->pos = pos;
+	o->rerender = 1;
+}
+void radiobox_set_size(radiobox* o, vec2f size)
+{
+	o->size = size;
+	o->rerender = 1;
+}
+void radiobox_set_font_size(radiobox* o, vec2f font_size)
+{
+	o->font_size = font_size;
+	o->rerender = 1;
+}
+void radiobox_set_font(radiobox* o, font* fnt)
+{
+	o->fnt = fnt;
+	o->rerender = 1;
+}
+void radiobox_set_text(radiobox* o, const char* text)
+{
+	o->text = text;
+	o->rerender = 1;
+}
+void radiobox_set_text_color(radiobox* o, vec3f clr)
+{
+	o->text_clr = clr;
+	o->rerender = 1;
+}

@@ -38,5 +38,11 @@ void radiobox_create(radiobox* o, vec2f post, vec2f size, vec2f font_size,
 			atlas_texture* check_tex, atlas_texture* uncheck_tex);
 
 void radiobox_set_group(radiobox* o, radiobox_group* rg);
+void radiobox_set_pos(radiobox* o, vec2f pos);
+void radiobox_set_size(radiobox* o, vec2f size);
+void radiobox_set_font_size(radiobox* o, vec2f font_size);
+void radiobox_set_font(radiobox* o, font* fnt);
+void radiobox_set_text(radiobox* o, const char* text);
+void radiobox_set_text_color(radiobox* o, vec3f clr);
 
 #endif

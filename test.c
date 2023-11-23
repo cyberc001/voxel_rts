@@ -93,9 +93,11 @@ int main()
 	radiobox rb; radiobox_create(&rb, (vec2f){0.05, 0.92}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
 					font_find("courbd"), "enable Jhonny",
 					atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
+	radiobox_set_text_color(&rb, (vec3f){1, 0, 0});
 	radiobox rb2; radiobox_create(&rb2, (vec2f){0.05, 0.87}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
 font_find("courbd"), "find Tema",
 atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
+	radiobox_set_text_color(&rb2, (vec3f){0, 1, 0});
 	ui_add_element((ui_element*)&rb);
 	ui_add_element((ui_element*)&rb2);
 	radiobox_group rbgrp; radiobox_group_create(&rbgrp);
