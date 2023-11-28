@@ -6,10 +6,6 @@
 #include "controls.h"
 #include "audio.h"
 
-// TEST
-#include "ui/radiobox.h"
-#include "ui/radiobox.h"
-
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
 const float cam_zoom_speed = 0.2; // per wheel scroll
@@ -61,9 +57,6 @@ static void camera_mouse_move(float x, float y)
 
 void camera_ui_tick(unsigned ms)
 {
-	//printf("%f %f %f\n", render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
-	//printf("%f %f %f\n", render_cam_rot.x, render_cam_rot.y, render_cam_rot.z);
-
 	float s_frac = ms / 1000.; // fractions of a second
 	vec3f ang = {render_cam_rot.x, render_cam_rot.y, render_cam_rot.z};
 
@@ -89,20 +82,7 @@ int main()
 	controls_add_mouse_move(camera_mouse_move);
 
 	resources_scan();
-
-	radiobox rb; radiobox_create(&rb, (vec2f){0.05, 0.92}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
-					font_find("courbd"), "enable Jhonny",
-					atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
-	radiobox_set_text_color(&rb, (vec3f){1, 0, 0});
-	radiobox rb2; radiobox_create(&rb2, (vec2f){0.05, 0.87}, (vec2f){0.03, 0.03}, (vec2f){0.05, 0.05},
-font_find("courbd"), "find Tema",
-atlas_texture_find("radiobox_c"), atlas_texture_find("radiobox_uc"));
-	radiobox_set_text_color(&rb2, (vec3f){0, 1, 0});
-	ui_add_element((ui_element*)&rb);
-	ui_add_element((ui_element*)&rb2);
-	radiobox_group rbgrp; radiobox_group_create(&rbgrp);
-	radiobox_group_push(&rbgrp, &rb);
-	radiobox_group_push(&rbgrp, &rb2);
+	game_logic_init();
 
 	audio_play_sound(sound_find("its a jhonny"));
 

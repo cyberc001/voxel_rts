@@ -72,7 +72,7 @@ struct render_obj_dynamic {
 render_obj render_obj_create(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...);
 render_obj_dynamic render_obj_create_dynamic(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...);
 
-void render_obj_draw(render_obj* obj);
+void render_obj_draw(const render_obj* obj);
 void render_obj_free(render_obj* obj);
 
 typedef struct {

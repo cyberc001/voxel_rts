@@ -13,7 +13,7 @@ void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash, NULL);
 	for(size_t x = 0; x < 10; ++x)
-		for(size_t y = 0; y < 10; ++y){
+		for(size_t y = 0; y < 5; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
 			terrain_piece* add = malloc(sizeof(terrain_piece));
@@ -33,7 +33,7 @@ void terrain_init()
 		}
 
 	for(size_t x = 0; x < 9; ++x)
-		for(size_t y = 0; y < 9; ++y){
+		for(size_t y = 0; y < 4; ++y){
 			terrain_piece* p[4];
 			p[0] = terrain_get_piece(x, y)->next;
 			p[1] = terrain_get_piece(x + 1, y)->next;

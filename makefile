@@ -1,6 +1,6 @@
 INCLUDE := -I. -I./math -I./nn
 FLAGS := -fms-extensions -g -fsanitize=address -Wall -Wextra -Wno-parentheses -Wno-unused-parameter -Wno-implicit-function-declaration -Wno-unused-function `pkg-config --cflags freetype2`
-LIBS := -lm -lGL -lGLU -lglfw -lpng -lSDL2 -lSDL2_mixer `pkg-config --libs freetype2`
+LIBS := -lm -lGL -lGLU -lglfw -lpng -lSDL2 -lSDL2_mixer `pkg-config --libs freetype2` -llua
 
 CC := gcc $(INCLUDE) $(FLAGS) $(LIBS)
 CCO := $(CC) -c
@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  audio.o resources.o controls.o ticker.o utf.o object.o more_math.o ui.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  audio.o resources.o controls.o ticker.o utf.o object.o more_math.o ui.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -41,6 +41,8 @@ formats/font.o: formats/font.c formats/font.h
 	$(CCO) $< -o $@
 
 game/terrain.o: game/terrain.c game/terrain.h
+	$(CCO) $< -o $@
+game/logic.o: game/logic.c game/logic.h
 	$(CCO) $< -o $@
 
 ui/ui_element.o: ui/ui_element.c ui/ui_element.h object.h

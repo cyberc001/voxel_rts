@@ -9,6 +9,8 @@
 #include "ticker.h"
 #include "resources.h"
 
+#include "game/logic.h"
+
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
@@ -43,10 +45,7 @@ static void render_display()
 	glRotatef(render_cam_rot.z, 0, 0, 1);
 	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
 
-	glTranslatef(5, 5, 5);
-	render_obj_draw(model_find("kirov"));
-	glTranslatef(-5, -5, -5);
-
+	game_logic_render();
 	render_terrain();
 
 	// UI rendering
@@ -209,7 +208,7 @@ render_obj_dynamic render_obj_create_dynamic(int render_type, int flags, GLfloat
 	return o;
 }
 
-void render_obj_draw(render_obj* obj)
+void render_obj_draw(const render_obj* obj)
 {
 	size_t buf_off = obj->buf_sizes[0];
 
