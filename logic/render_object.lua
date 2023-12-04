@@ -5,7 +5,7 @@ render_object = {
 function render_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.rot = o.rot or vec2:new()
-	o.size = o.size or {x = 1, y = 1, z = 1}
+	o.size = o.size or vec3:new(1, 1, 1)
 end
 function render_object:new(o)
 	o = o or {}
