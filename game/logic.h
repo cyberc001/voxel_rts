@@ -10,8 +10,6 @@ void game_logic_init();
 void game_logic_tick();
 void game_logic_render();
 
-/* Helper functions */
-vec2f lua_get_vec2(lua_State* L, int vecidx);
-vec3f lua_get_vec3(lua_State* L, int vecidx);
+#define lua_to_const_idx(L, i) ((i) > 0 ? (i) : (lua_gettop(L) + 1 + (i)))
 
 #endif

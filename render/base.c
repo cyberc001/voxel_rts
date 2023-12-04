@@ -44,7 +44,7 @@ static void render_display()
 	glRotatef(render_cam_rot.y, 0, 1, 0);
 	glRotatef(render_cam_rot.z, 0, 0, 1);
 	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
-
+	
 	game_logic_render();
 	render_terrain();
 
@@ -250,7 +250,11 @@ void render_obj_draw(const render_obj* obj)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	shader_load_gl_matrix();
+	if(obj->flags & RENDER_OBJ_FLAG_WIREFRAME)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawArrays(obj->render_type, 0, obj->buf_sizes[RENDER_OBJ_VERTS] / sizeof(GLfloat) / 3);
+	if(obj->flags & RENDER_OBJ_FLAG_WIREFRAME)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	for(size_t i = 1; i <= 2; ++i)

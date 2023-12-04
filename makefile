@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  audio.o resources.o controls.o ticker.o utf.o object.o more_math.o ui.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/logic/render.o game/logic/math.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  math/more_math.o math/collision.o  audio.o resources.o controls.o ticker.o utf.o object.o ui.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -27,6 +27,8 @@ render/terrain.o: render/terrain.c render/terrain.h game/terrain.h
 render/font.o: render/font.c render/font.h formats/font.h
 	$(CCO) $< -o $@
 render/texture.o: render/texture.c render/texture.h
+	$(CCO) $< -o $@
+render/primitive.o: render/primitive.c render/primitive.h math/collision.h
 	$(CCO) $< -o $@
 
 formats/qb_vxl.o: formats/qb_vxl.c formats/qb_vxl.h
@@ -43,6 +45,10 @@ formats/font.o: formats/font.c formats/font.h
 game/terrain.o: game/terrain.c game/terrain.h
 	$(CCO) $< -o $@
 game/logic.o: game/logic.c game/logic.h
+	$(CCO) $< -o $@
+game/logic/render.o: game/logic/render.c game/logic/render.h game/logic.h
+	$(CCO) $< -o $@
+game/logic/math.o: game/logic/math.c game/logic/math.h game/logic.h
 	$(CCO) $< -o $@
 
 ui/ui_element.o: ui/ui_element.c ui/ui_element.h object.h
@@ -68,6 +74,11 @@ ui/checkbox.o: ui/checkbox.c ui/checkbox.h ui/ui_element.h
 ui/radiobox.o: ui/radiobox.c ui/checkbox.h ui/ui_element.h
 	$(CCO) $< -o $@
 
+math/more_math.o: math/more_math.c math/more_math.h
+	$(CCO) $< -o $@
+math/collision.o: math/collision.c math/collision.h
+	$(CCO) $< -o $@
+
 audio.o: audio.c audio.h
 	$(CCO) $< -o $@
 resources.o: resources.c resources.h
@@ -81,6 +92,4 @@ utf.o: utf.c utf.h
 object.o: object.c object.h
 	$(CCO) $< -o $@
 ui.o: ui.c ui.h
-	$(CCO) $< -o $@
-more_math.o: more_math.c more_math.h
 	$(CCO) $< -o $@

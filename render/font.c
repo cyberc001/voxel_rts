@@ -16,7 +16,7 @@ render_obj render_char(font* f, utf_char fcc, vec2f coords, vec2f size, vec3f cl
 {
 	font_char* fc = font_get_char(f,fcc);
 	if(!fc)
-		return (render_obj){.flags = RENDER_OBJ_FLAG_INVALID};
+		return RENDER_OBJ_EMPTY;
 	TRANSLATE_ORTHO_COORDS(coords);
 	coords.x += fc->bearing.x * size.x * 2;
 	coords.y -= size.y * (fc->size.y - fc->bearing.y) * 2;

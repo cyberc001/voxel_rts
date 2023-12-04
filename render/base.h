@@ -42,7 +42,7 @@ void render_pop_bbox();
 #define RENDER_OBJ_COLORIZE		101
 
 // Render object flags
-#define RENDER_OBJ_FLAG_INVALID		0x1	// signals that function returning a render object failed
+#define RENDER_OBJ_FLAG_WIREFRAME	0x1
 
 typedef struct render_obj render_obj;
 struct render_obj {

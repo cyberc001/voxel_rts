@@ -1,4 +1,4 @@
-#include "more_math.h"
+#include "math/more_math.h"
 
 float clamp_angle_360(float a)
 {
