@@ -16,6 +16,11 @@ function vec2:new(x, y)
 	return o
 end
 
+function vec2.tostring(v1)
+	return "{" .. tostring(v1.x) .. ", " .. tostring(v1.y) .. "}"
+end
+vec2.__tostring = vec2.tostring
+
 function vec2.add(v1, v2)
 	return vec2:new(v1.x + v2.x, v1.y + v2.y)
 end
@@ -56,6 +61,11 @@ function vec3:new(x, y, z)
 	self.__index = self
 	return o
 end
+
+function vec3.tostring(v1)
+	return "{" .. tostring(v1.x) .. ", " .. tostring(v1.y) .. ", " .. tostring(v1.z) .. "}"
+end
+vec3.__tostring = vec3.tostring
 
 function vec3.add(v1, v2)
 	return vec3:new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
