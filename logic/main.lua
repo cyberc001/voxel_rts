@@ -5,9 +5,9 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = {x = -5, y = -1, z = 1}, rot = {x = 15, y = 15},
+	pos = vec3:new(-5, -1, 1), rot = vec2:new(15, 15),
 	robj_arr = {
-		render_object:new({model = game.model_find("kirov"), pos = {x = 10, y = 5, z = 5}, rot = {x = 45, y = 45}})
+		render_object:new({model = game.model_find("kirov"), pos = vec3:new(10, 5, 5), rot = vec2:new(45, 45)})
 	}
 }))
 
