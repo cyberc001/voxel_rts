@@ -18,20 +18,25 @@ static int lua_render_obj_draw(lua_State* L)
 	luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
 	const render_obj* robj = lua_topointer(L, 1);
 
-	float tparams[8] = { // transformation params
-		0, 0, 0, // translation
-		0, 0, // rotation
-		1, 1, 1 // scale
-	};
+	vec3f tr = {0, 0, 0};
+	vec2f rot = {0, 0};
+	vec3f sc = {1, 1, 1};
 
-	for(int i = 2; i <= lua_gettop(L); ++i)
-		tparams[i - 2] = luaL_checknumber(L, i);
+	for(int i = 2; i <= lua_gettop(L) && i <= 4; ++i){
+		if(lua_type(L, i) != LUA_TTABLE)
+			break;
+		switch(i){
+			case 2: tr = lua_get_vec3(L, i); break;
+			case 3: rot = lua_get_vec2(L, i); break;
+			case 4: sc = lua_get_vec3(L, i); break;
+		}
+	}
 
 	glPushMatrix();
-	glTranslatef(tparams[0], tparams[2], tparams[1]);
-	glRotatef(tparams[3], 0, 1, 0);
-	glRotatef(tparams[4], 0, 0, 1);
-	glScalef(tparams[5], tparams[6], tparams[7]);
+	glTranslatef(tr.x, tr.z, tr.y);
+	glRotatef(rot.x, 0, 1, 0);
+	glRotatef(rot.y, 0, 0, 1);
+	glScalef(sc.x, sc.z, sc.y);
 	render_obj_draw(robj);
 	glPopMatrix();
 	return 0;
@@ -78,4 +83,28 @@ void game_logic_render()
 		LOG_ERROR("global logic render() returned an error:\n%s\n", lua_tostring(_s, -1));
 		lua_pop(_s, 1);
 	}
+}
+
+/* Helper functions */
+vec2f lua_get_vec2(lua_State* L, int vecidx)
+{
+	lua_pushstring(L, "y");
+	lua_gettable(L, vecidx);
+	lua_pushstring(L, "x");
+	lua_gettable(L, vecidx);
+	vec2f v = {lua_tonumber(L, -1), lua_tonumber(L, -2)};
+	lua_pop(L, 2);
+	return v;
+}
+vec3f lua_get_vec3(lua_State* L, int vecidx)
+{
+	lua_pushstring(L, "z");
+	lua_gettable(L, vecidx);
+	lua_pushstring(L, "y");
+	lua_gettable(L, vecidx);
+	lua_pushstring(L, "x");
+	lua_gettable(L, vecidx);
+	vec3f v = {lua_tonumber(L, -1), lua_tonumber(L, -2), lua_tonumber(L, -3)};
+	lua_pop(L, 3);
+	return v;
 }

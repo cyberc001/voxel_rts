@@ -1,10 +1,11 @@
-game_object = {
-	pos_x = 0, pos_y = 0, pos_z = 0,
-	angle = 0, pitch = 0,
-	size_x = y, size_y = 0, size_z = 0
-}
+require "./logic/math/vec"
+
+game_object = {}
 
 function game_object:create_tables(o)
+	o.pos = o.pos or vec3:new()
+	o.rot = o.rot or vec2:new()
+	o.size = o.size or vec3:new()
 	o.robj_arr = o.robj_arr or {}
 end
 function game_object:new(o)
@@ -22,6 +23,6 @@ end
 
 function game_object:render()
 	for _,v in ipairs(self.robj_arr) do
-		v:render()
+		v:render(self)
 	end
 end
