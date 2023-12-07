@@ -13,4 +13,6 @@ typedef struct {
 #define hexahedron_from_cube(side) (hexahedron_from_cuboid(side, side, side))
 hexahedron hexahedron_from_cuboid(float s1, float s2, float s3);
 
+hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat);
+
 #endif

@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "math/vec.h"
+#include "math/mat.h"
 
 #define min(x, y) ((x) > (y) ? (y) : (x))
 #define max(x, y) ((x) > (y) ? (x) : (y))
