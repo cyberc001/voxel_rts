@@ -5,7 +5,7 @@ game_object = {}
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.rot = o.rot or vec2:new()
-	o.size = o.size or vec3:new()
+	o.size = o.size or vec3:new(1, 1, 1)
 	o.hitbox = o.hitbox or math.hexahedron_from_cube(0)
 	o.robj_arr = o.robj_arr or {}
 end
@@ -27,7 +27,7 @@ function game_object:render()
 		if not self.robj_hitbox then
 			self.robj_hitbox = render.render_hexahedron(self.hitbox)
 		end
-		render.render_obj_draw(self.robj_hitbox, self.pos)
+		render.render_obj_draw(self.robj_hitbox, self.pos, self.rot, self.size)
 	end
 
 	for _,v in ipairs(self.robj_arr) do

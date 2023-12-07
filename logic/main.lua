@@ -7,7 +7,7 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(2, 2, 5),
+	pos = vec3:new(2, 2, 5), rot = vec2:new(45, 45),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})

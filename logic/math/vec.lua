@@ -1,5 +1,6 @@
 -- function notations:
 -- i - inline (result is written to 1st operand)
+-- e - element-wise (multiplication/division)
 
 -- vec2
 vec2 = { x = 0, y = 0 }
@@ -47,7 +48,12 @@ function vec2:isub(v1, v2)
 	v1.x = v1.x - v2.x
 	v1.y = v1.y - v2.y
 end
-
+function vec2:emul(v1, v2)
+	v = vec2:new()
+	v.x = v1.x * v2.x
+	v.y = v1.y * v2.y
+	return v
+end
 -- vec3
 vec3 = { x = 0, y = 0, z = 0 }
 
@@ -94,4 +100,11 @@ function vec3:isub(v1, v2)
 	v1.x = v1.x - v2.x
 	v1.y = v1.y - v2.y
 	v1.z = v1.z - v2.z
+end
+function vec3:emul(v1, v2)
+	v = vec3:new()
+	v.x = v1.x * v2.x
+	v.y = v1.y * v2.y
+	v.z = v1.z * v2.z
+	return v
 end

@@ -18,9 +18,8 @@ end
 function render_object:render(gobj)
 	vec3:iadd(self.pos, gobj.pos)
 	vec2:iadd(self.rot, gobj.rot)
-	vec3:iadd(self.size, gobj.size)
-	render.render_obj_draw(self.model, self.pos, self.rot, self.size)
+	local size = vec3:emul(self.size, gobj.size)
+	render.render_obj_draw(self.model, self.pos, self.rot, size)
 	vec3:isub(self.pos, gobj.pos)
 	vec2:isub(self.rot, gobj.rot)
-	vec3:isub(self.size, gobj.size)
 end
