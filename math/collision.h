@@ -1,7 +1,7 @@
 #ifndef MATH_COLLISION_H
 #define MATH_COLLISION_H
 
-#include "math/more_math.h"
+#include "more_math.h"
 
 typedef struct {
 	vec3f p[4];

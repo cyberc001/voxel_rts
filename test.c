@@ -6,6 +6,9 @@
 #include "controls.h"
 #include "audio.h"
 
+// TEST
+#include "math/mat.h"
+
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
 const float cam_zoom_speed = 0.2; // per wheel scroll
@@ -69,6 +72,10 @@ void camera_ui_tick(unsigned ms)
 
 int main()
 {
+	mat4f m = mat4f_identity();
+	mat4f_print(&m);
+	return 0;
+
 	audio_init();
 	resources_init();
 	render_init();

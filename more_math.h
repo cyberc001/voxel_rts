@@ -2,33 +2,12 @@
 #define MORE_MATH_H
 
 #include <math.h>
+#include "math/vec.h"
 
 #define min(x, y) ((x) > (y) ? (y) : (x))
 #define max(x, y) ((x) > (y) ? (x) : (y))
 #define clamp(x, _min, _max) (min(max((x), (_min)), (_max)))
 #define clamp01(x, _min, _max) ( ( (double)clamp(x, _min, _max) - (_min) ) / ((_max) - (_min)) )
-
-typedef struct {
-	int x, y;
-} vec2i;
-
-typedef struct {
-	float x, y;
-} vec2f;
-typedef struct {
-	float x, y, z;
-} vec3f;
-
-typedef struct {
-	vec2f pos, size;
-} rect2f;
-
-#define vec3_smul(vec, s) ( (typeof(vec)){(vec).x * s, (vec).y * s, (vec).z * s} )
-
-#define vec2_add(v1, v2) ( (typeof(v1)){(v1).x + (v2).x, (v1).y + (v2).y} )
-#define vec3_add(v1, v2) ( (typeof(v1)){(v1).x + (v2).x, (v1).y + (v2).y, (v1).z + (v2).z} )
-
-#define vec2_sub(v1, v2) ( (typeof(v1)){(v1).x - (v2).x, (v1).y - (v2).y} )
 
 // trigonometry
 float clamp_angle_360(float a);
