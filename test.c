@@ -72,14 +72,21 @@ void camera_ui_tick(unsigned ms)
 
 int main()
 {
-	mat4f m = mat4f_identity();
-	mat4f_print(&m);
-	return 0;
-
 	audio_init();
 	resources_init();
 	render_init();
 	tickers_init();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(3, 3, 3);
+	GLfloat modelview_mat[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_mat);
+	mat4f_gl_print(modelview_mat); puts("");
+
+	mat4f m = mat4f_identity();
+	mat4f_print(&m);
+	return 0;
 
 	controls_init("ctl_cfg.lon");
 	ui_init();

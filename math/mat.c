@@ -9,3 +9,9 @@ void mat4f_print(const mat4f* mat)
 		puts("");
 	}
 }
+
+
+void mat4f_translate(mat4f* mat, vec3f tr)
+{
+
+}
