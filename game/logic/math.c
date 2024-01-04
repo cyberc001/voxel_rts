@@ -28,20 +28,15 @@ static int lua_hexahedron_transform(lua_State* L)
 	}
 
 	mat4f trmat = mat4f_identity();
-	mat4f_translate(&trmat, (vec3f){tr.x, /*tr.z*/0, /*tr.y*/0});
-	//mat4f_rotate(&trmat, rot.x, (vec3f){0, 1, 0});
-	//mat4f_rotate(&trmat, rot.y, (vec3f){0, 0, 1});
-	mat4f_scale(&trmat, (vec3f){sc.x, /*sc.z*/1, /*sc.y*/1});
+	mat4f_translate(&trmat, (vec3f){tr.x, tr.z, tr.y});
+	mat4f_rotate(&trmat, rot.x, (vec3f){0, 1, 0});
+	mat4f_rotate(&trmat, rot.y, (vec3f){0, 0, 1});
+	mat4f_scale(&trmat, (vec3f){sc.x, sc.z, sc.y});
 	
 	h = hexahedron_transform(&h, &trmat);
 
 	lua_push_hexahedron(L, h);
 	return 1;
-
-	/*glTranslatef(tr.x, tr.z, tr.y);
-	glRotatef(rot.x, 0, 1, 0);
-	glRotatef(rot.y, 0, 0, 1);
-	glScalef(sc.x, sc.z, sc.y);*/
 }
 static int lua_hexahedron_check_collision(lua_State* L)
 {

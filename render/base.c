@@ -46,6 +46,12 @@ static void render_display()
 	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
 	
 	game_logic_render();
+	/*glBegin(GL_LINE_LOOP);
+	glColor3f(1, 0, 0);
+	glVertex3f(2.5, 2, 3);
+	glVertex3f(2.5, 0, 3);
+	glVertex3f(2.5, 0, 0);
+	glEnd();*/
 	render_terrain();
 
 	// UI rendering

@@ -3,6 +3,8 @@
 
 #include "more_math.h"
 
+float triangle_area_heron(vec3f a, vec3f b, vec3f c); // a, b, c are points, not edge vectors
+
 float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* intersect);
 
 typedef struct {

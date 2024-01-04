@@ -1,6 +1,18 @@
 #include "math/collision.h"
 #include <stddef.h>
 
+float triangle_area_heron(vec3f a, vec3f b, vec3f c)
+{
+	vec3f side_a = vec3_sub(b, a);
+	vec3f side_b = vec3_sub(c, b);
+	vec3f side_c = vec3_sub(a, c);
+	float ln_a = vec3_ln(side_a);
+	float ln_b = vec3_ln(side_b);
+	float ln_c = vec3_ln(side_c);
+	float p = (ln_a + ln_b + ln_c) / 2; // perimeter
+	return sqrt(p*(p - ln_a)*(p - ln_b)*(p - ln_c));
+}
+
 float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* intersect)
 { // source: https://stackoverflow.com/questions/5666222/3d-line-plane-intersection?noredirect=1&lq=1
 	const float epsilon = 1e-6;
@@ -20,6 +32,15 @@ float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* in
 	return 0;
 }
 
+static int point_inside_cosurface_quad(vec3f p, face f)
+{ // source: https://stackoverflow.com/questions/5922027/how-to-determine-if-a-point-is-within-a-quadrilateral
+	// TODO pre-calculate edge lengths and use them without any external functions to optimize
+	float quad_area = triangle_area_heron(f.p[0], f.p[1], f.p[2]) + triangle_area_heron(f.p[2], f.p[3], f.p[0]);
+	float tri_area_sum = 0;
+	for(size_t i = 0; i < 4; ++i)
+		tri_area_sum += triangle_area_heron(f.p[i], f.p[i == 3 ? 0 : i+1], p);
+	return tri_area_sum == quad_area;
+}
 
 hexahedron hexahedron_from_cuboid(float s1, float s2, float s3)
 {
@@ -57,12 +78,9 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
 			vec3f surf_norm = vec3_cross(e2, e1);
 			for(size_t _p = 0; _p < 4; ++_p){ // iterate over h1 face's edges
 				line3f edge = {h1->f[_f].p[_p], h1->f[_f].p[_p == 3 ? 0 : _p + 1]};
-				float fac = line_plane_intersect(edge, surf_norm, h2->f[_f2].p[0], NULL);
-				printf("edge:\n"); vec3f_print(edge.p1); vec3f_print(edge.p2);
-				printf("surface:\n"); vec3f_print(h2->f[_f2].p[0]); vec3f_print(surf_norm);
-				vec3f_print(e1); vec3f_print(e2);
-				printf("factor: %f\n", fac);
-				if(fac >= 0 && fac <= 1)
+				vec3f intersec;
+				float fac = line_plane_intersect(edge, surf_norm, h2->f[_f2].p[0], &intersec);
+				if(fac >= 0 && fac <= 1 && !isnan(intersec.x) && point_inside_cosurface_quad(intersec, h2->f[_f2]))
 					return 1;
 
 			}
