@@ -12,6 +12,7 @@ end
 function game_object:new(o)
 	o = o or {}
 	game_object:create_tables(o)
+	o.hitbox = math.hexahedron_transform(o.hitbox, o.pos, o.rot, o.size)
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -27,10 +28,10 @@ function game_object:render()
 		if not self.robj_hitbox then
 			self.robj_hitbox = render.render_hexahedron(self.hitbox)
 		end
-		render.render_obj_draw(self.robj_hitbox, self.pos, self.rot, self.size)
+		render.render_obj_draw(self.robj_hitbox)
 	end
 
 	for _,v in ipairs(self.robj_arr) do
-		v:render(self)
+		--v:render(self)
 	end
 end

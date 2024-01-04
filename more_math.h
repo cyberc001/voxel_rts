@@ -5,6 +5,10 @@
 #include "math/vec.h"
 #include "math/mat.h"
 
+typedef struct {
+	vec3f p1, p2;
+} line3f;
+
 #define min(x, y) ((x) > (y) ? (y) : (x))
 #define max(x, y) ((x) > (y) ? (x) : (y))
 #define clamp(x, _min, _max) (min(max((x), (_min)), (_max)))

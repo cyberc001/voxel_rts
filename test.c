@@ -7,7 +7,7 @@
 #include "audio.h"
 
 // TEST
-#include "math/mat.h"
+#include "math/collision.h"
 
 const float cam_scroll_speed_keys = 6; // per second
 const float cam_scroll_speed_mouse = 10; // per second
