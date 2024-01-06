@@ -24,6 +24,22 @@ table.insert(game_object_arr, game_object:new({
 print(math.hexahedron_check_collision(game_object_arr[1].hitbox, game_object_arr[2].hitbox))
 
 function _tick()
+	-- handle velocity and collision
+	for _,v in ipairs(game_object_arr) do
+		vec3:iadd(v.pos, v.vel)
+		for _,v2 in ipairs(game_object_arr) do
+			if v == v2 then goto continue end
+			local collided, resolution = math.hexahedron_check_collision(v.hitbox, v2.hitbox)
+			if collided then
+				print(v.pos)
+				vec3:isub(v.pos, resolution)
+				v:update_hitbox()
+				print(v.pos)
+			end
+			::continue::
+		end
+	end
+
 	for _,v in ipairs(game_object_arr) do
 		v:tick()
 	end

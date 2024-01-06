@@ -29,7 +29,6 @@ void game_logic_tick()
 		LOG_ERROR("global logic _tick() returned an error:\n%s\n", lua_tostring(_s, -1));
 		lua_pop(_s, 1);
 	}
-	lua_pop(_s, 1);
 }
 void game_logic_render()
 {

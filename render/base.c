@@ -28,6 +28,7 @@ void glfwPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zF
 
 static void render_display()
 {
+	game_logic_tick();
 	glViewport(0, 0, wnd_shape.x, wnd_shape.y);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

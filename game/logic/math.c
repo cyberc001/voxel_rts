@@ -43,8 +43,16 @@ static int lua_hexahedron_check_collision(lua_State* L)
 	hexahedron h1 = lua_get_hexahedron(L, 1);
 	hexahedron h2 = lua_get_hexahedron(L, 2);
 
-	lua_pushinteger(L, hexahedron_check_collision(&h1, &h2));
-	return 1;
+	vec3f resolution;
+	int collided = hexahedron_check_collision(&h1, &h2, &resolution);
+	lua_pushboolean(L, collided);
+
+	if(collided){
+		lua_push_vec3(L, resolution);
+		return 2;
+	}
+	else
+		return 1;
 }
 
 static const struct luaL_Reg cfuncs[] = {

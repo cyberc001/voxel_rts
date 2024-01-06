@@ -13,15 +13,16 @@ float triangle_area_heron(vec3f a, vec3f b, vec3f c)
 	return sqrt(p*(p - ln_a)*(p - ln_b)*(p - ln_c));
 }
 
-float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* intersect)
+float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* intersect, vec3f* resolution)
 { // source: https://stackoverflow.com/questions/5666222/3d-line-plane-intersection?noredirect=1&lq=1
 	const float epsilon = 1e-6;
 	vec3f u = vec3_sub(line.p2, line.p1);
 	float dot = vec3_dot(surf_norm, u);
-
 	if(fabs(dot) > epsilon){
 		vec3f w = vec3_sub(line.p1, surf_p);
 		float fac = -vec3_dot(surf_norm, w) / dot;
+		if(resolution)
+			*resolution = vec3_smul(w, fac);
 		u = vec3_smul(u, fac);
 		if(intersect)
 			*intersect = vec3_add(line.p1, u);
@@ -97,7 +98,7 @@ int hexahedron_check_projection_collision(const hexahedron* h1, const hexahedron
 	       && !(max1.y < min2.y || max2.y < min1.y)
 	       && !(max1.z < min2.z || max2.z < min1.z);
 }
-int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
+int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution)
 {
 	if(!hexahedron_check_projection_collision(h1, h2))
 		return 0; // cannot possibly overlap if projections dont
@@ -108,11 +109,13 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
 			vec3f surf_norm = vec3_cross(e2, e1);
 			for(size_t _p = 0; _p < 4; ++_p){ // iterate over h1 face's edges
 				line3f edge = {h1->f[_f].p[_p], h1->f[_f].p[_p == 3 ? 0 : _p + 1]};
-				vec3f intersec;
-				float fac = line_plane_intersect(edge, surf_norm, h2->f[_f2].p[0], &intersec);
-				if(fac >= 0 && fac <= 1 && !isnan(intersec.x) && point_inside_cosurface_quad(intersec, h2->f[_f2]))
+				vec3f intersec, resol;
+				float fac = line_plane_intersect(edge, surf_norm, h2->f[_f2].p[0], &intersec, &resol);
+				if(fac >= 0 && fac <= 1 && !isnan(intersec.x) && point_inside_cosurface_quad(intersec, h2->f[_f2])){
+					if(resolution)
+						*resolution = resol;
 					return 1;
-
+				}
 			}
 		}
 	return 0;
