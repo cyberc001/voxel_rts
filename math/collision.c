@@ -69,8 +69,38 @@ hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat)
 	return _out;
 }
 
+#define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
+#define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
+int hexahedron_check_projection_collision(const hexahedron* h1, const hexahedron* h2)
+{
+	vec3f min1 = {INFINITY, INFINITY, INFINITY}, max1 = {-INFINITY, -INFINITY, -INFINITY};
+	vec3f min2 = {INFINITY, INFINITY, INFINITY}, max2 = {-INFINITY, -INFINITY, -INFINITY};
+	for(size_t _f = 0; _f < 6; ++_f)
+		for(size_t _p = 0; _p < 4; ++_p){
+			SET_MIN(min1.x, h1->f[_f].p[_p].x);
+			SET_MIN(min1.y, h1->f[_f].p[_p].y);
+			SET_MIN(min1.z, h1->f[_f].p[_p].z);
+			SET_MAX(max1.x, h1->f[_f].p[_p].x);
+			SET_MAX(max1.y, h1->f[_f].p[_p].y);
+			SET_MAX(max1.z, h1->f[_f].p[_p].z);
+		}
+	for(size_t _f = 0; _f < 6; ++_f)
+		for(size_t _p = 0; _p < 4; ++_p){
+			SET_MIN(min2.x, h2->f[_f].p[_p].x);
+			SET_MIN(min2.y, h2->f[_f].p[_p].y);
+			SET_MIN(min2.z, h2->f[_f].p[_p].z);
+			SET_MAX(max2.x, h2->f[_f].p[_p].x);
+			SET_MAX(max2.y, h2->f[_f].p[_p].y);
+			SET_MAX(max2.z, h2->f[_f].p[_p].z);
+		}
+	return !(max1.x < min2.x || max2.x < min1.x)
+	       && !(max1.y < min2.y || max2.y < min1.y)
+	       && !(max1.z < min2.z || max2.z < min1.z);
+}
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
 {
+	if(!hexahedron_check_projection_collision(h1, h2))
+		return 0; // cannot possibly overlap if projections dont
 	for(size_t _f = 0; _f < 6; ++_f) // iterate over h1 faces
 		for(size_t _f2 = 0; _f2 < 6; ++_f2){ // iterate over h2 faces
 			vec3f e1 = vec3_sub(h2->f[_f2].p[1], h2->f[_f2].p[0]);
