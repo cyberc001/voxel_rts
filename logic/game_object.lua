@@ -21,6 +21,7 @@ end
 
 function game_object:update_hitbox()
 	self.hitbox = math.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
+	self.robj_hitbox = render.render_hexahedron(self.hitbox)
 end
 
 -- callbacks for the engine
