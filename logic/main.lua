@@ -7,15 +7,16 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(2, 2, 6), rot = vec2:new(0, 0),
-	vel = vec3:new(-0.003, 0, 0),
+	pos = vec3:new(2, 2, 6), rot = vec2:new(45, 45),
+	vel = vec3:new(-0.009, 0, 0),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
 	}
 }))
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(0, 2, 5), rot = vec2:new(-45, 0),
+	pos = vec3:new(0, 2, 5), rot = vec2:new(-45, -45),
+	vel = vec3:new(0.009, 0, 0),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
@@ -26,17 +27,21 @@ table.insert(game_object_arr, game_object:new({
 
 function _tick()
 	-- handle velocity and collision
-	for _,v in ipairs(game_object_arr) do
+	for i,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel)
 		v:update_hitbox()
-		for _,v2 in ipairs(game_object_arr) do
+		for i2,v2 in ipairs(game_object_arr) do
 			if v == v2 then goto continue end
 			local collided, resolution = math.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
-			if collided then
+			if collided ~= 0 then
 				vec3:isub(v.pos, v.vel)
-				vec3:iadd(v.pos, resolution)
+				if collided == 1 then
+					vec3:iadd(v.pos, resolution)
+				else
+					--vec3:iadd(v.pos, resolution)
+				end
 				v:update_hitbox()
-				print("collided", v, v2, resolution.x, resolution.y, resolution.z)
+				print("collided", collided, i, i2, resolution.x, resolution.y, resolution.z)
 			end
 			::continue::
 		end

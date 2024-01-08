@@ -46,7 +46,7 @@ static int lua_hexahedron_check_collision(lua_State* L)
 	vec3f vel = lua_get_vec3(L, 3);
 
 	int collided = hexahedron_check_collision(&h1, &h2, &vel);
-	lua_pushboolean(L, collided);
+	lua_pushinteger(L, collided);
 
 	if(collided){
 		lua_push_vec3(L, vel);

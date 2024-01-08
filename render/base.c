@@ -50,13 +50,9 @@ static void render_display()
 	glPointSize(5);
 	glBegin(GL_POINTS);
 	glColor3f(1, 0, 0);
-	glVertex3f(0.650000, 6.000000, 2.650000);
-	glVertex3f(0.707107, 5.000000, 2.707107);
-	glVertex3f(0.707107, 7.000000, 2.707107);
-	glEnd();
-	glBegin(GL_POINTS);
-	glColor3f(0, 1, 0);
-	glVertex3f(0.707107, 6.000000, 2.707107);
+	glVertex3f(1.355107, 5.000000, 2.707107);
+	glVertex3f(1.355107, 7.000000, 2.707107);
+	glVertex3f(1.355107, 7.000000, 2.707107);
 	glEnd();
 	/*glBegin(GL_LINE_LOOP);
 	glColor3f(1, 0, 0);

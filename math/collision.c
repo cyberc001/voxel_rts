@@ -110,15 +110,16 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	vec3f vel = *_vel;
 	int collided1 = _hexahedron_check_collision(h1, h2, &vel);
 	if(collided1){
+		printf("collided1, vel: "); vec3f_print(vel);
 		*_vel = vel;
-		return 1;
+		return collided1;
 	}
 	vel = *_vel;
 	int collided2 = _hexahedron_check_collision(h2, h1, &vel);
 	if(collided2){
 		printf("collided2, vel: "); vec3f_print(vel);
 		*_vel = vel;
-		return 1;
+		return collided2;
 	}
 	*_vel = (vec3f){0, 0, 0};
 	return 0;
@@ -169,7 +170,7 @@ collision_end:
 			}
 		printf("INIT COLLISION POINTS: "); vec3f_print(init_collision_p); vec3f_print(init_collision_p2);
 		vec3f target_p = perpendicular_3f((line3f){init_collision_p, init_collision_p2}, intersec);
-		printf("TARGET POINT: "); vec3f_print(target_p);
+		printf("BETWEEN: "); vec3f_print(target_p); vec3f_print(vec3_sub(target_p, *vel));
 
 		float min_fac = INFINITY;
 		for(size_t _f = 0; _f < 6; ++_f){ // iterate over all h1 faces
@@ -182,6 +183,45 @@ collision_end:
 				printf("RESOLUTION %f: ", fac); vec3f_print(test);
 				resolution = vec3_sub(target_p, test);
 				min_fac = fac;
+			}
+		}
+
+		// 2
+		velx_sign *= -1; vely_sign *= -1; velz_sign *= -1;
+		init_collision_p = (vec3f){INFINITY * velx_sign, INFINITY * vely_sign, INFINITY * velz_sign};
+	       	init_collision_p2 = init_collision_p; // find the earliest point of collision amongst h1 vertices
+		for(size_t _f = 0; _f < 6; ++_f) // iterate over all h1 points TODO optimize
+			for(size_t _p = 0; _p < 4; ++_p){
+				vec3f pt = h1->f[_f].p[_p];
+				if( ((velx_sign == 1 && pt.x < init_collision_p2.x) || (velx_sign == -1 && pt.x > init_collision_p2.x) || (velx_sign == 0)) &&
+					((vely_sign == 1 && pt.y < init_collision_p2.y) || (vely_sign == -1 && pt.y > init_collision_p2.y) || (vely_sign == 0)) &&
+					((velz_sign == 1 && pt.z < init_collision_p2.z) || (velz_sign == -1 && pt.z > init_collision_p2.z) || (velz_sign == 0))){
+					if( ((velx_sign == 1 && pt.x < init_collision_p.x) || (velx_sign == -1 && pt.x > init_collision_p.x) || (velx_sign == 0)) &&
+						((vely_sign == 1 && pt.y < init_collision_p.y) || (vely_sign == -1 && pt.y > init_collision_p.y) || (vely_sign == 0)) &&
+						((velz_sign == 1 && pt.z < init_collision_p.z) || (velz_sign == -1 && pt.z > init_collision_p.z) || (velz_sign == 0))){
+						init_collision_p2 = init_collision_p;
+						init_collision_p = pt;
+					}
+					else {
+						init_collision_p2 = pt;
+					}
+				}
+			}
+		printf("INIT COLLISION POINTS2: "); vec3f_print(init_collision_p); vec3f_print(init_collision_p2);
+		target_p = perpendicular_3f((line3f){init_collision_p, init_collision_p2}, intersec);
+		printf("BETWEEN2: "); vec3f_print(target_p); vec3f_print(vec3_sub(target_p, *vel));
+
+		for(size_t _f = 0; _f < 6; ++_f){ // iterate over all h2 faces
+			vec3f test;
+			vec3f e1 = vec3_sub(h2->f[_f].p[1], h2->f[_f].p[0]);
+			vec3f e2 = vec3_sub(h2->f[_f].p[2], h2->f[_f].p[1]);
+			vec3f surf_norm = vec3_cross(e2, e1), surf_p = h2->f[_f].p[0];
+			float fac = line_plane_intersect((line3f){target_p, vec3_sub(target_p, *vel)}, surf_norm, surf_p, &test, NULL);
+			if(fac < min_fac && !isnan(test.x) && fac > 0){
+				printf("RESOLUTION2 %f: ", fac); vec3f_print(test);
+				resolution = vec3_sub(target_p, test);
+				min_fac = fac;
+				collided = 2;
 			}
 		}
 
