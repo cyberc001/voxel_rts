@@ -109,26 +109,27 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 {
 	vec3f vel = *_vel;
 	int collided1 = _hexahedron_check_collision(h1, h2, &vel);
+	if(collided1 == -1)
+		return 0;
 	if(collided1){
-		printf("collided1, vel: "); vec3f_print(vel);
 		*_vel = vel;
 		return collided1;
 	}
 	vel = *_vel;
 	int collided2 = _hexahedron_check_collision(h2, h1, &vel);
+	if(collided2 == -1)
+		return 0;
 	if(collided2){
-		printf("collided2, vel: "); vec3f_print(vel);
 		*_vel = vel;
 		return collided2;
 	}
-	*_vel = (vec3f){0, 0, 0};
 	return 0;
 }
 
 int _hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* vel)
 {
 	if(!hexahedron_check_projection_collision(h1, h2))
-		return 0; // cannot possibly overlap if projections dont
+		return -1; // cannot possibly overlap if projections dont
 	int collided = 0; vec3f resolution = {0, 0, 0};
 	vec3f intersec, collision_p;
 	for(size_t _f = 0; _f < 6; ++_f) // iterate over h1 faces
@@ -142,13 +143,11 @@ int _hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3
 				if(fac >= 0 && fac <= 1 && !isnan(intersec.x) && point_inside_cosurface_quad(intersec, h2->f[_f2])){
 					collided = 1;
 					goto collision_end;
-					//return 1;
 				}
 			}
 		}
 collision_end:
 	if(collided && vec3_ln(*vel) > 0){ // point on h1 collided with a surface on h2
-		printf("INTERSEC: "); vec3f_print(intersec);
 		float velx_sign = sign(vel->x), vely_sign = sign(vel->y), velz_sign = sign(vel->z);
 		vec3f init_collision_p = {INFINITY * velx_sign, INFINITY * vely_sign, INFINITY * velz_sign}, init_collision_p2 = init_collision_p; // find the earliest point of collision amongst h2 vertices
 		for(size_t _f = 0; _f < 6; ++_f) // iterate over all h2 points TODO optimize
@@ -168,9 +167,7 @@ collision_end:
 					}
 				}
 			}
-		printf("INIT COLLISION POINTS: "); vec3f_print(init_collision_p); vec3f_print(init_collision_p2);
 		vec3f target_p = perpendicular_3f((line3f){init_collision_p, init_collision_p2}, intersec);
-		printf("BETWEEN: "); vec3f_print(target_p); vec3f_print(vec3_sub(target_p, *vel));
 
 		float min_fac = INFINITY;
 		for(size_t _f = 0; _f < 6; ++_f){ // iterate over all h1 faces
@@ -180,13 +177,12 @@ collision_end:
 			vec3f surf_norm = vec3_cross(e2, e1), surf_p = h1->f[_f].p[0];
 			float fac = line_plane_intersect((line3f){target_p, vec3_sub(target_p, *vel)}, surf_norm, surf_p, &test, NULL);
 			if(fac < min_fac && !isnan(test.x) && fac > 0){
-				printf("RESOLUTION %f: ", fac); vec3f_print(test);
 				resolution = vec3_sub(target_p, test);
 				min_fac = fac;
 			}
 		}
 
-		// 2
+		// check for better resolutions that are done by moving h2; if they are found, don't resolve
 		velx_sign *= -1; vely_sign *= -1; velz_sign *= -1;
 		init_collision_p = (vec3f){INFINITY * velx_sign, INFINITY * vely_sign, INFINITY * velz_sign};
 	       	init_collision_p2 = init_collision_p; // find the earliest point of collision amongst h1 vertices
@@ -207,9 +203,7 @@ collision_end:
 					}
 				}
 			}
-		printf("INIT COLLISION POINTS2: "); vec3f_print(init_collision_p); vec3f_print(init_collision_p2);
 		target_p = perpendicular_3f((line3f){init_collision_p, init_collision_p2}, intersec);
-		printf("BETWEEN2: "); vec3f_print(target_p); vec3f_print(vec3_sub(target_p, *vel));
 
 		for(size_t _f = 0; _f < 6; ++_f){ // iterate over all h2 faces
 			vec3f test;
@@ -218,15 +212,12 @@ collision_end:
 			vec3f surf_norm = vec3_cross(e2, e1), surf_p = h2->f[_f].p[0];
 			float fac = line_plane_intersect((line3f){target_p, vec3_sub(target_p, *vel)}, surf_norm, surf_p, &test, NULL);
 			if(fac < min_fac && !isnan(test.x) && fac > 0){
-				printf("RESOLUTION2 %f: ", fac); vec3f_print(test);
-				resolution = vec3_sub(target_p, test);
-				min_fac = fac;
-				collided = 2;
+				resolution = (vec3f){0, 0, 0};
+				break;
 			}
 		}
 
 	}
 	*vel = resolution;
 	return collided;
-	//return 0;
 }
