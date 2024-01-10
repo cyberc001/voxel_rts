@@ -16,7 +16,7 @@ table.insert(game_object_arr, game_object:new({
 }))
 table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(6, 2, 2), rot = vec2:new(0, -15),
-	vel = vec3:new(0, 0.01, 0.03),
+	vel = vec3:new(0, 0.01, -0.01),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})

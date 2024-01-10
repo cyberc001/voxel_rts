@@ -204,8 +204,8 @@ int hexahedron_check_terrain_collision(const hexahedron* h)
 					for(size_t _p = 0; _p < 4; ++_p)
 						tpiece_h.f[_f].p[_p] = vec3_smul(tpiece_h.f[_f].p[_p], TERRAIN_PIECE_SIZE);
 
-				int _collided = _hexahedron_check_collision(h, &tpiece_h);
-				if(_collided == 1)
+				int _collided = hexahedron_check_collision(h, &tpiece_h);
+				if(_collided)
 					return 1;
 				piece = piece->next;
 			}
