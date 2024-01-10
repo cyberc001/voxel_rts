@@ -38,29 +38,30 @@ static int lua_hexahedron_transform(lua_State* L)
 	lua_push_hexahedron(L, h);
 	return 1;
 }
+
 static int lua_hexahedron_check_collision(lua_State* L)
 {
 	hexahedron h1 = lua_get_hexahedron(L, 1);
 	hexahedron h2 = lua_get_hexahedron(L, 2);
-
-	vec3f vel = lua_get_vec3(L, 3);
-
-	int collided = hexahedron_check_collision(&h1, &h2, &vel);
+	int collided = hexahedron_check_collision(&h1, &h2);
 	lua_pushboolean(L, collided);
-
-	if(collided){
-		lua_push_vec3(L, vel);
-		return 2;
-	}
-	else
-		return 1;
+	return 1;
+}
+static int lua_hexahedron_check_terrain_collision(lua_State* L)
+{
+	hexahedron h = lua_get_hexahedron(L, 1);
+	int collided = hexahedron_check_terrain_collision(&h);
+	lua_pushboolean(L, collided);
+	return 1;
 }
 
 static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},
 	{"hexahedron_transform", lua_hexahedron_transform},
+
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
+	{"hexahedron_check_terrain_collision", lua_hexahedron_check_terrain_collision},
 	{NULL, NULL}
 };
 

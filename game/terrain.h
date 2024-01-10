@@ -7,6 +7,8 @@
 #include "render/base.h"
 #include "resources.h"
 
+#define TERRAIN_PIECE_SIZE	1
+
 #define COORD_KEY(x, y) (((uint64_t)(x) << 32) | (y))
 #define KEY_COORD_X(key) ((key) >> 32)
 #define KEY_COORD_Y(key) ((key) & 0xFFFFFFFF)

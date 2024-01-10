@@ -47,14 +47,18 @@ static void render_display()
 	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
 	
 	game_logic_render();
-	/*glPointSize(5);
+	render_terrain();
+
+	glLoadIdentity();
+	glPointSize(5);
 	glBegin(GL_POINTS);
 	glColor3f(1, 0, 0);
-	glVertex3f(1.355107, 5.000000, 2.707107);
-	glVertex3f(1.355107, 7.000000, 2.707107);
-	glVertex3f(1.355107, 7.000000, 2.707107);
-	glEnd();*/
-	render_terrain();
+	// intersec
+	glVertex3f(6, 1.555556, 2);
+	// edge
+	glVertex3f(7, 0, 2);
+	glVertex3f(6, 0, 3);
+	glEnd();
 
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);

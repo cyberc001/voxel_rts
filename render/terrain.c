@@ -1,11 +1,10 @@
 #include "render/terrain.h"
 #include "game/terrain.h"
 
-#define TERRAIN_RENDER_SCALE	1
 #define MODEL_SET_DATA(x, y, z, tex, u, v){\
-	model_vert[model_idx] = (x) * TERRAIN_RENDER_SCALE;\
-	model_vert[model_idx + 1] = (y) * TERRAIN_RENDER_SCALE;\
-	model_vert[model_idx + 2] = (z) * TERRAIN_RENDER_SCALE;\
+	model_vert[model_idx] = (x) * TERRAIN_PIECE_SIZE;\
+	model_vert[model_idx + 1] = (y) * TERRAIN_PIECE_SIZE;\
+	model_vert[model_idx + 2] = (z) * TERRAIN_PIECE_SIZE;\
 	model_tex[model_idx / 3] = tex;\
 	model_uv[model_idx / 3 * 2] = u;\
 	model_uv[model_idx / 3 * 2 + 1] = v;\
