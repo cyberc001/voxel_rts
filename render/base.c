@@ -48,18 +48,7 @@ static void render_display()
 	
 	game_logic_render();
 	render_terrain();
-
-	glLoadIdentity();
-	glPointSize(5);
-	glBegin(GL_POINTS);
-	glColor3f(1, 0, 0);
-	// intersec
-	glVertex3f(6, 1.555556, 2);
-	// edge
-	glVertex3f(7, 0, 2);
-	glVertex3f(6, 0, 3);
-	glEnd();
-
+	
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

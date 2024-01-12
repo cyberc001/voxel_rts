@@ -43,9 +43,15 @@ static int lua_hexahedron_check_collision(lua_State* L)
 {
 	hexahedron h1 = lua_get_hexahedron(L, 1);
 	hexahedron h2 = lua_get_hexahedron(L, 2);
-	int collided = hexahedron_check_collision(&h1, &h2);
+	vec3f resolution;
+	int collided = hexahedron_check_collision(&h1, &h2, &resolution);
 	lua_pushboolean(L, collided);
-	return 1;
+	if(collided){
+		lua_push_vec3(L, resolution);
+		return 2;
+	}
+	else
+		return 1;
 }
 static int lua_hexahedron_check_terrain_collision(lua_State* L)
 {

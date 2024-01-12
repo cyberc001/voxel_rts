@@ -40,16 +40,6 @@ float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* in
 	return 0;
 }
 
-static int point_inside_cosurface_quad(vec3f p, face3f f)
-{ // source: https://stackoverflow.com/questions/5922027/how-to-determine-if-a-point-is-within-a-quadrilateral
-	// TODO pre-calculate edge lengths and use them without any external functions to optimize
-	float quad_area = triangle_area_heron(f.p[0], f.p[1], f.p[2]) + triangle_area_heron(f.p[2], f.p[3], f.p[0]);
-	float tri_area_sum = 0;
-	for(size_t i = 0; i < 4; ++i)
-		tri_area_sum += triangle_area_heron(f.p[i], f.p[i == 3 ? 0 : i+1], p);
-	return tri_area_sum == quad_area;
-}
-
 hexahedron hexahedron_from_cuboid(float s1, float s2, float s3)
 {
 	hexahedron h;
@@ -126,35 +116,124 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2)
 	       && !(b1->max.z < b2->min.z || b2->max.z < b1->min.z);
 }
 
-int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
-{
-	int collided1 = _hexahedron_check_collision(h1, h2);
-	if(collided1 == -1) return 0;
-	else if(collided1 == 1) return 1;
-	int collided2 = _hexahedron_check_collision(h2, h1);
-	if(collided2 == 1) return 1;
-	return 0;
-}
+/* SAT */
 
-int _hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2)
+static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 {
-	if(!hexahedron_check_projection_collision(h1, h2))
-		return -1; // cannot possibly overlap if projections dont
-	vec3f intersec, collision_p;
-	for(size_t _f = 0; _f < 6; ++_f) // iterate over h1 faces
-		for(size_t _f2 = 0; _f2 < 6; ++_f2){ // iterate over h2 faces
-			vec3f e1 = vec3_sub(h2->f[_f2].p[1], h2->f[_f2].p[0]);
-			vec3f e2 = vec3_sub(h2->f[_f2].p[2], h2->f[_f2].p[1]);
-			vec3f surf_norm = vec3_cross(e2, e1), surf_p = h2->f[_f2].p[0];
-			for(size_t _p = 0; _p < 4; ++_p){ // iterate over h1 face's edges
-				line3f edge = {h1->f[_f].p[_p], h1->f[_f].p[_p == 3 ? 0 : _p + 1]};
-				float fac = line_plane_intersect(edge, surf_norm, surf_p, &intersec, &collision_p);
-				if(fac >= 0 && fac <= 1 && !isnan(intersec.x) && point_inside_cosurface_quad(intersec, h2->f[_f2])){
-					return 1;
+	float min = vec3_dot(axis, h1->f[0].p[0]), max = min;
+	for(size_t _p = 1; _p < 4; ++_p){
+		float proj = vec3_dot(axis, h1->f[0].p[_p]);
+		if(proj < min) min = proj;
+		else if(proj > max) max = proj;
+	}
+	for(size_t _f = 1; _f < 6; ++_f){
+		for(size_t _p = 0; _p < 4; ++_p){
+			float proj = vec3_dot(axis, h1->f[_f].p[_p]);
+			if(proj < min) min = proj;
+			else if(proj > max) max = proj;
+		}
+	}
+	return (vec2f){min, max};
+}
+static int do_proj_overlap(vec2f proj1, vec2f proj2)
+{
+	return proj1.y >= proj2.x || proj1.x <= proj2.y;
+}
+static float get_proj_overlap(vec2f proj1, vec2f proj2)
+{
+	return (proj1.y >= proj2.x) ? (proj1.y - proj2.x)
+		: (proj2.y - proj1.x); /*proj1.x <= proj2.y*/
+}
+static size_t hexahedron_get_separating_axes(const hexahedron* h1, const hexahedron* h2, vec3f* axis_arr)
+{
+	size_t arr_i = 0;
+	// get normals to h1 and h2 faces
+	for(size_t _f = 0; _f < 6; ++_f){
+		vec3f edge1 = vec3_sub(h1->f[_f].p[1], h1->f[_f].p[0]);
+		vec3f edge2 = vec3_sub(h1->f[_f].p[2], h1->f[_f].p[1]);
+		vec3f norm = vec3_norm(vec3_cross(edge1, edge2));
+		int insert = 1;
+		for(size_t i = 0; i < arr_i; ++i)
+			if(vec3_eq(axis_arr[i], norm))
+			{ insert = 0; break; }
+		if(insert)
+			axis_arr[arr_i++] = norm;
+
+		edge1 = vec3_sub(h2->f[_f].p[1], h2->f[_f].p[0]);
+		edge2 = vec3_sub(h2->f[_f].p[2], h2->f[_f].p[1]);
+		norm = vec3_norm(vec3_cross(edge1, edge2));
+		insert = 1;
+		for(size_t i = 0; i < arr_i; ++i)
+			if(vec3_eq(axis_arr[i], norm))
+			{ insert = 0; break; }
+		if(insert)
+			axis_arr[arr_i++] = norm;
+	}
+	// get all edge-to-edge cases (i.e. cross-products of edges)
+	for(size_t _f = 0; _f < 6; ++_f){
+		for(size_t _p = 0; _p < 4; ++_p){
+			for(size_t _f2 = 0; _f2 < 6; ++_f2){
+				for(size_t _p2 = 0; _p2 < 4; ++_p2){
+					vec3f e1 = h1->f[_f].p[_p], e2 = h1->f[_f].p[_p == 3 ? 0 : _p + 1],
+					e3 = h2->f[_f2].p[_p2], e4 = h2->f[_f2].p[_p2 == 3 ? 0 : _p2 + 1];
+					vec3f edge1 = vec3_sub(e1, e2), edge2 = vec3_sub(e3, e4);
+					vec3f edge = vec3_cross(edge1, edge2);
+					vec3f norm = vec3_norm(edge);
+					if(!isnan(norm.x) && !isnan(norm.y) && !isnan(norm.z)){
+						int insert = 1;
+						for(size_t i = 0; i < arr_i; ++i)
+							if(vec3_eq(axis_arr[i], norm))
+							{ insert = 0; break; }
+						if(insert)
+							axis_arr[arr_i++] = norm;
+					}
 				}
 			}
 		}
-	return 0;
+	}
+	return arr_i;
+}
+
+int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resol)
+{
+	vec3f axes[6 + 6 + 256];
+	if(!hexahedron_check_projection_collision(h1, h2))
+		return 0;
+	size_t axes_ln = hexahedron_get_separating_axes(h1, h2, axes);
+	float overlap = INFINITY;
+	vec3f resolution;
+
+	for(size_t i = 0; i < axes_ln; ++i){
+		vec3f axis = axes[i];
+		if(vec3_ln(axis) == 0)
+			continue;
+		vec2f proj1 = hexahedron_project_on_axis(h1, axis),
+		      proj2 = hexahedron_project_on_axis(h2, axis);
+		if(do_proj_overlap(proj1, proj2)){
+			float o = get_proj_overlap(proj1, proj2);
+			printf("proj1: %f %f\n", proj1.x, proj1.y);
+			printf("proj2: %f %f\n", proj2.x, proj2.y);
+			printf("overlap: %f\n", o);
+			printf("axis %lu: ", i); vec3f_print(axes[i]);
+			if(o < overlap){
+				overlap = o;
+				resolution = axis;
+			}
+		}
+		else{
+			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
+			printf("proj2: %f %f\n", proj2.x, proj2.y);
+			printf("DON'T OVERLAP\n");
+			printf("axis %lu: ", i); vec3f_print(axes[i]);*/
+			return 0;
+		}
+	}
+
+	printf("OVERLAP: %f\n", overlap);
+	vec3f_print(resolution);
+	resolution = vec3_smul(resolution, overlap);
+	*resol = resolution;
+	return 1;
 }
 
 int hexahedron_check_terrain_collision(const hexahedron* h)
@@ -204,7 +283,8 @@ int hexahedron_check_terrain_collision(const hexahedron* h)
 					for(size_t _p = 0; _p < 4; ++_p)
 						tpiece_h.f[_f].p[_p] = vec3_smul(tpiece_h.f[_f].p[_p], TERRAIN_PIECE_SIZE);
 
-				int _collided = hexahedron_check_collision(h, &tpiece_h);
+				vec3f resolution;
+				int _collided = hexahedron_check_collision(h, &tpiece_h, &resolution);
 				if(_collided)
 					return 1;
 				piece = piece->next;
