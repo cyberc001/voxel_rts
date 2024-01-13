@@ -118,6 +118,15 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2)
 
 /* SAT */
 
+static vec3f hexahedron_get_center(const hexahedron* h1)
+{
+	vec3f c = {0, 0, 0};
+	for(size_t _f = 0; _f < 6; ++_f)
+		for(size_t _p = 0; _p < 4; ++_p)
+			c = vec3_add(c, h1->f[_f].p[_p]);
+	return vec3_sdiv(c, 24);
+}
+
 static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 {
 	float min = vec3_dot(axis, h1->f[0].p[0]), max = min;
@@ -137,12 +146,11 @@ static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 }
 static int do_proj_overlap(vec2f proj1, vec2f proj2)
 {
-	return proj1.y >= proj2.x || proj1.x <= proj2.y;
+	return proj1.x <= proj2.y && proj1.y >= proj2.x;
 }
 static float get_proj_overlap(vec2f proj1, vec2f proj2)
 {
-	return (proj1.y >= proj2.x) ? (proj1.y - proj2.x)
-		: (proj2.y - proj1.x); /*proj1.x <= proj2.y*/
+	return min(proj1.y, proj2.y) - max(proj1.x, proj2.x);
 }
 static size_t hexahedron_get_separating_axes(const hexahedron* h1, const hexahedron* h2, vec3f* axis_arr)
 {
@@ -232,6 +240,12 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	printf("OVERLAP: %f\n", overlap);
 	vec3f_print(resolution);
 	resolution = vec3_smul(resolution, overlap);
+	vec3f p1 = hexahedron_get_center(h1), p2 = hexahedron_get_center(h2);
+	vec3f vd = vec3_sub(p1, p2);
+	if(vec3_dot(vd, resolution) > 0)
+		resolution = vec3_smul(resolution, -1);
+	//float tmp = resolution.y;
+	//resolution.y = resolution.z; resolution.z = tmp;
 	*resol = resolution;
 	return 1;
 }

@@ -39,10 +39,10 @@ static int lua_render_obj_draw(lua_State* L)
 	}
 
 	glPushMatrix();
-	glTranslatef(tr.x, tr.z, tr.y);
+	glTranslatef(tr.x, tr.y, tr.z);
 	glRotatef(rot.x, 0, 1, 0);
 	glRotatef(rot.y, 0, 0, 1);
-	glScalef(sc.x, sc.z, sc.y);
+	glScalef(sc.x, sc.y, sc.z);
 
 	render_obj_draw(robj);
 	glPopMatrix();

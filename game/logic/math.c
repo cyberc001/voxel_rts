@@ -28,10 +28,10 @@ static int lua_hexahedron_transform(lua_State* L)
 	}
 
 	mat4f trmat = mat4f_identity();
-	mat4f_translate(&trmat, (vec3f){tr.x, tr.z, tr.y});
+	mat4f_translate(&trmat, tr);
 	mat4f_rotate(&trmat, rot.x, (vec3f){0, 1, 0});
 	mat4f_rotate(&trmat, rot.y, (vec3f){0, 0, 1});
-	mat4f_scale(&trmat, (vec3f){sc.x, sc.z, sc.y});
+	mat4f_scale(&trmat, sc);
 	
 	h = hexahedron_transform(&h, &trmat);
 
