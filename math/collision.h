@@ -29,6 +29,6 @@ bbox3f hexahedron_get_bbox(const hexahedron* h);
 int bbox_check_collision(const bbox3f* b1, const bbox3f* b2);
 
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution);
-int hexahedron_check_terrain_collision(const hexahedron* h);
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, float* pitch_change);
 
 #endif

@@ -204,7 +204,7 @@ static size_t hexahedron_get_separating_axes(const hexahedron* h1, const hexahed
 
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resol)
 {
-	vec3f axes[6 + 6 + 256];
+	vec3f axes[6 + 6 + 576];
 	if(!hexahedron_check_projection_collision(h1, h2))
 		return 0;
 	size_t axes_ln = hexahedron_get_separating_axes(h1, h2, axes);
@@ -219,10 +219,10 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		      proj2 = hexahedron_project_on_axis(h2, axis);
 		if(do_proj_overlap(proj1, proj2)){
 			float o = get_proj_overlap(proj1, proj2);
-			printf("proj1: %f %f\n", proj1.x, proj1.y);
+			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
 			printf("proj2: %f %f\n", proj2.x, proj2.y);
 			printf("overlap: %f\n", o);
-			printf("axis %lu: ", i); vec3f_print(axes[i]);
+			printf("axis %lu: ", i); vec3f_print(axes[i]);*/
 			if(o < overlap){
 				overlap = o;
 				resolution = axis;
@@ -237,8 +237,8 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		}
 	}
 
-	printf("OVERLAP: %f\n", overlap);
-	vec3f_print(resolution);
+	//printf("OVERLAP: %f\n", overlap);
+	//vec3f_print(resolution);
 	resolution = vec3_smul(resolution, overlap);
 	vec3f p1 = hexahedron_get_center(h1), p2 = hexahedron_get_center(h2);
 	vec3f vd = vec3_sub(p1, p2);
@@ -250,7 +250,7 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	return 1;
 }
 
-int hexahedron_check_terrain_collision(const hexahedron* h)
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, float* new_pitch)
 {
 	bbox3f bbox = hexahedron_get_bbox(h);
 	vec3f terrain_min = {0, 0, 0};
@@ -261,6 +261,8 @@ int hexahedron_check_terrain_collision(const hexahedron* h)
 		 end_tx = ceil(bbox.max.x / TERRAIN_PIECE_SIZE);
 	uint32_t beg_ty = floor(bbox.min.y / TERRAIN_PIECE_SIZE),
 		 end_ty = ceil(bbox.max.y / TERRAIN_PIECE_SIZE);
+	int collided = 0;
+	vec3f max_resol = {0, 0, 0};
 	for(uint32_t tx = beg_tx; tx <= end_tx; ++tx)
 		for(uint32_t ty = beg_ty; ty <= end_ty; ++ty){
 			terrain_piece* piece = terrain_get_piece(tx, ty);
@@ -297,12 +299,24 @@ int hexahedron_check_terrain_collision(const hexahedron* h)
 					for(size_t _p = 0; _p < 4; ++_p)
 						tpiece_h.f[_f].p[_p] = vec3_smul(tpiece_h.f[_f].p[_p], TERRAIN_PIECE_SIZE);
 
-				vec3f resolution;
-				int _collided = hexahedron_check_collision(h, &tpiece_h, &resolution);
-				if(_collided)
-					return 1;
+				vec3f resol;
+				int _collided = hexahedron_check_collision(h, &tpiece_h, &resol);
+				if(_collided){
+					vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
+					vec3f norm = vec3_cross(e1, e2);
+					vec3f vel = {0, 0, -1};
+					*new_pitch = rad_to_ang(vec3_dot(vel, norm) / vec3_ln(vel) / vec3_ln(norm));
+
+					printf("resolution: "); vec3f_print(resol); vec3f_print(max_resol);
+					if(vec3_ln(resol) > vec3_ln(max_resol)){
+						max_resol = resol;
+					}
+					collided = 1;
+					//return 1;
+				}
 				piece = piece->next;
 			}
 		}
-	return 0;
+	*resolution = max_resol;
+	return collided;
 }

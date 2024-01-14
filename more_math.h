@@ -19,6 +19,7 @@ typedef struct {
 // trigonometry
 float clamp_angle_360(float a);
 #define ang_to_rad(a) ((a) / 180. * M_PI)
+#define rad_to_ang(a) ((a) * 180. / M_PI)
 
 // collision checks
 int is_point_in_rect2f(vec2f point, vec2f coords, vec2f size);

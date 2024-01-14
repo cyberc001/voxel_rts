@@ -30,7 +30,7 @@ static int lua_hexahedron_transform(lua_State* L)
 	mat4f trmat = mat4f_identity();
 	mat4f_translate(&trmat, tr);
 	mat4f_rotate(&trmat, rot.x, (vec3f){0, 1, 0});
-	mat4f_rotate(&trmat, rot.y, (vec3f){0, 0, 1});
+	mat4f_rotate(&trmat, rot.y, (vec3f){1, 0, 0});
 	mat4f_scale(&trmat, sc);
 	
 	h = hexahedron_transform(&h, &trmat);
@@ -50,14 +50,20 @@ static int lua_hexahedron_check_collision(lua_State* L)
 		lua_push_vec3(L, resolution);
 		return 2;
 	}
-	else
-		return 1;
+	return 1;
 }
 static int lua_hexahedron_check_terrain_collision(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
-	int collided = hexahedron_check_terrain_collision(&h);
+	vec3f resolution;
+	float new_pitch;
+	int collided = hexahedron_check_terrain_collision(&h, &resolution, &new_pitch);
 	lua_pushboolean(L, collided);
+	if(collided){
+		lua_push_vec3(L, resolution);
+		lua_pushnumber(L, new_pitch);
+		return 3;
+	}
 	return 1;
 }
 

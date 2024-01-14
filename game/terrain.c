@@ -18,10 +18,10 @@ void terrain_init()
 
 			terrain_piece* add = malloc(sizeof(terrain_piece));
 			add->z_floor[0] = add->z_floor[1] = add->z_floor[2] = add->z_floor[3] = 0;
-			add->z_ceil[0] = (y)*0.35;
-			add->z_ceil[1] = (y)*0.35;
-			add->z_ceil[2] = (y + 1)*0.35;
-			add->z_ceil[3] = (y + 1)*0.35;
+			add->z_ceil[0] = max((y)*0.55, 0.05);
+			add->z_ceil[1] = max((y)*0.55, 0.05);
+			add->z_ceil[2] = max((y + 1)*0.55, 0.05);
+			add->z_ceil[3] = max((y + 1)*0.55, 0.05);
 
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");
