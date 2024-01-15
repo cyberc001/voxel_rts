@@ -13,15 +13,22 @@ void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash, NULL);
 	for(size_t x = 0; x < 10; ++x)
-		for(size_t y = 0; y < 5; ++y){
+		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
 			terrain_piece* add = malloc(sizeof(terrain_piece));
 			add->z_floor[0] = add->z_floor[1] = add->z_floor[2] = add->z_floor[3] = 0;
-			add->z_ceil[0] = 0.5;
-			add->z_ceil[1] = 0.5;
-			add->z_ceil[2] = 0.5;
-			add->z_ceil[3] = 0.5;
+			add->z_ceil[0] = 1;
+			add->z_ceil[1] = 1;
+			add->z_ceil[2] = 1;
+			add->z_ceil[3] = 1;
+
+			/*if(y >= 1 && y <= 4 && x == 5){
+				add->z_ceil[0] = 3;
+				add->z_ceil[1] = 3;
+				add->z_ceil[2] = 3;
+				add->z_ceil[3] = 3;
+			}*/
 
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");

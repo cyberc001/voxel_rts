@@ -1,5 +1,18 @@
 #include "game/logic/math.h"
 
+static int lua_vec3_rot(lua_State* L)
+{
+	vec3f v = lua_get_vec3(L, 1), rot = lua_get_vec3(L, 2);
+	lua_push_vec3(L, vec3f_rot(v, rot));
+	return 1;
+}
+static int lua_vec3_lookat_rot(lua_State* L)
+{
+	vec3f cur_rot = lua_get_vec3(L, 1), look_pt = lua_get_vec3(L, 2);
+	lua_push_vec3(L, vec3f_lookat_rot(cur_rot, look_pt));
+	return 1;
+}
+
 static int lua_hexahedron_from_cuboid(lua_State* L)
 {
 	lua_push_hexahedron(L, hexahedron_from_cuboid(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3)));
@@ -8,6 +21,12 @@ static int lua_hexahedron_from_cuboid(lua_State* L)
 static int lua_hexahedron_from_cube(lua_State* L)
 {
 	lua_push_hexahedron(L, hexahedron_from_cube(luaL_checknumber(L, 1)));
+	return 1;
+}
+static int lua_hexahedron_get_center(lua_State* L)
+{
+	hexahedron h = lua_get_hexahedron(L, 1);
+	lua_push_vec3(L, hexahedron_get_center(&h));
 	return 1;
 }
 static int lua_hexahedron_transform(lua_State* L)
@@ -68,9 +87,13 @@ static int lua_hexahedron_check_terrain_collision(lua_State* L)
 }
 
 static const struct luaL_Reg cfuncs[] = {
+	{"vec3_rot", lua_vec3_rot},
+	{"vec3_lookat_rot", lua_vec3_lookat_rot},
+
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},
 	{"hexahedron_transform", lua_hexahedron_transform},
+	{"hexahedron_get_center", lua_hexahedron_get_center},
 
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
 	{"hexahedron_check_terrain_collision", lua_hexahedron_check_terrain_collision},
@@ -81,7 +104,7 @@ void game_logic_init_math(lua_State* _s)
 {
 	lua_newtable(_s);
 	luaL_setfuncs(_s, cfuncs, 0);
-	lua_setglobal(_s, "math");
+	lua_setglobal(_s, "gmath");
 }
 
 /* Helper functions */

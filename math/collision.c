@@ -58,6 +58,15 @@ hexahedron hexahedron_from_cuboid(float s1, float s2, float s3)
 	return h;
 }
 
+vec3f hexahedron_get_center(const hexahedron* h1)
+{
+	vec3f c = {0, 0, 0};
+	for(size_t _f = 0; _f < 6; ++_f)
+		for(size_t _p = 0; _p < 4; ++_p)
+			c = vec3_add(c, h1->f[_f].p[_p]);
+	return vec3_sdiv(c, 24);
+}
+
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat)
 {
 	hexahedron _out;
@@ -117,15 +126,6 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2)
 }
 
 /* SAT */
-
-static vec3f hexahedron_get_center(const hexahedron* h1)
-{
-	vec3f c = {0, 0, 0};
-	for(size_t _f = 0; _f < 6; ++_f)
-		for(size_t _p = 0; _p < 4; ++_p)
-			c = vec3_add(c, h1->f[_f].p[_p]);
-	return vec3_sdiv(c, 24);
-}
 
 static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 {
@@ -308,13 +308,7 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						vec3f norm = vec3_cross(e1, e2);
 						vec3f vel = {0, -1, 0};
 
-						// source: https://stackoverflow.com/questions/42554960/get-xyz-angles-between-vectors
-						float ang = rad_to_ang(acos(vec3_dot(vel, norm) / vec3_ln(vel) / vec3_ln(norm)));
-						vec3f axis = vec3_norm(vec3_cross(vel, norm));
-						if(isnan(axis.x) || isnan(axis.y) || isnan(axis.z))
-							*new_rot = (vec3f){0, 0, 0};
-						else
-							*new_rot = vec3_smul(axis, ang);
+						*new_rot = vec3f_get_rot_between(vel, norm);
 					}
 					collided = 1;
 				}

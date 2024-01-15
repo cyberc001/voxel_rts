@@ -22,6 +22,8 @@ typedef struct {
 #define hexahedron_from_cube(side) (hexahedron_from_cuboid(side, side, side))
 hexahedron hexahedron_from_cuboid(float s1, float s2, float s3);
 
+vec3f hexahedron_get_center(const hexahedron* h1);
+
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat);
 
 int hexahedron_check_projection_collision(const hexahedron* h1, const hexahedron* h2);

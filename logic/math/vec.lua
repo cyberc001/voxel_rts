@@ -108,3 +108,11 @@ function vec3:emul(v1, v2)
 	v.z = v1.z * v2.z
 	return v
 end
+
+function vec3:ln()
+	return math.sqrt(self.x*self.x, self.y*self.y, self.z*self.z)
+end
+function vec3:unit()
+	local ln = self:ln()
+	return vec3:new(self.x/ln, self.y/ln, self.z/ln)
+end
