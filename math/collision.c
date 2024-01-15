@@ -311,7 +311,10 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						// source: https://stackoverflow.com/questions/42554960/get-xyz-angles-between-vectors
 						float ang = rad_to_ang(acos(vec3_dot(vel, norm) / vec3_ln(vel) / vec3_ln(norm)));
 						vec3f axis = vec3_norm(vec3_cross(vel, norm));
-						*new_rot = vec3_smul(axis, ang);
+						if(isnan(axis.x) || isnan(axis.y) || isnan(axis.z))
+							*new_rot = (vec3f){0, 0, 0};
+						else
+							*new_rot = vec3_smul(axis, ang);
 					}
 					collided = 1;
 				}
