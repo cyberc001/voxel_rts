@@ -5,7 +5,7 @@ game_object = {}
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.vel = o.vel or vec3:new()
-	o.rot = o.rot or vec2:new()
+	o.rot = o.rot or vec3:new()
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.hitbox or math.hexahedron_from_cube(0)
 	o.robj_arr = o.robj_arr or {}

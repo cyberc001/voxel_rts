@@ -139,7 +139,7 @@ static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 		for(size_t _p = 0; _p < 4; ++_p){
 			float proj = vec3_dot(axis, h1->f[_f].p[_p]);
 			if(proj < min) min = proj;
-			else if(proj > max) max = proj;
+				else if(proj > max) max = proj;
 		}
 	}
 	return (vec2f){min, max};
@@ -250,7 +250,7 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	return 1;
 }
 
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, float* new_pitch)
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* new_rot)
 {
 	bbox3f bbox = hexahedron_get_bbox(h);
 	vec3f terrain_min = {0, 0, 0};
@@ -302,17 +302,18 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, f
 				vec3f resol;
 				int _collided = hexahedron_check_collision(h, &tpiece_h, &resol);
 				if(_collided){
-					vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
-					vec3f norm = vec3_cross(e1, e2);
-					vec3f vel = {0, 0, -1};
-					*new_pitch = rad_to_ang(vec3_dot(vel, norm) / vec3_ln(vel) / vec3_ln(norm));
-
-					printf("resolution: "); vec3f_print(resol); vec3f_print(max_resol);
 					if(vec3_ln(resol) > vec3_ln(max_resol)){
 						max_resol = resol;
+						vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
+						vec3f norm = vec3_cross(e1, e2);
+						vec3f vel = {0, -1, 0};
+
+						// source: https://stackoverflow.com/questions/42554960/get-xyz-angles-between-vectors
+						float ang = rad_to_ang(acos(vec3_dot(vel, norm) / vec3_ln(vel) / vec3_ln(norm)));
+						vec3f axis = vec3_norm(vec3_cross(vel, norm));
+						*new_rot = vec3_smul(axis, ang);
 					}
 					collided = 1;
-					//return 1;
 				}
 				piece = piece->next;
 			}

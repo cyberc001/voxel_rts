@@ -7,7 +7,7 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(2, 6, 2), rot = vec2:new(30, 0),
+	pos = vec3:new(2, 6, 2), rot = vec3:new(0, 0, 0),
 	vel = vec3:new(0, -0.03, 0),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
@@ -15,8 +15,8 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(4, 6, 2), rot = vec2:new(-20, 15),
-	vel = vec3:new(0, -0.03, 0),
+	pos = vec3:new(4, 6, 2), rot = vec3:new(0, 0, 0),
+	--vel = vec3:new(0, -0.03, 0),
 	hitbox = math.hexahedron_from_cuboid(1, 2, 3),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
@@ -41,11 +41,16 @@ function _tick()
 			end
 			::continue::
 		end
-		local collided, resolution, new_pitch = math.hexahedron_check_terrain_collision(v.hitbox, v.vel)
+		local collided, resolution, new_rot = math.hexahedron_check_terrain_collision(v.hitbox, v.vel)
 		if collided then
-			print("collided", resolution.x, resolution.y, resolution.z)
+			--print("collided", resolution.x, resolution.y, resolution.z)
+			--local rot = vec2:new(new_rot.x*cos())
+			print(new_rot.x, new_rot.y, new_rot.z)
 			vec3:isub(v.pos, resolution)
-			v.rot.y = v.rot.y + (new_pitch - v.rot.y) * 0.1
+			v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
+			v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
+			v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
+
 			v:update_hitbox()
 		end
 	end
