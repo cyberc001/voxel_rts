@@ -32,7 +32,7 @@ function _tick()
 		-- PATHFINDING TEST
 		if i == 1 then
 			local center = gmath.hexahedron_get_center(v.hitbox)
-			local goal_diff = vec3:new(goal.x, center.y, goal.z) - center
+			--[[local goal_diff = vec3:new(goal.x, center.y, goal.z) - center
 			local new_rot = gmath.vec3_lookat_rot(v.rot, goal_diff)
 			if goal_diff:ln() > 0.1 and new_rot.x == new_rot.x then -- test for nan
 				v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
@@ -44,7 +44,8 @@ function _tick()
 				vec3:iadd(v.vel, vec3:new(0, -0.03, 0))
 			else
 				v.vel = vec3:new(0, -0.03, 0)
-			end
+			end]]--
+			path.find_path(v.hitbox, goal)
 		end
 
 		vec3:iadd(v.pos, v.vel)

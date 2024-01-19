@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef GAME_MATH_H
+#define GAME_MATH_H
 
 #include "game/logic.h"
 #include "math/collision.h"

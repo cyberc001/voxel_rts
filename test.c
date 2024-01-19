@@ -70,6 +70,10 @@ void camera_ui_tick(unsigned ms)
 	render_cam_pos.z += cam_pos_change.z * s_frac * sin(ang_to_rad(ang.y));
 }
 
+// TEST
+#include "pqueue.h"
+DEF_PQUEUE(pqueue_int, int)
+
 int main()
 {
 	audio_init();
