@@ -4,6 +4,11 @@
 #include "math/vec.h"
 #include "math/collision.h"
 
-void path_find(const hexahedron* h, vec3f target);
+typedef struct {
+	size_t ln;
+	vec2f* points;
+} path;
+
+path path_find(const hexahedron* h, vec3f target);
 
 #endif

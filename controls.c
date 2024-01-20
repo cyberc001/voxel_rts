@@ -41,7 +41,7 @@ int check_key_bind(key_code kc, const char* bind)
 }
 
 // mapping GLFW keycodes to engine's keycodes
-DEF_HTABLE_OA(glfw_kc_map, int, key_code)
+DEF_PHTABLE_OA(glfw_kc_map, int, key_code)
 glfw_kc_map map_glfw_kc;
 
 // memorizing held keys and buttons
@@ -220,7 +220,7 @@ void controls_init(const char* cfg_fname)
 	controls_key_char_cb_list_t_create(&controls_key_char_list);
 
 	// setting up all key mappings
-	glfw_kc_map_create(&map_glfw_kc, 512, int_hash, NULL);
+	glfw_kc_map_create(&map_glfw_kc, 512, int_hash);
 
 	glfw_kc_map_insert(&map_glfw_kc, GLFW_KEY_UNKNOWN, KEY_INVALID);
 	glfw_kc_map_insert(&map_glfw_kc, GLFW_KEY_0, KEY_0);
@@ -373,7 +373,7 @@ void controls_init(const char* cfg_fname)
 	held_bind_map_create(&map_held_bind, 32, str_hash, str_cmp);
 
 	// reading config file
-	controls_map_create(&map_controls, 32, (size_t(*)(size_t, const key_code*)) int_hash, NULL);
+	controls_map_create(&map_controls, 32, (size_t(*)(size_t, const key_code*)) int_hash);
 	FILE* fd = fopen(cfg_fname, "r");
 	if(!fd){
 		LOG_ERROR("Cannot open control config file \"%s\" for reading", cfg_fname);

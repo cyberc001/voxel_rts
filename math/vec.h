@@ -24,6 +24,7 @@ void vec2i_print(vec2i vec);
 void vec3f_print(vec3f vec);
 
 #define vec3_eq(v1, v2) ( (v1).x == (v2).x && (v1).y == (v2).y && (v1).z == (v2).z )
+#define vec2_eq(v1, v2) ( (v1).x == (v2).x && (v1).y == (v2).y )
 
 #define vec3_smul(vec, s) ( (typeof(vec)){(vec).x * (s), (vec).y * (s), (vec).z * (s)} )
 #define vec3_sdiv(vec, s) ( (typeof(vec)){(vec).x / (s), (vec).y / (s), (vec).z / (s)} )

@@ -9,7 +9,7 @@ local game_object_arr = {}
 table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(0, 1, 2), rot = vec3:new(0, 0, 0),
 	--vel = vec3:new(0, -0.03, 0),
-	hitbox = gmath.hexahedron_from_cuboid(2, 1, 1),
+	hitbox = gmath.hexahedron_from_cuboid(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
 	}
@@ -28,7 +28,6 @@ function _tick()
 	if stop then return end
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
-
 		-- PATHFINDING TEST
 		if i == 1 then
 			local center = gmath.hexahedron_get_center(v.hitbox)
@@ -45,7 +44,25 @@ function _tick()
 			else
 				v.vel = vec3:new(0, -0.03, 0)
 			end]]--
-			path.find_path(v.hitbox, goal)
+			p = path.find_path(v.hitbox, goal)
+			for _,v in ipairs(p) do
+				--print(v.x, v.y)
+			end
+
+			if p[2] then
+				local diff = vec3:new(p[2].x, center.y, p[2].y) - center
+				local new_rot = gmath.vec3_lookat_rot(v.rot, v.vel)
+				--[[if new_rot.x == new_rot.x then -- test for nan
+					v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
+					v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
+					v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
+				end]]--
+				v.vel = diff:unit()*0.02
+				print("VEL: ", v.vel, diff:unit())
+			else
+				--v.vel.x = 0
+				--v.vel.z = 0
+			end
 		end
 
 		vec3:iadd(v.pos, v.vel)
@@ -62,12 +79,12 @@ function _tick()
 		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.vel)
 		if collided then
 			vec3:isub(v.pos, resolution)
+			--print("RESOLUTION: ", resolution.x, resolution.y, resolution.z)
 			if new_rot.x == new_rot.x then -- test for nan
 				v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
 				v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
 				v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
 			end
-
 			v:update_hitbox()
 		end
 	end

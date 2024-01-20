@@ -24,7 +24,7 @@ typedef enum {
 } key_code;
 #define key_code_is_mouse(kc) ((kc) == MOUSE_LEFT || (kc) == (MOUSE_RIGHT) || (kc) == (MOUSE_MIDDLE))
 
-DEF_HTABLE_OA(controls_map, key_code, char**) // maps a key code to one or more binds, array of binds ends with a NULL string
+DEF_PHTABLE_OA(controls_map, key_code, char**) // maps a key code to one or more binds, array of binds ends with a NULL string
 extern controls_map map_controls;
 
 const char** get_key_binds(key_code kc);

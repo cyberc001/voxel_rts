@@ -110,7 +110,7 @@ function vec3:emul(v1, v2)
 end
 
 function vec3:ln()
-	return math.sqrt(self.x*self.x, self.y*self.y, self.z*self.z)
+	return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
 end
 function vec3:unit()
 	local ln = self:ln()

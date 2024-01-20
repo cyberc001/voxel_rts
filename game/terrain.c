@@ -6,12 +6,12 @@ chunk_dict chunks;
 static size_t chunk_hash(size_t table_sz, const uint64_t* key)
 {
 	// hash table size will (should) not exceed uint32_t anyway, so only 16 lowest bits from each coordinate are used for hash
-	return *key & 0xFFFF | ((*key & 0xFFFF00000000) >> 16);
+	return (*key & 0xFFFF | ((*key & 0xFFFF00000000) >> 16));
 }
 
 void terrain_init()
 {
-	chunk_dict_create(&chunks, 16, chunk_hash, NULL);
+	chunk_dict_create(&chunks, 16, chunk_hash);
 	for(size_t x = 0; x < 10; ++x)
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
@@ -23,7 +23,7 @@ void terrain_init()
 			add->z_ceil[2] = 1;
 			add->z_ceil[3] = 1;
 
-			if(y >= 1 && y <= 4 && x == 5){
+			if(y >= 0 && y <= 4 && x == 5){
 				add->z_ceil[0] = 3;
 				add->z_ceil[1] = 3;
 				add->z_ceil[2] = 3;
