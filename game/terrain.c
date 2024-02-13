@@ -23,7 +23,14 @@ void terrain_init()
 			add->z_ceil[2] = 1;
 			add->z_ceil[3] = 1;
 
-			if(y >= 0 && y <= 4 && x == 5){
+			if(y >= 2 && y <= 9 && x == 6){
+				add->z_ceil[0] = 3;
+				add->z_ceil[1] = 3;
+				add->z_ceil[2] = 3;
+				add->z_ceil[3] = 3;
+			}
+
+			if(y >= 0 && y <= 4 && x == 3){
 				add->z_ceil[0] = 3;
 				add->z_ceil[1] = 3;
 				add->z_ceil[2] = 3;

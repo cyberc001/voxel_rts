@@ -24,6 +24,8 @@ table.insert(game_object_arr, game_object:new({
 }))]]--
 
 goal = vec3:new(9.5, 1, 2.5)
+p_i = 2
+
 function _tick()
 	if stop then return end
 	-- handle velocity and collision
@@ -44,21 +46,41 @@ function _tick()
 			else
 				v.vel = vec3:new(0, -0.03, 0)
 			end]]--
-			p = path.find_path(v.hitbox, goal)
+			if p == nil then
+				p = path.find_path(v.hitbox, goal)
+			end
 			for _,v in ipairs(p) do
 				--print(v.x, v.y)
 			end
 
-			if p[2] then
-				local diff = vec3:new(p[2].x, center.y, p[2].y) - center
+			if p[p_i] then
+				print("GOAL: ", p[p_i].x, p[p_i].y)
+				print("CURRENT: ", center.x, center.z)
+				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
 				local new_rot = gmath.vec3_lookat_rot(v.rot, v.vel)
 				--[[if new_rot.x == new_rot.x then -- test for nan
 					v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
 					v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
 					v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
 				end]]--
-				v.vel = diff:unit()*0.02
-				print("VEL: ", v.vel, diff:unit())
+				if(diff:ln() > 0) then
+					v.vel = diff:unit()*0.02
+				else
+					v.vel = vec3:new(0, 0, 0)
+				end
+				if(v.vel:ln() > diff:ln()) then
+					print(v.vel)
+					print(diff)
+					v.vel = diff
+					p_i = p_i + 1
+				end
+				if(math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)) == p[p_i].x and math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)) == p[p_i].y) then
+					p_i = p_i + 1
+					if(not p[p_i]) then
+						v.vel = vec3:new(0, 0, 0)
+					end
+				end
+				print("VEL: ", v.vel, diff)
 			else
 				--v.vel.x = 0
 				--v.vel.z = 0

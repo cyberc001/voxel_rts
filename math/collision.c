@@ -250,6 +250,52 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	return 1;
 }
 
+int bbox_check_terrain_collision(bbox3f bbox)
+{
+	vec3f terrain_min = {0, 0, 0};
+	vec3_setmin(bbox.min, terrain_min);
+	vec3_setmin(bbox.max, terrain_min);
+
+	uint32_t beg_tx = floor(bbox.min.x / TERRAIN_PIECE_SIZE),
+		 end_tx = ceil(bbox.max.x / TERRAIN_PIECE_SIZE);
+	uint32_t beg_ty = floor(bbox.min.z / TERRAIN_PIECE_SIZE),
+		 end_ty = ceil(bbox.max.z / TERRAIN_PIECE_SIZE);
+	for(uint32_t tx = beg_tx; tx <= end_tx; ++tx)
+		for(uint32_t ty = beg_ty; ty <= end_ty; ++ty){
+			terrain_piece* piece = terrain_get_piece(tx, ty)->next;
+
+			while(piece){
+				bbox3f tpiece_bbox;
+				tpiece_bbox.min.x = tx; tpiece_bbox.min.z = ty;
+				tpiece_bbox.max.x = tx + 1; tpiece_bbox.max.z = ty + 1;
+
+				tpiece_bbox.min.y = INFINITY;
+				for(size_t i = 0; i < 4; ++i)
+					if(piece->z_floor[i] < tpiece_bbox.min.y)
+						tpiece_bbox.min.y = piece->z_floor[i];
+				tpiece_bbox.max.y = -INFINITY;
+				for(size_t i = 0; i < 4; ++i)
+					if(piece->z_ceil[i] > tpiece_bbox.min.y)
+						tpiece_bbox.max.y = piece->z_ceil[i];
+
+				tpiece_bbox.min = vec3_smul(tpiece_bbox.min, TERRAIN_PIECE_SIZE);
+				tpiece_bbox.max = vec3_smul(tpiece_bbox.max, TERRAIN_PIECE_SIZE);
+
+				if(tpiece_bbox.max.y - bbox.min.y > 0.1 && bbox_check_collision(&bbox, &tpiece_bbox)){
+					printf("BBOX\n");
+					vec3f_print(bbox.min);
+					vec3f_print(bbox.max);
+					printf("COLLIDED WITH\n");
+					vec3f_print(tpiece_bbox.min);
+					vec3f_print(tpiece_bbox.max);
+					return 1;
+				}
+				piece = piece->next;
+			}
+		}
+	return 0;
+}
+
 int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* new_rot)
 {
 	bbox3f bbox = hexahedron_get_bbox(h);

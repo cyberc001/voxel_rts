@@ -14,8 +14,8 @@
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
-vec3f render_cam_pos = {-14, -10, 1.6};
-vec3f render_cam_rot = {30, 240, 0};
+vec3f render_cam_pos = {-5, -10, -5};
+vec3f render_cam_rot = {90, 180, 0};
 
 static GLuint __dummy_tex; // 1x1 texture that signals that main texture is not in use
 

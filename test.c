@@ -91,7 +91,7 @@ int main()
 	resources_scan();
 	game_logic_init();
 
-	audio_play_sound(sound_find("its a jhonny"));
+	//audio_play_sound(sound_find("its a jhonny"));
 
 	ui_ticker_add(camera_ui_tick);
 
