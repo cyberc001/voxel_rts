@@ -54,6 +54,22 @@ static void tname ## _heapify_down(tname* self)\
 	}\
 	self->data[k] = el;\
 }
+#define DEF_PQUEUE_HEAPIFY(tname, T)\
+static void tname ## _heapify(tname* self)\
+{\
+	for(size_t i = 0; i < self->size; ++i){\
+		size_t k = i;\
+		T el = self->data[k];\
+		for(;;){\
+			if(self->cmp_func((const T*)&self->data[k/2], (const T*)&el) <= 0)\
+				break;\
+			self->data[k] = self->data[k/2];\
+			k /= 2;\
+			if(k == 0) break;\
+		}\
+		self->data[k] = el;\
+	}\
+}
 
 #define DEF_PQUEUE_PUSH(tname, T)\
 static void tname ## _push(tname* self, T el)\
@@ -83,6 +99,7 @@ DEF_PQUEUE_CONSTRUCTOR(tname, T)\
 DEF_PQUEUE_DESTRUCTOR(tname, T)\
 DEF_PQUEUE_HEAPIFY_UP(tname, T)\
 DEF_PQUEUE_HEAPIFY_DOWN(tname, T)\
+DEF_PQUEUE_HEAPIFY(tname, T)\
 DEF_PQUEUE_PUSH(tname, T)\
 DEF_PQUEUE_POP(tname, T)\
 DEF_PQUEUE_IS_EMPTY(tname, T)
@@ -111,7 +128,7 @@ static void tname ## _heapify_up(tname* self)\
 	size_t k = self->size - 1;\
 	T el = self->data[k];\
 	for(;;){\
-		if(self->data[k/2]<= el)\
+		if(self->data[k/2] <= el)\
 			break;\
 		self->data[k] = self->data[k/2];\
 		k /= 2;\
@@ -132,6 +149,22 @@ static void tname ## _heapify_down(tname* self)\
 		k = _min;\
 	}\
 	self->data[k] = el;\
+}
+#define DEF_PPQUEUE_HEAPIFY(tname, T)\
+static void tname ## _heapify(tname* self)\
+{\
+	for(size_t i = 0; i < self->size; ++i){\
+		size_t k = i;\
+		T el = self->data[k];\
+		for(;;){\
+			if(self->data[k/2]<= el)\
+				break;\
+			self->data[k] = self->data[k/2];\
+			k /= 2;\
+			if(k == 0) break;\
+		}\
+		self->data[k] = el;\
+	}\
 }
 
 #define DEF_PPQUEUE_PUSH(tname, T)\
@@ -162,6 +195,7 @@ DEF_PPQUEUE_CONSTRUCTOR(tname, T)\
 DEF_PPQUEUE_DESTRUCTOR(tname, T)\
 DEF_PPQUEUE_HEAPIFY_UP(tname, T)\
 DEF_PPQUEUE_HEAPIFY_DOWN(tname, T)\
+DEF_PPQUEUE_HEAPIFY(tname, T)\
 DEF_PPQUEUE_PUSH(tname, T)\
 DEF_PPQUEUE_POP(tname, T)\
 DEF_PPQUEUE_IS_EMPTY(tname, T)

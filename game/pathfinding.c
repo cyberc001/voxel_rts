@@ -98,7 +98,7 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				(*old_node)->cost = cur_node->cost + max(dx, dy);\
 				tnode_calc_heuristic(**old_node, goal);\
 				(*old_node)->parent = cur_node;\
-				/* heapify??? */\
+				tnode_pqueue_heapify(open);\
 			}\
 			tpiece = tpiece->next;\
 		}\
