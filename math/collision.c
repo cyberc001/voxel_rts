@@ -372,13 +372,15 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						vec3f norm = vec3_cross(e1, e2);
 						vec3f vel = {0, -1, 0};
 
-						*new_rot = vec3f_get_rot_between(vel, norm);
+						if(new_rot)
+							*new_rot = vec3f_get_rot_between(vel, norm);
 					}
 					collided = 1;
 				}
 				piece = piece->next;
 			}
 		}
-	*resolution = max_resol;
+	if(resolution)
+		*resolution = max_resol;
 	return collided;
 }

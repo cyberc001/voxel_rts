@@ -78,6 +78,8 @@ function _tick()
 					if(not p[p_i]) then
 						v.vel = vec3:new(0, 0, 0)
 					end
+				elseif(not p[p_i]) then
+					v.vel = vec3:new(0, 0, 0)
 				end
 				print("VEL: ", v.vel, diff)
 			else

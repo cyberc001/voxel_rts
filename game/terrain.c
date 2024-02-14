@@ -36,6 +36,25 @@ void terrain_init()
 				add->z_ceil[2] = 3;
 				add->z_ceil[3] = 3;
 			}
+			/*if(y >= 0 && y <= 10 && x == 3){
+				add->z_ceil[0] = 3;
+				add->z_ceil[1] = 3;
+				add->z_ceil[2] = 3;
+				add->z_ceil[3] = 3;
+			}
+
+			if(x == 2 && y == 4){
+				add->z_ceil[0] = 1;
+				add->z_ceil[1] = 3;
+				add->z_ceil[2] = 3;
+				add->z_ceil[3] = 1;
+			}
+			if(x == 4 && y == 8){
+				add->z_ceil[0] = 3;
+				add->z_ceil[1] = 1;
+				add->z_ceil[2] = 1;
+				add->z_ceil[3] = 3;
+			}*/
 
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");
@@ -45,16 +64,6 @@ void terrain_init()
 			terrain_piece_add(p, add);
 			terrain_mark_changed_piece(x, y);
 		}
-
-	/*for(size_t x = 0; x < 9; ++x)
-		for(size_t y = 0; y < 4; ++y){
-			terrain_piece* p[4];
-			p[0] = terrain_get_piece(x, y)->next;
-			p[1] = terrain_get_piece(x + 1, y)->next;
-			p[2] = terrain_get_piece(x + 1, y + 1)->next;
-			p[3] = terrain_get_piece(x, y + 1)->next;
-			p[0]->z_ceil[2] = p[1]->z_ceil[3] = p[2]->z_ceil[0] = p[3]->z_ceil[1] = 1 + ((rand() % 8) / 9.) * (rand() % 2 ? 1 : -1);
-		}*/
 }
 
 terrain_chunk* terrain_get_chunk(uint32_t x, uint32_t y)

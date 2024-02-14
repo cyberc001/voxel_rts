@@ -48,9 +48,12 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 	tnode new_node;\
 	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};\
 	terrain_piece* tpiece = terrain_get_piece(new_node.pos.x, new_node.pos.y);\
+	terrain_piece* _tpiece_x = terrain_get_piece(new_node.pos.x, cur_node->pos.y);\
+	terrain_piece* _tpiece_y = terrain_get_piece(cur_node->pos.x, new_node.pos.y);\
 	if(tpiece){\
 		tpiece = tpiece->next;\
 		while(tpiece){\
+			printf("trying %d %d\n", new_node.pos.x, new_node.pos.y);\
 			/* ignore unpassable terrain */\
 			if(dx > 0){\
 				if(cur_node->tpiece->z_ceil[1] < tpiece->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece->z_ceil[3]){ tpiece = tpiece->next; continue; }\
@@ -64,24 +67,33 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 			else if(dy < 0){\
 				if(cur_node->tpiece->z_ceil[0] < tpiece->z_ceil[3] || cur_node->tpiece->z_ceil[1] < tpiece->z_ceil[2]) { tpiece = tpiece->next; continue; }\
 			}\
-			/* ignore the cell if it's unreachable due to (possible) collisions */\
-			bbox3f new_bbox = h_bbox;\
-			new_bbox.min.x += new_node.pos.x; new_bbox.min.z += cur_node->pos.y;\
-			new_bbox.max.x += new_node.pos.x; new_bbox.max.z += cur_node->pos.y;\
-			new_bbox.min.y += tpiece_avg_z_ceil(*tpiece);\
-			new_bbox.max.y += tpiece_avg_z_ceil(*tpiece);\
-			if(bbox_check_terrain_collision(new_bbox)){\
-				tpiece = tpiece->next; continue;\
+			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/\
+				printf("checking\n");\
+				terrain_piece* tpiece_x = _tpiece_x->next;\
+				int cont = 0;\
+				while(tpiece_x){\
+					if(dx > 0){\
+						if(cur_node->tpiece->z_ceil[1] < tpiece_x->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece_x->z_ceil[3]){ cont = 1; break; }\
+					}\
+					else if(dx < 0){\
+						if(cur_node->tpiece->z_ceil[0] < tpiece_x->z_ceil[1] || cur_node->tpiece->z_ceil[3] < tpiece_x->z_ceil[2]) { cont = 1; break; }\
+					}\
+					tpiece_x = tpiece_x->next;\
+				}\
+				if(cont) { tpiece = tpiece->next; continue; }\
+				\
+				terrain_piece* tpiece_y = _tpiece_y->next;\
+				while(tpiece_y){\
+					if(dy > 0){\
+						if(cur_node->tpiece->z_ceil[3] < tpiece_y->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece_y->z_ceil[1]){ cont = 1; break; }\
+					}\
+					else if(dy < 0){\
+						if(cur_node->tpiece->z_ceil[0] < tpiece_y->z_ceil[3] || cur_node->tpiece->z_ceil[1] < tpiece_y->z_ceil[2]) { cont = 1; break; }\
+					}\
+					tpiece_y = tpiece_y->next;\
+				}\
+				if(cont) { tpiece = tpiece->next; continue; }\
 			}\
-			new_bbox = h_bbox;\
-			new_bbox.min.x += cur_node->pos.x; new_bbox.min.z += new_node.pos.y;\
-			new_bbox.max.x += cur_node->pos.x; new_bbox.max.z += new_node.pos.y;\
-			new_bbox.min.y += tpiece_avg_z_ceil(*tpiece);\
-			new_bbox.max.y += tpiece_avg_z_ceil(*tpiece);\
-			if(bbox_check_terrain_collision(new_bbox)){\
-				tpiece = tpiece->next; continue;\
-			}\
-			\
 			tnode** old_node;\
 			if(!(old_node = tptr_set_find(closed, tpiece)) ){\
 				new_node.y = tpiece_avg_z_ceil(*tpiece);\
@@ -106,7 +118,7 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 }
 static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* cur_node, vec2i goal, bbox3f h_bbox)
 {
-	printf("start\n");
+	printf("start %d %d\n", cur_node->pos.x, cur_node->pos.y);
 	PUSH_SUCCESSOR(1, 0)
 	PUSH_SUCCESSOR(0, 1)
 	PUSH_SUCCESSOR(-1, 0)
