@@ -23,6 +23,18 @@ static int lua_hexahedron_from_cube(lua_State* L)
 	lua_push_hexahedron(L, hexahedron_from_cube(luaL_checknumber(L, 1)));
 	return 1;
 }
+static int lua_hexahedron_from_cuboid_centered(lua_State* L)
+{
+	lua_push_hexahedron(L, hexahedron_from_cuboid_centered(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3)));
+	return 1;
+}
+static int lua_hexahedron_from_cube_centered(lua_State* L)
+{
+	lua_push_hexahedron(L, hexahedron_from_cube_centered(luaL_checknumber(L, 1)));
+	return 1;
+}
+
+
 static int lua_hexahedron_get_center(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
@@ -92,6 +104,10 @@ static const struct luaL_Reg cfuncs[] = {
 
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},
+	{"hexahedron_from_cuboid_centered", lua_hexahedron_from_cuboid_centered},
+	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
+
+
 	{"hexahedron_transform", lua_hexahedron_transform},
 	{"hexahedron_get_center", lua_hexahedron_get_center},
 

@@ -9,7 +9,7 @@ local game_object_arr = {}
 table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(0, 1, 2), rot = vec3:new(0, 0, 0),
 	--vel = vec3:new(0, -0.03, 0),
-	hitbox = gmath.hexahedron_from_cuboid(0.8, 0.8, 0.8),
+	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
 	}
@@ -55,26 +55,25 @@ function _tick()
 
 			if p[p_i] then
 				print("GOAL: ", p[p_i].x, p[p_i].y)
-				print("CURRENT: ", center.x, center.z)
 				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
-				local new_rot = gmath.vec3_lookat_rot(v.rot, v.vel)
-				--[[if new_rot.x == new_rot.x then -- test for nan
-					v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
-					v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
-					v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
-				end]]--
+				print("CURRENT: ", center.x, center.z, math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)), math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)))
+				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
+				if new_rot.x == new_rot.x then -- test for nan
+					v.rot.x = v.rot.x + new_rot.x
+					v.rot.y = v.rot.y + new_rot.y
+					v.rot.z = v.rot.z + new_rot.z
+				end
+
 				if(diff:ln() > 0) then
 					v.vel = diff:unit()*0.02
 				else
 					v.vel = vec3:new(0, 0, 0)
 				end
 				if(v.vel:ln() > diff:ln()) then
-					print(v.vel)
-					print(diff)
 					v.vel = diff
 					p_i = p_i + 1
 				end
-				if(math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)) == p[p_i].x and math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)) == p[p_i].y) then
+				if(p[p_i] and math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)) == p[p_i].x and math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)) == p[p_i].y) then
 					p_i = p_i + 1
 					if(not p[p_i]) then
 						v.vel = vec3:new(0, 0, 0)
