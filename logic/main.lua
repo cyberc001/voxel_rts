@@ -7,7 +7,7 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(0, 1, 2), rot = vec3:new(0, 0, 0),
+	pos = vec3:new(1, 1, 2), rot = vec3:new(0, 0, 0),
 	--vel = vec3:new(0, -0.03, 0),
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
@@ -23,6 +23,7 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))]]--
 
+gravity = -0.05
 goal = vec3:new(9.5, 1, 2.5)
 p_i = 2
 
@@ -33,35 +34,18 @@ function _tick()
 		-- PATHFINDING TEST
 		if i == 1 then
 			local center = gmath.hexahedron_get_center(v.hitbox)
-			--[[local goal_diff = vec3:new(goal.x, center.y, goal.z) - center
-			local new_rot = gmath.vec3_lookat_rot(v.rot, goal_diff)
-			if goal_diff:ln() > 0.1 and new_rot.x == new_rot.x then -- test for nan
-				v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
-				v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
-				v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
-				v.vel = goal_diff:unit()*0.01
-				v.vel.y = 0
-				print("vel", v.vel)
-				vec3:iadd(v.vel, vec3:new(0, -0.03, 0))
-			else
-				v.vel = vec3:new(0, -0.03, 0)
-			end]]--
 			if p == nil then
 				p = path.find_path(v.hitbox, goal)
-			end
-			for _,v in ipairs(p) do
-				--print(v.x, v.y)
+				p_i = 1
 			end
 
 			if p[p_i] then
-				print("GOAL: ", p[p_i].x, p[p_i].y)
+				--print("GOAL: ", p[p_i].x, p[p_i].y)
 				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
-				print("CURRENT: ", center.x, center.z, math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)), math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)))
+				--print("CURRENT: ", center.x, center.z, math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)), math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)))
 				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
-				if new_rot.x == new_rot.x then -- test for nan
-					v.rot.x = v.rot.x + new_rot.x
+				if v.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
 					v.rot.y = v.rot.y + new_rot.y
-					v.rot.z = v.rot.z + new_rot.z
 				end
 
 				if(diff:ln() > 0) then
@@ -81,15 +65,14 @@ function _tick()
 				elseif(not p[p_i]) then
 					v.vel = vec3:new(0, 0, 0)
 				end
-				print("VEL: ", v.vel, diff)
-			else
-				--v.vel.x = 0
-				--v.vel.z = 0
 			end
 		end
 
 		vec3:iadd(v.pos, v.vel)
 		v:update_hitbox()
+		v.pos.y = v.pos.y + gravity
+		v:update_hitbox()
+
 		for i2,v2 in ipairs(game_object_arr) do
 			if v == v2 then goto continue end
 			local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
@@ -99,14 +82,16 @@ function _tick()
 			end
 			::continue::
 		end
-		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.vel)
+		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.rot)
 		if collided then
+			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
-			--print("RESOLUTION: ", resolution.x, resolution.y, resolution.z)
-			if new_rot.x == new_rot.x then -- test for nan
-				v.rot.x = v.rot.x + (new_rot.x - v.rot.x) * 0.1
-				v.rot.y = v.rot.y + (new_rot.y - v.rot.y) * 0.1
-				v.rot.z = v.rot.z + (new_rot.z - v.rot.z) * 0.1
+			print("NEW ROT: ", new_rot.x, new_rot.y, new_rot.z)
+			if new_rot.x == new_rot.x -- test for nan
+				and (new_rot.x*new_rot.x + new_rot.y*new_rot.y + new_rot.z*new_rot.z) > 0.5 then -- TODO: properly convert vectors from C to objects, maybe do smth else about flickering
+				v.rot.x = v.rot.x + (new_rot.x) * 0.1
+				v.rot.y = v.rot.y + (new_rot.y) * 0.1
+				v.rot.z = v.rot.z + (new_rot.z) * 0.1
 			end
 			v:update_hitbox()
 		end

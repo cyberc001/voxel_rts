@@ -316,6 +316,12 @@ int bbox_check_terrain_collision(bbox3f bbox)
 
 int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* new_rot)
 {
+	vec3f orig_rot;
+	if(new_rot){
+		orig_rot = *new_rot;
+		*new_rot = (vec3f){NAN, NAN, NAN};
+	}
+
 	bbox3f bbox = hexahedron_get_bbox(h);
 	vec3f terrain_min = {0, 0, 0};
 	vec3_setmin(bbox.min, terrain_min);
@@ -370,10 +376,21 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						max_resol = resol;
 						vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
 						vec3f norm = vec3_cross(e1, e2);
-						vec3f vel = {0, -1, 0};
 
-						if(new_rot)
+						if(new_rot){
+							printf("COORDS: %u %u\n", tx, ty);
+							printf("NORM: "); vec3f_print(norm);
+							printf("ROT: "); vec3f_print(orig_rot);
+
+							vec3f vel = {0, -1, 0};
+							mat4f tr = mat4f_identity();
+							mat4f_rotate(&tr, orig_rot.x, (vec3f){1, 0, 0});
+							mat4f_rotate(&tr, orig_rot.y, (vec3f){0, 1, 0});
+							mat4f_rotate(&tr, orig_rot.z, (vec3f){0, 0, 1});
+							vel = mat4f_mul_vec3f(&tr, vel);
+							printf("VEL: "); vec3f_print(vel);
 							*new_rot = vec3f_get_rot_between(vel, norm);
+						}
 					}
 					collided = 1;
 				}

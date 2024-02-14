@@ -44,6 +44,8 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 	return nearest_tpiece;
 }
 
+#define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
+
 #define PUSH_SUCCESSOR(dx, dy){\
 	tnode new_node;\
 	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};\
@@ -56,16 +58,16 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 			printf("trying %d %d\n", new_node.pos.x, new_node.pos.y);\
 			/* ignore unpassable terrain */\
 			if(dx > 0){\
-				if(cur_node->tpiece->z_ceil[1] < tpiece->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece->z_ceil[3]){ tpiece = tpiece->next; continue; }\
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }\
 			}\
 			else if(dx < 0){\
-				if(cur_node->tpiece->z_ceil[0] < tpiece->z_ceil[1] || cur_node->tpiece->z_ceil[3] < tpiece->z_ceil[2]) { tpiece = tpiece->next; continue; }\
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }\
 			}\
 			if(dy > 0){\
-				if(cur_node->tpiece->z_ceil[3] < tpiece->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece->z_ceil[1]){ tpiece = tpiece->next; continue; }\
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }\
 			}\
 			else if(dy < 0){\
-				if(cur_node->tpiece->z_ceil[0] < tpiece->z_ceil[3] || cur_node->tpiece->z_ceil[1] < tpiece->z_ceil[2]) { tpiece = tpiece->next; continue; }\
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }\
 			}\
 			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/\
 				printf("checking\n");\
@@ -73,10 +75,10 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				int cont = 0;\
 				while(tpiece_x){\
 					if(dx > 0){\
-						if(cur_node->tpiece->z_ceil[1] < tpiece_x->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece_x->z_ceil[3]){ cont = 1; break; }\
+						if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }\
 					}\
 					else if(dx < 0){\
-						if(cur_node->tpiece->z_ceil[0] < tpiece_x->z_ceil[1] || cur_node->tpiece->z_ceil[3] < tpiece_x->z_ceil[2]) { cont = 1; break; }\
+						if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }\
 					}\
 					tpiece_x = tpiece_x->next;\
 				}\
@@ -85,10 +87,10 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				terrain_piece* tpiece_y = _tpiece_y->next;\
 				while(tpiece_y){\
 					if(dy > 0){\
-						if(cur_node->tpiece->z_ceil[3] < tpiece_y->z_ceil[0] || cur_node->tpiece->z_ceil[2] < tpiece_y->z_ceil[1]){ cont = 1; break; }\
+						if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
 					}\
 					else if(dy < 0){\
-						if(cur_node->tpiece->z_ceil[0] < tpiece_y->z_ceil[3] || cur_node->tpiece->z_ceil[1] < tpiece_y->z_ceil[2]) { cont = 1; break; }\
+						if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }\
 					}\
 					tpiece_y = tpiece_y->next;\
 				}\
@@ -97,7 +99,7 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 			tnode** old_node;\
 			if(!(old_node = tptr_set_find(closed, tpiece)) ){\
 				new_node.y = tpiece_avg_z_ceil(*tpiece);\
-				new_node.cost = cur_node->cost + max(dx, dy);\
+				new_node.cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
 				tnode_calc_heuristic(new_node, goal);\
 				new_node.parent = cur_node;\
 				new_node.tpiece = tpiece;\

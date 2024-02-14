@@ -23,7 +23,7 @@ void terrain_init()
 			add->z_ceil[2] = 1;
 			add->z_ceil[3] = 1;
 
-			if(y >= 2 && y <= 9 && x == 5){
+			/*if(y >= 2 && y <= 9 && x == 5){
 				add->z_ceil[0] = 3;
 				add->z_ceil[1] = 3;
 				add->z_ceil[2] = 3;
@@ -35,8 +35,9 @@ void terrain_init()
 				add->z_ceil[1] = 3;
 				add->z_ceil[2] = 3;
 				add->z_ceil[3] = 3;
-			}
-			/*if(y >= 0 && y <= 10 && x == 3){
+			}*/
+
+			if(y >= 0 && y <= 10 && x == 3){
 				add->z_ceil[0] = 3;
 				add->z_ceil[1] = 3;
 				add->z_ceil[2] = 3;
@@ -54,7 +55,7 @@ void terrain_init()
 				add->z_ceil[1] = 1;
 				add->z_ceil[2] = 1;
 				add->z_ceil[3] = 3;
-			}*/
+			}
 
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");
