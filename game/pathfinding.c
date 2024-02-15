@@ -108,7 +108,7 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				tptr_set_insert(closed, tpiece, new_node_ptr);\
 				tnode_pqueue_push(open, new_node_ptr);\
 				printf("pushed %d %d\n", new_node.pos.x, new_node.pos.y);\
-			} else if(cur_node->cost + max(dx, dy) < (*old_node)->cost){\
+			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
 				(*old_node)->cost = cur_node->cost + max(dx, dy);\
 				tnode_calc_heuristic(**old_node, goal);\
 				(*old_node)->parent = cur_node;\
