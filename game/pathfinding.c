@@ -47,6 +47,51 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 #define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
 
 #define PUSH_SUCCESSOR(dx, dy){\
+	printf("trying to push successor %d %d\n", _cur_node->pos.x + dx, _cur_node->pos.y + dy);\
+	int do_move = 1;\
+	for(size_t i = 0; i < buf_ln; ++i){\
+		if(!tpiece_buf[i])\
+			continue;\
+		tnode cur_node_base;\
+		cur_node_base.tpiece = tpiece_buf[i];\
+		cur_node_base.pos = (vec2i){_cur_node->pos.x + i % bbox_w - bbox_w/2, _cur_node->pos.y + i / bbox_w - bbox_h/2};\
+		printf("going from pos %d %d\n", cur_node_base.pos.x, cur_node_base.pos.y);\
+		tnode* cur_node = &cur_node_base;\
+		GET_SUCCESSOR(dx, dy)\
+		if(!res_tpiece){\
+			printf("FAIL\n");\
+			do_move = 0;\
+			break;\
+		}\
+	}\
+	if(do_move){\
+		tnode* cur_node = _cur_node;\
+		GET_SUCCESSOR(dx, dy)\
+		if(res_tpiece){\
+			tnode** old_node;\
+			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
+				res_node.y = tpiece_avg_z_ceil(*res_tpiece);\
+				res_node.cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
+				tnode_calc_heuristic(res_node, goal);\
+				res_node.parent = cur_node;\
+				res_node.tpiece = res_tpiece;\
+				tnode* new_node_ptr = malloc(sizeof(tnode));\
+				*new_node_ptr = res_node;\
+				tptr_set_insert(closed, res_tpiece, new_node_ptr);\
+				tnode_pqueue_push(open, new_node_ptr);\
+				printf("pushed %d %d\n", res_node.pos.x, res_node.pos.y);\
+			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
+				(*old_node)->cost = cur_node->cost + max(dx, dy);\
+				tnode_calc_heuristic(**old_node, goal);\
+				(*old_node)->parent = cur_node;\
+				tnode_pqueue_heapify(open);\
+				printf("updated %d %d\n", res_node.pos.x, res_node.pos.y);\
+			} else (*old_node)->parent ? printf("already in queue with parent %d %d\n", (*old_node)->parent->pos.x, (*old_node)->parent->pos.y) : printf("already in queue with no parent\n");\
+		}\
+	}\
+}
+#define GET_SUCCESSOR(dx, dy){\
+	res_tpiece = NULL;\
 	tnode new_node;\
 	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};\
 	terrain_piece* tpiece = terrain_get_piece(new_node.pos.x, new_node.pos.y);\
@@ -55,8 +100,10 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 	if(tpiece){\
 		tpiece = tpiece->next;\
 		while(tpiece){\
-			printf("trying %d %d\n", new_node.pos.x, new_node.pos.y);\
 			/* ignore unpassable terrain */\
+			printf("going to %d %d, %f\n", new_node.pos.x, new_node.pos.y);\
+			for(size_t i = 0; i < 4; ++i) printf("%f ", cur_node->tpiece->z_ceil[i]); puts("");\
+			for(size_t i = 0; i < 4; ++i) printf("%f ", tpiece->z_ceil[i]); puts("");\
 			if(dx > 0){\
 				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }\
 			}\
@@ -70,57 +117,113 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }\
 			}\
 			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/\
-				printf("checking\n");\
-				terrain_piece* tpiece_x = _tpiece_x->next;\
-				int cont = 0;\
-				while(tpiece_x){\
-					if(dx > 0){\
-						if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }\
+				if(_tpiece_x){\
+					terrain_piece* tpiece_x = _tpiece_x->next;\
+					int cont = 0;\
+					while(tpiece_x){\
+						if(dx > 0){\
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }\
+						}\
+						else if(dx < 0){\
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }\
+						}\
+						tpiece_x = tpiece_x->next;\
 					}\
-					else if(dx < 0){\
-						if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }\
-					}\
-					tpiece_x = tpiece_x->next;\
+					if(cont) { tpiece = tpiece->next; continue; }\
+					\
 				}\
-				if(cont) { tpiece = tpiece->next; continue; }\
-				\
-				terrain_piece* tpiece_y = _tpiece_y->next;\
-				while(tpiece_y){\
-					if(dy > 0){\
-						if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
+				if(_tpiece_y){\
+					terrain_piece* tpiece_y = _tpiece_y->next;\
+					int cont = 0;\
+					while(tpiece_y){\
+						if(dy > 0){\
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
+						}\
+						else if(dy < 0){\
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }\
+						}\
+						tpiece_y = tpiece_y->next;\
 					}\
-					else if(dy < 0){\
-						if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }\
-					}\
-					tpiece_y = tpiece_y->next;\
+					if(cont) { tpiece = tpiece->next; continue; }\
 				}\
-				if(cont) { tpiece = tpiece->next; continue; }\
 			}\
-			tnode** old_node;\
-			if(!(old_node = tptr_set_find(closed, tpiece)) ){\
-				new_node.y = tpiece_avg_z_ceil(*tpiece);\
-				new_node.cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
-				tnode_calc_heuristic(new_node, goal);\
-				new_node.parent = cur_node;\
-				new_node.tpiece = tpiece;\
-				tnode* new_node_ptr = malloc(sizeof(tnode));\
-				*new_node_ptr = new_node;\
-				tptr_set_insert(closed, tpiece, new_node_ptr);\
-				tnode_pqueue_push(open, new_node_ptr);\
-				printf("pushed %d %d\n", new_node.pos.x, new_node.pos.y);\
-			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
-				(*old_node)->cost = cur_node->cost + max(dx, dy);\
-				tnode_calc_heuristic(**old_node, goal);\
-				(*old_node)->parent = cur_node;\
-				tnode_pqueue_heapify(open);\
-			}\
-			tpiece = tpiece->next;\
+			res_tpiece = tpiece;\
+			res_node = new_node;\
+			break;\
 		}\
 	}\
 }
-static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* cur_node, vec2i goal, bbox3f h_bbox)
+
+#define PUT_TPIECE_BUF(dx, dy){\
+	int _x = _cur_node->pos.x + x, _y = _cur_node->pos.y + y;\
+	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
+	if(!tpiece_buf[buf_i]){\
+		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
+		tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
+		if(cur_node_base.tpiece){\
+			cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
+			tnode* cur_node = &cur_node_base;\
+			GET_SUCCESSOR(-(dx), -(dy))\
+			if(!res_tpiece)\
+				break;\
+			cur_node_base.tpiece = res_tpiece;\
+			cur_node_base.pos.y += _y;\
+			tpiece_buf[buf_i] = res_tpiece;\
+			cur_node_base.pos.x += _x;\
+		}\
+	}\
+}
+
+static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, bbox3f h_bbox)
 {
-	printf("start %d %d\n", cur_node->pos.x, cur_node->pos.y);
+	printf("start %d %d\n", _cur_node->pos.x, _cur_node->pos.y);
+	terrain_piece* res_tpiece; tnode res_node;
+	int bbox_w = ceil(h_bbox.max.x - h_bbox.min.x),
+	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);
+	if(bbox_w % 2 == 0) ++bbox_w;
+	if(bbox_h % 2 == 0) ++bbox_h;
+	size_t buf_ln = bbox_w*bbox_h;
+	terrain_piece** tpiece_buf = malloc(buf_ln * sizeof(terrain_piece*));
+	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
+	// push all blocks in buffer
+	printf("ALL BLOCKS START %lu\n", buf_ln);
+	int bbox_max_side = max(bbox_w, bbox_h);
+	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = _cur_node->tpiece;
+	for(int square_side = 3; square_side <= bbox_max_side; square_side += 2){
+		// TODO optimize by breaking early if square didn't yield any blocks?
+		// left side
+		for(int y = -square_side/2 + 1; y < square_side/2; ++y){
+			int x = -square_side/2;
+			PUT_TPIECE_BUF(1, 0)
+			PUT_TPIECE_BUF(1, -1)
+			PUT_TPIECE_BUF(1, 1)
+		}
+		// right side
+		for(int y = -square_side/2 + 1; y < square_side/2; ++y){
+			int x = square_side/2;
+			PUT_TPIECE_BUF(-1, 0)
+			PUT_TPIECE_BUF(-1, -1)
+			PUT_TPIECE_BUF(-1, 1)
+		}
+		// top side
+		for(int x = -square_side/2; x <= square_side/2; ++x){
+			int y = square_side/2;
+			PUT_TPIECE_BUF(0, -1)
+			PUT_TPIECE_BUF(-1, -1)
+			PUT_TPIECE_BUF(1, -1)
+		}
+		// bottom side
+		for(int x = -square_side/2; x <= square_side/2; ++x){
+			int y = -square_side/2;
+			PUT_TPIECE_BUF(0, 1)
+			PUT_TPIECE_BUF(-1, 1)
+			PUT_TPIECE_BUF(1, 1)
+		}
+	}
+	printf("ALL BLOCKS END\n");
+	for(size_t i = 0; i < buf_ln; ++i)
+		printf("%lu %p\n", i, tpiece_buf[i]);
+
 	PUSH_SUCCESSOR(1, 0)
 	PUSH_SUCCESSOR(0, 1)
 	PUSH_SUCCESSOR(-1, 0)

@@ -13,8 +13,6 @@
 #define KEY_COORD_X(key) ((key) >> 32)
 #define KEY_COORD_Y(key) ((key) & 0xFFFFFFFF)
 
-#define tpiece_avg_z_ceil(tpiece) (((tpiece).z_ceil[0] + (tpiece).z_ceil[1] + (tpiece).z_ceil[2] + (tpiece).z_ceil[3]) / 4)
-
 typedef struct terrain_piece terrain_piece;
 struct terrain_piece {
 	terrain_piece *prev, *next; // there is always a dummy head for the double-linked list to save cpu cycles on allocation of TERRAIN_CHUNK_SIZE^2 pointers per chunk.
@@ -26,6 +24,8 @@ struct terrain_piece {
 	double health;
 };
 
+#define tpiece_avg_z_ceil(tpiece) (((tpiece).z_ceil[0] + (tpiece).z_ceil[1] + (tpiece).z_ceil[2] + (tpiece).z_ceil[3]) / 4)
+float tpiece_max_z_ceil(terrain_piece* tpiece);
 
 #define TERRAIN_CHUNK_SIZE 16
 

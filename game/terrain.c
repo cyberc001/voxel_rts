@@ -9,10 +9,19 @@ static size_t chunk_hash(size_t table_sz, const uint64_t* key)
 	return (*key & 0xFFFF | ((*key & 0xFFFF00000000) >> 16));
 }
 
+float tpiece_max_z_ceil(terrain_piece* tpiece)
+{
+	float _max = tpiece->z_ceil[0];
+	for(size_t i = 1; i < 4; ++i)
+		if(tpiece->z_ceil[i] > _max)
+			_max = tpiece->z_ceil[i];
+	return _max;
+}
+
 void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash);
-	for(size_t x = 0; x < 10; ++x)
+	for(size_t x = 0; x < 11; ++x)
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
@@ -37,24 +46,24 @@ void terrain_init()
 				add->z_ceil[3] = 3;
 			}*/
 
-			if(y >= 0 && y <= 10 && x == 3){
-				add->z_ceil[0] = 3;
-				add->z_ceil[1] = 3;
-				add->z_ceil[2] = 3;
-				add->z_ceil[3] = 3;
+			if(y <= 10 && x >= 4 && x <= 6){
+				add->z_ceil[0] = 1.5;
+				add->z_ceil[1] = 1.5;
+				add->z_ceil[2] = 1.5;
+				add->z_ceil[3] = 1.5;
 			}
 
-			if(x == 2 && y == 4){
+			if(x == 3 && y >= 3 && y <= 5){
 				add->z_ceil[0] = 1;
-				add->z_ceil[1] = 3;
-				add->z_ceil[2] = 3;
+				add->z_ceil[1] = 1.5;
+				add->z_ceil[2] = 1.5;
 				add->z_ceil[3] = 1;
 			}
-			if(x == 4 && y == 8){
-				add->z_ceil[0] = 3;
+			if(x == 7 && y >= 6 && y <= 8){
+				add->z_ceil[0] = 1.5;
 				add->z_ceil[1] = 1;
 				add->z_ceil[2] = 1;
-				add->z_ceil[3] = 3;
+				add->z_ceil[3] = 1.5;
 			}
 
 			for(size_t j = 1; j < 5; ++j)
