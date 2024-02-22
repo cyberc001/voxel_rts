@@ -14,8 +14,8 @@
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
-vec3f render_cam_pos = {-3.2, -6.6, 2.4};
-vec3f render_cam_rot = {33, 165, 0};
+vec3f render_cam_pos = {-10.5, -18, 2.5};
+vec3f render_cam_rot = {58, 180, 0};
 
 static GLuint __dummy_tex; // 1x1 texture that signals that main texture is not in use
 
@@ -50,8 +50,8 @@ static void render_display()
 	render_terrain();
 
 	glBegin(GL_LINES);
-	glVertex3f(9.5, 0, 2.5);
-	glVertex3f(9.5, 6, 2.5);
+	glVertex3f(19.5, 0, 2.5);
+	glVertex3f(19.5, 6, 2.5);
 
 	glEnd();
 	

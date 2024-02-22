@@ -46,10 +46,21 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 
 #define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
 
+#define CHECK_NEXT_TPIECE_HEIGHT(){\
+	printf("check height %f\n", next_z);\
+	if(isnan(next_tpiece_z))\
+		next_tpiece_z = next_z;\
+	else if(DIFF_MORE(next_z, next_tpiece_z)){\
+		printf("difference: %f <> %f\n", next_z, next_tpiece_z);\
+		do_move = 0;\
+		break;\
+	}\
+}
 #define PUSH_SUCCESSOR(dx, dy){\
 	printf("trying to push successor %d %d\n", _cur_node->pos.x + dx, _cur_node->pos.y + dy);\
 	int do_move = 1;\
-	for(size_t i = 0; i < buf_ln; ++i){\
+	float next_tpiece_z = NAN;\
+	for(int i = 0; i < buf_ln; ++i){\
 		if(!tpiece_buf[i])\
 			continue;\
 		tnode cur_node_base;\
@@ -62,6 +73,23 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 			printf("FAIL\n");\
 			do_move = 0;\
 			break;\
+		}\
+		float next_z = tpiece_max_z_ceil(res_tpiece);\
+		if(dx > 0){\
+			if(i % bbox_w == bbox_w - 1) /*a block with the largest x coordinate*/\
+				CHECK_NEXT_TPIECE_HEIGHT();\
+		}\
+		else if(dx < 0){\
+			if(i % bbox_w == 0) /*a block with the smallest x coordinate*/\
+				CHECK_NEXT_TPIECE_HEIGHT();\
+		}\
+		if(dy > 0){\
+			if(i / bbox_w == bbox_h - 1) /*a block with the largest y coordinate*/\
+				CHECK_NEXT_TPIECE_HEIGHT();\
+		}\
+		else if(dy < 0){\
+			if(i / bbox_w == 0) /*a block with the smallest y coordinate*/\
+				CHECK_NEXT_TPIECE_HEIGHT();\
 		}\
 	}\
 	if(do_move){\
@@ -101,9 +129,6 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 		tpiece = tpiece->next;\
 		while(tpiece){\
 			/* ignore unpassable terrain */\
-			printf("going to %d %d, %f\n", new_node.pos.x, new_node.pos.y);\
-			for(size_t i = 0; i < 4; ++i) printf("%f ", cur_node->tpiece->z_ceil[i]); puts("");\
-			for(size_t i = 0; i < 4; ++i) printf("%f ", tpiece->z_ceil[i]); puts("");\
 			if(dx > 0){\
 				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }\
 			}\
@@ -182,11 +207,10 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);
 	if(bbox_w % 2 == 0) ++bbox_w;
 	if(bbox_h % 2 == 0) ++bbox_h;
-	size_t buf_ln = bbox_w*bbox_h;
+	int buf_ln = bbox_w*bbox_h;
 	terrain_piece** tpiece_buf = malloc(buf_ln * sizeof(terrain_piece*));
 	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
 	// push all blocks in buffer
-	printf("ALL BLOCKS START %lu\n", buf_ln);
 	int bbox_max_side = max(bbox_w, bbox_h);
 	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = _cur_node->tpiece;
 	for(int square_side = 3; square_side <= bbox_max_side; square_side += 2){
@@ -220,9 +244,6 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 			PUT_TPIECE_BUF(1, 1)
 		}
 	}
-	printf("ALL BLOCKS END\n");
-	for(size_t i = 0; i < buf_ln; ++i)
-		printf("%lu %p\n", i, tpiece_buf[i]);
 
 	PUSH_SUCCESSOR(1, 0)
 	PUSH_SUCCESSOR(0, 1)
