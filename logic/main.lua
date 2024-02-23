@@ -24,8 +24,8 @@ table.insert(game_object_arr, game_object:new({
 }))]]--
 
 gravity = -0.05
-goal = vec3:new(19.5, 1, 2.5)
-p_i = 2
+goal = vec3:new(19.0, 1, 2.0)
+p_i = 1
 
 function _tick()
 	if stop then return end
@@ -42,10 +42,10 @@ function _tick()
 			if p[p_i] then
 				print("GOAL: ", p[p_i].x, p[p_i].y)
 				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
-				print("CURRENT: ", center.x, center.z, math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)), math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)))
+				print("CURRENT: ", center.x, center.z, math.floor(center.x), math.floor(center.z))
 				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
 				if v.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-					--v.rot.y = v.rot.y + new_rot.y
+					v.rot.y = v.rot.y + new_rot.y
 				end
 
 				if(diff:ln() > 0) then
@@ -57,7 +57,7 @@ function _tick()
 					v.vel = diff
 					p_i = p_i + 1
 				end
-				if(p[p_i] and math.floor(center.x + (diff.x < 0 and 0.5 or -0.5)) == p[p_i].x and math.floor(center.z + (diff.z < 0 and 0.5 or -0.5)) == p[p_i].y) then
+				if(p[p_i] and math.floor(center.x) == p[p_i].x and math.floor(center.z) == p[p_i].y) then
 					p_i = p_i + 1
 					if(not p[p_i]) then
 						v.vel = vec3:new(0, 0, 0)
