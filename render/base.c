@@ -50,8 +50,8 @@ static void render_display()
 	render_terrain();
 
 	glBegin(GL_LINES);
-	glVertex3f(19.5, 0, 2.5);
-	glVertex3f(19.5, 6, 2.5);
+	glVertex3f(1., 0, 6.5);
+	glVertex3f(1.5, 11, 6.5);
 
 	glEnd();
 	

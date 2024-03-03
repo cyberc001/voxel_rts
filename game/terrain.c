@@ -18,6 +18,12 @@ float tpiece_max_z_ceil(terrain_piece* tpiece)
 	return _max;
 }
 
+#define TEST_ADD_TPIECE()\
+	terrain_piece* add2 = malloc(sizeof(terrain_piece));\
+	add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1;\
+	for(size_t j = 0; j < 6; ++j)\
+		add2->atex[j] = atlas_texture_find("gravel");\
+
 void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash);
@@ -25,19 +31,62 @@ void terrain_init()
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
-			if(x == 2 && y == 2){
-				terrain_piece* add2 = malloc(sizeof(terrain_piece));
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1;
-				add2->z_ceil[0] = 1;
-				add2->z_ceil[1] = 2;
-				add2->z_ceil[2] = 2;
-				add2->z_ceil[3] = 1;
-				for(size_t j = 1; j < 5; ++j)
-					add2->atex[j] = atlas_texture_find("grass_side");
-				add2->atex[5] = atlas_texture_find("grass_top");
-				add2->atex[0] = atlas_texture_find("dirt");
+			/* TEST */
+			if(x >= 2 && x <= 4 && y == 2){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1 + (x - 2);
+				add2->z_ceil[0] = 1 + (x - 2);
+				add2->z_ceil[1] = 2 + (x - 2);
+				add2->z_ceil[2] = 2 + (x - 2);
+				add2->z_ceil[3] = 1 + (x - 2);
 				terrain_piece_add(p, add2);
 			}
+			if(x == 5 && y == 2){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 3;
+				add2->z_ceil[0] = 4;
+				add2->z_ceil[1] = 4;
+				add2->z_ceil[2] = 4;
+				add2->z_ceil[3] = 4;
+				terrain_piece_add(p, add2);
+			}
+			if(x == 5 && y >= 3 && y <= 5){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 4 + (y - 3);
+				add2->z_ceil[0] = 4 + (y - 3);
+				add2->z_ceil[1] = 4 + (y - 3);
+				add2->z_ceil[2] = 5 + (y - 3);
+				add2->z_ceil[3] = 5 + (y - 3);
+				terrain_piece_add(p, add2);
+			}
+			if(x == 5 && y == 6){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 6;
+				add2->z_ceil[0] = 7;
+				add2->z_ceil[1] = 7;
+				add2->z_ceil[2] = 7;
+				add2->z_ceil[3] = 7;
+				terrain_piece_add(p, add2);
+			}
+			if(x >= 2 && x <= 4 && y == 6){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 7 + (4 - x);
+				add2->z_ceil[0] = 8 + (4 - x);
+				add2->z_ceil[1] = 7 + (4 - x);
+				add2->z_ceil[2] = 7 + (4 - x);
+				add2->z_ceil[3] = 8 + (4 - x);
+				terrain_piece_add(p, add2);
+			}
+			if(x == 1 && y == 6){
+				TEST_ADD_TPIECE()
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 9;
+				add2->z_ceil[0] = 10;
+				add2->z_ceil[1] = 10;
+				add2->z_ceil[2] = 10;
+				add2->z_ceil[3] = 10;
+				terrain_piece_add(p, add2);
+			}
+			/* TEST END */
 
 			terrain_piece* add = malloc(sizeof(terrain_piece));
 
@@ -47,26 +96,12 @@ void terrain_init()
 			add->z_ceil[2] = 1;
 			add->z_ceil[3] = 1;
 
-
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");
 			add->atex[5] = atlas_texture_find("grass_top");
 			add->atex[0] = atlas_texture_find("dirt");
 
 			terrain_piece_add(p, add);
-
-			/*if(x == 3 && y == 2){
-				add->z_ceil[0] = 2;
-				add->z_ceil[1] = 2;
-				add->z_ceil[2] = 2;
-				add->z_ceil[3] = 2;
-			}
-			if(x == 3 && y == 2){
-				add->z_ceil[0] = 2;
-				add->z_ceil[1] = 2;
-				add->z_ceil[2] = 2;
-				add->z_ceil[3] = 2;
-			}*/
 
 			terrain_mark_changed_piece(x, y);
 		}
