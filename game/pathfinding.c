@@ -1,6 +1,7 @@
 #include "game/pathfinding.h"
 #include "htable_oa.h"
 #include "pqueue.h"
+#include "dyn_array.h"
 
 typedef struct tnode tnode;
 struct tnode {
@@ -28,6 +29,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 	if((*t1)->cost + (*t1)->heuristic < (*t2)->cost + (*t2)->heuristic) return -1;
 	return (*t1)->cost + (*t1)->heuristic > (*t2)->cost + (*t2)->heuristic;
 }
+DEF_DYN_ARRAY(tnode_dynarray, tnode)
 
 static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 {
@@ -47,13 +49,10 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 #define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
 
 #define CHECK_NEXT_TPIECE_HEIGHT(){\
-	printf("check height %f\n", next_z);\
 	if(isnan(next_tpiece_z))\
 		next_tpiece_z = next_z;\
 	else if(DIFF_MORE(next_z, next_tpiece_z)){\
-		printf("difference: %f <> %f\n", next_z, next_tpiece_z);\
-		do_move = 0;\
-		break;\
+		continue;\
 	}\
 }
 #define PUSH_SUCCESSOR(dx, dy){\
@@ -68,34 +67,64 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 		cur_node_base.pos = (vec2i){_cur_node->pos.x + i % bbox_w - bbox_w/2, _cur_node->pos.y + i / bbox_w - bbox_h/2};\
 		printf("going from pos %d %d\n", cur_node_base.pos.x, cur_node_base.pos.y);\
 		tnode* cur_node = &cur_node_base;\
-		GET_SUCCESSOR(dx, dy)\
-		if(!res_tpiece){\
-			printf("FAIL\n");\
-			do_move = 0;\
+		get_successor(dx, dy, cur_node, &node_buf);\
+		\
+		do_move = 0;\
+		for(size_t j = 0; j < node_buf.busy; ++j){\
+			terrain_piece* res_tpiece = node_buf.data[j].tpiece;\
+			float next_z = tpiece_max_z_ceil(res_tpiece);\
+			if(dx > 0){\
+				if(i % bbox_w == bbox_w - 1) /*a block with the largest x coordinate*/\
+					CHECK_NEXT_TPIECE_HEIGHT();\
+			}\
+			else if(dx < 0){\
+				if(i % bbox_w == 0) /*a block with the smallest x coordinate*/\
+					CHECK_NEXT_TPIECE_HEIGHT();\
+			}\
+			if(dy > 0){\
+				if(i / bbox_w == bbox_h - 1) /*a block with the largest y coordinate*/\
+					CHECK_NEXT_TPIECE_HEIGHT();\
+			}\
+			else if(dy < 0){\
+				if(i / bbox_w == 0) /*a block with the smallest y coordinate*/\
+					CHECK_NEXT_TPIECE_HEIGHT();\
+			}\
+			do_move = 1;\
 			break;\
-		}\
-		float next_z = tpiece_max_z_ceil(res_tpiece);\
-		if(dx > 0){\
-			if(i % bbox_w == bbox_w - 1) /*a block with the largest x coordinate*/\
-				CHECK_NEXT_TPIECE_HEIGHT();\
-		}\
-		else if(dx < 0){\
-			if(i % bbox_w == 0) /*a block with the smallest x coordinate*/\
-				CHECK_NEXT_TPIECE_HEIGHT();\
-		}\
-		if(dy > 0){\
-			if(i / bbox_w == bbox_h - 1) /*a block with the largest y coordinate*/\
-				CHECK_NEXT_TPIECE_HEIGHT();\
-		}\
-		else if(dy < 0){\
-			if(i / bbox_w == 0) /*a block with the smallest y coordinate*/\
-				CHECK_NEXT_TPIECE_HEIGHT();\
 		}\
 	}\
 	if(do_move){\
 		tnode* cur_node = _cur_node;\
-		GET_SUCCESSOR(dx, dy)\
-		if(res_tpiece){\
+		get_successor(dx, dy, cur_node, &node_buf);\
+		for(size_t i = 0; i < node_buf.busy; ++i){\
+			terrain_piece* res_tpiece = node_buf.data[i].tpiece;\
+			tnode res_node = node_buf.data[i];\
+			\
+			float max_ceil = tpiece_max_z_ceil(res_tpiece);\
+			/* collision check dx*/\
+			bbox3f new_bbox = h_bbox;\
+			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y;\
+			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
+			new_bbox.min.y += max_ceil;\
+			new_bbox.max.y += max_ceil;\
+			if(bbox_check_terrain_collision(new_bbox)) continue;\
+			\
+			/* collision check dy*/\
+			new_bbox = h_bbox;\
+			new_bbox.min.x += _cur_node->pos.x; new_bbox.min.z += _cur_node->pos.y + (dy);\
+			new_bbox.max.x += _cur_node->pos.x; new_bbox.max.z += _cur_node->pos.y + (dy);\
+			new_bbox.min.y += max_ceil;\
+			new_bbox.max.y += max_ceil;\
+			if(bbox_check_terrain_collision(new_bbox)) continue;\
+			\
+			/* collision check dx+dy*/\
+			new_bbox = h_bbox;\
+			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
+			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
+			new_bbox.min.y += max_ceil;\
+			new_bbox.max.y += max_ceil;\
+			if(bbox_check_terrain_collision(new_bbox)) continue;\
+\
 			tnode** old_node;\
 			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
 				res_node.y = tpiece_avg_z_ceil(*res_tpiece);\
@@ -107,7 +136,7 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 				*new_node_ptr = res_node;\
 				tptr_set_insert(closed, res_tpiece, new_node_ptr);\
 				tnode_pqueue_push(open, new_node_ptr);\
-				printf("pushed %d %d\n", res_node.pos.x, res_node.pos.y);\
+				printf("pushed %d %d %f\n", res_node.pos.x, res_node.pos.y, max_ceil);\
 			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
 				(*old_node)->cost = cur_node->cost + max(dx, dy);\
 				tnode_calc_heuristic(**old_node, goal);\
@@ -118,65 +147,72 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 		}\
 	}\
 }
-#define GET_SUCCESSOR(dx, dy){\
-	res_tpiece = NULL;\
-	tnode new_node;\
-	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};\
-	terrain_piece* tpiece = terrain_get_piece(new_node.pos.x, new_node.pos.y);\
-	terrain_piece* _tpiece_x = terrain_get_piece(new_node.pos.x, cur_node->pos.y);\
-	terrain_piece* _tpiece_y = terrain_get_piece(cur_node->pos.x, new_node.pos.y);\
-	if(tpiece){\
-		tpiece = tpiece->next;\
-		while(tpiece){\
-			/* ignore unpassable terrain */\
-			if(dx > 0){\
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }\
-			}\
-			else if(dx < 0){\
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }\
-			}\
-			if(dy > 0){\
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }\
-			}\
-			else if(dy < 0){\
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }\
-			}\
-			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/\
-				if(_tpiece_x){\
-					terrain_piece* tpiece_x = _tpiece_x->next;\
-					int cont = 0;\
-					while(tpiece_x){\
-						if(dx > 0){\
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }\
-						}\
-						else if(dx < 0){\
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }\
-						}\
-						tpiece_x = tpiece_x->next;\
-					}\
-					if(cont) { tpiece = tpiece->next; continue; }\
-					\
-				}\
-				if(_tpiece_y){\
-					terrain_piece* tpiece_y = _tpiece_y->next;\
-					int cont = 0;\
-					while(tpiece_y){\
-						if(dy > 0){\
+
+void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
+{
+	node_buf->busy = 0;
+
+	tnode new_node;
+	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};
+
+	terrain_piece* tpiece = terrain_get_piece(new_node.pos.x, new_node.pos.y);
+	terrain_piece* _tpiece_x = terrain_get_piece(new_node.pos.x, cur_node->pos.y);
+	terrain_piece* _tpiece_y = terrain_get_piece(cur_node->pos.x, new_node.pos.y);
+
+	if(tpiece){
+		tpiece = tpiece->next;
+		while(tpiece){
+			/* ignore unpassable terrain */
+			if(dx > 0){
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }
+			}
+			else if(dx < 0){
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+			}
+			if(dy > 0){
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }
+			}
+			else if(dy < 0){
+				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+			}
+
+			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/
+				if(_tpiece_x){
+					terrain_piece* tpiece_x = _tpiece_x->next;
+					int cont = 0;
+					while(tpiece_x){
+						if(dx > 0){
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }
+						}
+						else if(dx < 0){
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }
+						}
+						tpiece_x = tpiece_x->next;
+					}
+					if(cont) { tpiece = tpiece->next; continue; }	
+				}
+				if(_tpiece_y){
+					terrain_piece* tpiece_y = _tpiece_y->next;
+					int cont = 0;
+					while(tpiece_y){
+						if(dy > 0){
 							if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
-						}\
-						else if(dy < 0){\
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }\
-						}\
-						tpiece_y = tpiece_y->next;\
-					}\
-					if(cont) { tpiece = tpiece->next; continue; }\
-				}\
-			}\
-			res_tpiece = tpiece;\
-			res_node = new_node;\
-			break;\
-		}\
-	}\
+						}
+						else if(dy < 0){
+							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }
+						}
+						tpiece_y = tpiece_y->next;
+					}
+					if(cont) { tpiece = tpiece->next; continue; }
+				}
+			}
+
+			new_node.tpiece = tpiece;
+			tnode_dynarray_push(node_buf, new_node);
+
+			tpiece = tpiece->next;
+		}
+	}
 }
 
 #define PUT_TPIECE_BUF(dx, dy){\
@@ -188,28 +224,37 @@ static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
 		if(cur_node_base.tpiece){\
 			cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
 			tnode* cur_node = &cur_node_base;\
-			GET_SUCCESSOR(-(dx), -(dy))\
-			if(!res_tpiece)\
-				break;\
-			cur_node_base.tpiece = res_tpiece;\
-			cur_node_base.pos.y += _y;\
-			tpiece_buf[buf_i] = res_tpiece;\
-			cur_node_base.pos.x += _x;\
+			get_successor(-(dx), -(dy), cur_node, &node_buf);\
+			for(size_t i = 0; i < node_buf.busy; ++i){\
+				terrain_piece* res_tpiece = node_buf.data[i].tpiece;\
+				if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
+					cur_node_base.tpiece = res_tpiece;\
+					cur_node_base.pos.y += _y;\
+					tpiece_buf[buf_i] = res_tpiece;\
+					cur_node_base.pos.x += _x;\
+					break;\
+				}\
+			}\
 		}\
 	}\
 }
 
-static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, bbox3f h_bbox)
+static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, bbox3f h_bbox, vec3f center)
 {
 	printf("start %d %d\n", _cur_node->pos.x, _cur_node->pos.y);
-	terrain_piece* res_tpiece; tnode res_node;
+
+	tnode_dynarray node_buf;
+	tnode_dynarray_create(&node_buf);
+
 	int bbox_w = ceil(h_bbox.max.x - h_bbox.min.x),
 	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);
 	if(bbox_w % 2 == 0) ++bbox_w;
 	if(bbox_h % 2 == 0) ++bbox_h;
+
 	int buf_ln = bbox_w*bbox_h;
 	terrain_piece** tpiece_buf = malloc(buf_ln * sizeof(terrain_piece*));
 	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
+
 	// push all blocks in buffer
 	int bbox_max_side = max(bbox_w, bbox_h);
 	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = _cur_node->tpiece;
@@ -241,7 +286,7 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 			int y = -square_side/2;
 			PUT_TPIECE_BUF(0, 1)
 			PUT_TPIECE_BUF(-1, 1)
-			PUT_TPIECE_BUF(1, 1)
+		PUT_TPIECE_BUF(1, 1)
 		}
 	}
 
@@ -290,7 +335,7 @@ path path_find(const hexahedron* h, vec3f target)
 		cur_node = tnode_pqueue_pop(&open);
 		if(vec2_eq(cur_node->pos, target_xz))
 			break;
-		push_successors(&open, &closed, cur_node, target_xz, h_bbox);
+		push_successors(&open, &closed, cur_node, target_xz, h_bbox, center);
 	}
 
 	tnode* n = cur_node;

@@ -21,9 +21,23 @@ float tpiece_max_z_ceil(terrain_piece* tpiece)
 void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash);
-	for(size_t x = 0; x < 21; ++x)
+	for(size_t x = 0; x < 10; ++x)
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
+
+			if(x == 2 && y == 2){
+				terrain_piece* add2 = malloc(sizeof(terrain_piece));
+				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1;
+				add2->z_ceil[0] = 1;
+				add2->z_ceil[1] = 2;
+				add2->z_ceil[2] = 2;
+				add2->z_ceil[3] = 1;
+				for(size_t j = 1; j < 5; ++j)
+					add2->atex[j] = atlas_texture_find("grass_side");
+				add2->atex[5] = atlas_texture_find("grass_top");
+				add2->atex[0] = atlas_texture_find("dirt");
+				terrain_piece_add(p, add2);
+			}
 
 			terrain_piece* add = malloc(sizeof(terrain_piece));
 
@@ -33,38 +47,6 @@ void terrain_init()
 			add->z_ceil[2] = 1;
 			add->z_ceil[3] = 1;
 
-			if((y == 0 || y == 9) && x == 4){
-				add->z_ceil[0] = 3;
-				add->z_ceil[1] = 3;
-				add->z_ceil[2] = 3;
-				add->z_ceil[3] = 3;
-			}
-			if(y >= 2 && y <= 5 && x == 4){
-				add->z_ceil[0] = 3;
-				add->z_ceil[1] = 3;
-				add->z_ceil[2] = 3;
-				add->z_ceil[3] = 3;
-			}
-
-			if(y <= 10 && x >= 14 && x <= 16){
-				add->z_ceil[0] = 1.5;
-				add->z_ceil[1] = 1.5;
-				add->z_ceil[2] = 1.5;
-				add->z_ceil[3] = 1.5;
-			}
-
-			if(x == 13 && y >= 3 && y <= 5){
-				add->z_ceil[0] = 1;
-				add->z_ceil[1] = 1.5;
-				add->z_ceil[2] = 1.5;
-				add->z_ceil[3] = 1;
-			}
-			if(x == 17 && y >= 6 && y <= 8){
-				add->z_ceil[0] = 1.5;
-				add->z_ceil[1] = 1;
-				add->z_ceil[2] = 1;
-				add->z_ceil[3] = 1.5;
-			}
 
 			for(size_t j = 1; j < 5; ++j)
 				add->atex[j] = atlas_texture_find("grass_side");
@@ -72,6 +54,20 @@ void terrain_init()
 			add->atex[0] = atlas_texture_find("dirt");
 
 			terrain_piece_add(p, add);
+
+			/*if(x == 3 && y == 2){
+				add->z_ceil[0] = 2;
+				add->z_ceil[1] = 2;
+				add->z_ceil[2] = 2;
+				add->z_ceil[3] = 2;
+			}
+			if(x == 3 && y == 2){
+				add->z_ceil[0] = 2;
+				add->z_ceil[1] = 2;
+				add->z_ceil[2] = 2;
+				add->z_ceil[3] = 2;
+			}*/
+
 			terrain_mark_changed_piece(x, y);
 		}
 }

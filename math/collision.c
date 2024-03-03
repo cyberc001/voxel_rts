@@ -231,7 +231,7 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 
 	for(size_t i = 0; i < axes_ln; ++i){
 		vec3f axis = axes[i];
-		if(vec3_ln(axis) == 0)
+		if(vec3_ln(axis) == 0 || isnan(axis.x))
 			continue;
 		vec2f proj1 = hexahedron_project_on_axis(h1, axis),
 		      proj2 = hexahedron_project_on_axis(h2, axis);
@@ -239,8 +239,7 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 			float o = get_proj_overlap(proj1, proj2);
 			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
 			printf("proj2: %f %f\n", proj2.x, proj2.y);
-			printf("overlap: %f\n", o);
-			printf("axis %lu: ", i); vec3f_print(axes[i]);*/
+			printf("overlap: %f\n", o);*/
 			if(o < overlap){
 				overlap = o;
 				resolution = axis;
@@ -249,8 +248,8 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		else{
 			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
 			printf("proj2: %f %f\n", proj2.x, proj2.y);
-			printf("DON'T OVERLAP\n");
-			printf("axis %lu: ", i); vec3f_print(axes[i]);*/
+			printf("axis: "); vec3f_print(axis);
+			printf("DON'T OVERLAP\n");*/
 			return 0;
 		}
 	}
@@ -293,7 +292,7 @@ int bbox_check_terrain_collision(bbox3f bbox)
 						tpiece_bbox.min.y = piece->z_floor[i];
 				tpiece_bbox.max.y = -INFINITY;
 				for(size_t i = 0; i < 4; ++i)
-					if(piece->z_ceil[i] > tpiece_bbox.min.y)
+					if(piece->z_ceil[i] > tpiece_bbox.max.y)
 						tpiece_bbox.max.y = piece->z_ceil[i];
 
 				tpiece_bbox.min = vec3_smul(tpiece_bbox.min, TERRAIN_PIECE_SIZE);
@@ -378,17 +377,12 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						vec3f norm = vec3_cross(e1, e2);
 
 						if(new_rot){
-							printf("COORDS: %u %u\n", tx, ty);
-							printf("NORM: "); vec3f_print(norm);
-							printf("ROT: "); vec3f_print(orig_rot);
-
 							vec3f vel = {0, -1, 0};
 							mat4f tr = mat4f_identity();
 							mat4f_rotate(&tr, orig_rot.x, (vec3f){1, 0, 0});
 							mat4f_rotate(&tr, orig_rot.y, (vec3f){0, 1, 0});
 							mat4f_rotate(&tr, orig_rot.z, (vec3f){0, 0, 1});
 							vel = mat4f_mul_vec3f(&tr, vel);
-							printf("VEL: "); vec3f_print(vel);
 							*new_rot = vec3f_get_rot_between(vel, norm);
 						}
 					}

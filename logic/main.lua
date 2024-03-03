@@ -7,24 +7,16 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(0.5, 1, 0.5), rot = vec3:new(0, 0, 0),
+	pos = vec3:new(1.5, 1.8, 2.5), rot = vec3:new(0, 0, 0),
 	--vel = vec3:new(0, -0.03, 0),
-	hitbox = gmath.hexahedron_from_cuboid_centered(1.8, 1.8, 1.8),
+	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
 	}
 }))
---[[table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(4, 6, 2), rot = vec3:new(0, 0, 0),
-	--vel = vec3:new(0, -0.03, 0),
-	hitbox = gmath.hexahedron_from_cuboid(1, 2, 3),
-	robj_arr = {
-		render_object:new({model = render.model_find("kirov")})
-	}
-}))]]--
 
 gravity = -0.05
-goal = vec3:new(19.0, 1, 2.0)
+goal = vec3:new(9, 1, 2)
 p_i = 1
 
 function _tick()
@@ -39,10 +31,10 @@ function _tick()
 				p_i = 1
 			end
 
-			if p[p_i] then
-				print("GOAL: ", p[p_i].x, p[p_i].y)
+			if p and p[p_i] then
+				--print("GOAL: ", p[p_i].x, p[p_i].y)
 				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
-				print("CURRENT: ", center.x, center.z, math.floor(center.x), math.floor(center.z))
+				--print("CURRENT: ", center.x, center.z, math.floor(center.x), math.floor(center.z))
 				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
 				if v.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
 					v.rot.y = v.rot.y + new_rot.y
@@ -86,7 +78,7 @@ function _tick()
 		if collided then
 			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
-			print("NEW ROT: ", new_rot.x, new_rot.y, new_rot.z)
+			--print("NEW ROT: ", new_rot.x, new_rot.y, new_rot.z)
 			if new_rot.x == new_rot.x -- test for nan
 				and (new_rot.x*new_rot.x + new_rot.y*new_rot.y + new_rot.z*new_rot.z) > 0.5 then -- TODO: properly convert vectors from C to objects, maybe do smth else about flickering
 				v.rot.x = v.rot.x + (new_rot.x) * 0.1
