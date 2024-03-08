@@ -37,7 +37,7 @@ function _tick()
 				--print("CURRENT: ", center.x, center.z, math.floor(center.x), math.floor(center.z))
 				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
 				if v.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-					v.rot.y = v.rot.y + new_rot.y
+					v.rot.y = v.rot.y + new_rot.y * 0.1
 				end
 
 				if(diff:ln() > 0) then
@@ -61,7 +61,6 @@ function _tick()
 		end
 
 		vec3:iadd(v.pos, v.vel)
-		v:update_hitbox()
 		v.pos.y = v.pos.y + gravity
 		v:update_hitbox()
 
@@ -78,12 +77,13 @@ function _tick()
 		if collided then
 			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
+			local center = gmath.hexahedron_get_center(v.hitbox)
 			--print("NEW ROT: ", new_rot.x, new_rot.y, new_rot.z)
 			if new_rot.x == new_rot.x -- test for nan
-				and (new_rot.x*new_rot.x + new_rot.y*new_rot.y + new_rot.z*new_rot.z) > 0.5 then -- TODO: properly convert vectors from C to objects, maybe do smth else about flickering
-				v.rot.x = v.rot.x + (new_rot.x) * 0.1
-				v.rot.y = v.rot.y + (new_rot.y) * 0.1
-				v.rot.z = v.rot.z + (new_rot.z) * 0.1
+				then -- TODO: properly convert vectors from C to objects
+				v.rot.x = v.rot.x + new_rot.x * 0.1
+				v.rot.y = v.rot.y + new_rot.y * 0.1
+				v.rot.z = v.rot.z + new_rot.z * 0.1
 			end
 			v:update_hitbox()
 		end

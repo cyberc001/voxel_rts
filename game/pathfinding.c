@@ -333,13 +333,13 @@ path path_find(const hexahedron* h, vec3f target)
 
 	while(!tnode_pqueue_is_empty(&open)){
 		cur_node = tnode_pqueue_pop(&open);
-		if(vec2_eq(cur_node->pos, target_xz))
+		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
 			break;
 		push_successors(&open, &closed, cur_node, target_xz, h_bbox, center);
 	}
 
 	tnode* n = cur_node;
-	if(!vec2_eq(n->pos, target_xz)){ // haven't reached the goal
+	if(!vec2_eq(n->pos, target_xz) || DIFF_MORE(n->y, target.y)){ // haven't reached the goal
 		for(size_t i = 0; i < closed.size; ++i)
 			if(tptr_set_is_allocated(&closed, i))
 				free(closed.data[i]);

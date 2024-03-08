@@ -14,8 +14,8 @@
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
-vec3f render_cam_pos = {-10.5, -18, 2.5};
-vec3f render_cam_rot = {58, 180, 0};
+vec3f render_cam_pos = {-4.07, -12.2, 3.93};
+vec3f render_cam_rot = {40, 180, 0};
 
 static GLuint __dummy_tex; // 1x1 texture that signals that main texture is not in use
 
@@ -37,7 +37,7 @@ static void render_display()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glfwPerspective(70, wnd_shape.x / wnd_shape.y, 1, 100);
-	glEnable(GL_DEPTH_TEST); 
+	glEnable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -52,7 +52,6 @@ static void render_display()
 	glBegin(GL_LINES);
 	glVertex3f(1., 0, 6.5);
 	glVertex3f(1.5, 11, 6.5);
-
 	glEnd();
 	
 	// UI rendering
