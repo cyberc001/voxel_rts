@@ -23,8 +23,17 @@ void game_logic_init()
 	}
 }
 
+static int first_tick = 1;
 void game_logic_tick()
 {
+	if(first_tick){
+		first_tick = 0;
+		lua_getglobal(_s, "_first_tick");
+		if(lua_pcall(_s, 0, 0, 0)){
+			LOG_ERROR("global logic _first_tick() returned an error:\n%s\n", lua_tostring(_s, -1));
+			lua_pop(_s, 1);
+		}
+	}
 	lua_getglobal(_s, "_tick");
 	if(lua_pcall(_s, 0, 0, 0)){
 		LOG_ERROR("global logic _tick() returned an error:\n%s\n", lua_tostring(_s, -1));

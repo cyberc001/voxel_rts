@@ -16,49 +16,16 @@ table.insert(game_object_arr, game_object:new({
 }))
 
 gravity = -0.05
-goal = vec3:new(1, 10, 6)
-p_i = 1
+
+function _first_tick()
+	game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
+end
 
 function _tick()
 	if stop then return end
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
-		-- PATHFINDING TEST
-		if i == 1 then
-			local center = gmath.hexahedron_get_center(v.hitbox)
-			if p == nil then
-				p = path.find_path(v.hitbox, goal)
-				p_i = 1
-			end
-
-			if p and p[p_i] then
-				--print("GOAL: ", p[p_i].x, p[p_i].y)
-				local diff = vec3:new(p[p_i].x + 0.5, center.y, p[p_i].y + 0.5) - center
-				--print("CURRENT: ", center.x, center.z, math.floor(center.x), math.floor(center.z))
-				local new_rot = gmath.vec3_lookat_rot(v.rot, diff:unit())
-				if v.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-					v.rot.y = v.rot.y + new_rot.y * 0.1
-				end
-
-				if(diff:ln() > 0) then
-					v.vel = diff:unit()*0.02
-				else
-					v.vel = vec3:new(0, 0, 0)
-				end
-				if(v.vel:ln() > diff:ln()) then
-					v.vel = diff
-					p_i = p_i + 1
-				end
-				if(p[p_i] and math.floor(center.x) == p[p_i].x and math.floor(center.z) == p[p_i].y) then
-					p_i = p_i + 1
-					if(not p[p_i]) then
-						v.vel = vec3:new(0, 0, 0)
-					end
-				elseif(not p[p_i]) then
-					v.vel = vec3:new(0, 0, 0)
-				end
-			end
-		end
+		v:path_tick()
 
 		vec3:iadd(v.pos, v.vel)
 		v.pos.y = v.pos.y + gravity

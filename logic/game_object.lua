@@ -24,6 +24,50 @@ function game_object:update_hitbox()
 	self.robj_hitbox = render.render_hexahedron(self.hitbox)
 end
 
+-- pathfinding
+
+function game_object:set_goal(goal)
+	self.goal = goal
+	self.path = path.find_path(self.hitbox, goal)
+	self.path_i = 1
+end
+function game_object:clear_goal(goal)
+	self.goal = nil
+	self.path = nil
+end
+
+function game_object:path_tick()
+	if self.path then
+		local center = gmath.hexahedron_get_center(self.hitbox)
+		if self.path and self.path[self.path_i] then
+			local diff = vec3:new(self.path[self.path_i].x + 0.5, center.y, self.path[self.path_i].y + 0.5) - center
+			local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
+			if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
+				self.rot.y = self.rot.y + new_rot.y * 0.1
+			end
+
+			if(diff:ln() > 0) then
+				self.vel = diff:unit()*0.02
+			else
+				self.vel = vec3:new(0, 0, 0)
+			end
+			if(self.vel:ln() > diff:ln()) then
+				self.vel = diff
+				self.path_i = self.path_i + 1
+			end
+			if(self.path[self.path_i] and math.floor(center.x) == self.path[self.path_i].x and math.floor(center.z) == self.path[self.path_i].y) then
+				self.path_i = self.path_i + 1
+				if(not self.path[self.path_i]) then
+					self.vel = vec3:new(0, 0, 0)
+				end
+			elseif(not self.path[self.path_i]) then
+				v.vel = vec3:new(0, 0, 0)
+				self:clear_goal()
+			end
+		end
+	end
+end
+
 -- callbacks for the engine
 
 function game_object:tick()
