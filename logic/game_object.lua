@@ -12,6 +12,7 @@ function game_object:create_tables(o)
 end
 function game_object:new(o)
 	o = o or {}
+	o.speed = o.speed or 0.01
 	game_object:create_tables(o)
 	setmetatable(o, self)
 	self.__index = self
@@ -47,7 +48,7 @@ function game_object:path_tick()
 			end
 
 			if(diff:ln() > 0) then
-				self.vel = diff:unit()*0.02
+				self.vel = diff:unit() * self.speed
 			else
 				self.vel = vec3:new(0, 0, 0)
 			end

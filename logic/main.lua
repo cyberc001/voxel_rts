@@ -7,8 +7,14 @@ local game_object_arr = {}
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 1.8, 2.5), rot = vec3:new(0, 0, 0),
-	--vel = vec3:new(0, -0.03, 0),
+	pos = vec3:new(1.5, 1.8, 4.5), rot = vec3:new(0, 0, 0),
+	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
+	robj_arr = {
+		render_object:new({model = render.model_find("kirov")})
+	}
+}))
+table.insert(game_object_arr, game_object:new({
+	pos = vec3:new(1.5, 1.8, 0.5), rot = vec3:new(0, 0, 0),
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
@@ -19,6 +25,7 @@ gravity = -0.05
 
 function _first_tick()
 	game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
+	game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
 end
 
 function _tick()
