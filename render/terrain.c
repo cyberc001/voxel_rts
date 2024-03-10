@@ -28,7 +28,7 @@ void render_terrain()
 				uint32_t chnk_x = KEY_COORD_X(chunks.keys[i]);
 				uint32_t chnk_y = KEY_COORD_Y(chunks.keys[i]);
 				for(size_t j = 0; j < TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE; ++j){
-					terrain_piece* piece = chnk->data[j].next;
+					terrain_piece* piece = chnk->data[j];
 					uint32_t world_x = chnk_x * TERRAIN_CHUNK_SIZE + j % TERRAIN_CHUNK_SIZE;
 					uint32_t world_y = chnk_y * TERRAIN_CHUNK_SIZE + j / TERRAIN_CHUNK_SIZE;
 					while(piece){

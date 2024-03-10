@@ -279,7 +279,7 @@ int bbox_check_terrain_collision(bbox3f bbox)
 		 end_ty = ceil(bbox.max.z / TERRAIN_PIECE_SIZE);
 	for(uint32_t tx = beg_tx; tx <= end_tx; ++tx)
 		for(uint32_t ty = beg_ty; ty <= end_ty; ++ty){
-			terrain_piece* piece = terrain_get_piece(tx, ty)->next;
+			terrain_piece* piece = terrain_get_piece(tx, ty);
 
 			while(piece){
 				bbox3f tpiece_bbox;
@@ -334,7 +334,7 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 	vec3f max_resol = {0, 0, 0};
 	for(uint32_t tx = beg_tx; tx <= end_tx; ++tx)
 		for(uint32_t ty = beg_ty; ty <= end_ty; ++ty){
-			terrain_piece* piece = terrain_get_piece(tx, ty)->next;
+			terrain_piece* piece = terrain_get_piece(tx, ty);
 
 			while(piece){
 				hexahedron tpiece_h;

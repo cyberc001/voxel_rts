@@ -159,59 +159,50 @@ void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
 	terrain_piece* _tpiece_x = terrain_get_piece(new_node.pos.x, cur_node->pos.y);
 	terrain_piece* _tpiece_y = terrain_get_piece(cur_node->pos.x, new_node.pos.y);
 
-	if(tpiece){
-		tpiece = tpiece->next;
-		while(tpiece){
-			/* ignore unpassable terrain */
-			if(dx > 0){
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }
-			}
-			else if(dx < 0){
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
-			}
-			if(dy > 0){
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }
-			}
-			else if(dy < 0){
-				if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
-			}
-
-			if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/
-				if(_tpiece_x){
-					terrain_piece* tpiece_x = _tpiece_x->next;
-					int cont = 0;
-					while(tpiece_x){
-						if(dx > 0){
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }
-						}
-						else if(dx < 0){
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }
-						}
-						tpiece_x = tpiece_x->next;
-					}
-					if(cont) { tpiece = tpiece->next; continue; }	
-				}
-				if(_tpiece_y){
-					terrain_piece* tpiece_y = _tpiece_y->next;
-					int cont = 0;
-					while(tpiece_y){
-						if(dy > 0){
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
-						}
-						else if(dy < 0){
-							if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }
-						}
-						tpiece_y = tpiece_y->next;
-					}
-					if(cont) { tpiece = tpiece->next; continue; }
-				}
-			}
-
-			new_node.tpiece = tpiece;
-			tnode_dynarray_push(node_buf, new_node);
-
-			tpiece = tpiece->next;
+	while(tpiece){
+		/* ignore unpassable terrain */
+		if(dx > 0){
+			if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }
 		}
+		else if(dx < 0){
+			if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+		}
+		if(dy > 0){
+			if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }
+		}
+		else if(dy < 0){
+			if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+		}
+		if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/
+			terrain_piece* tpiece_x = _tpiece_x;
+			int cont = 0;
+			while(tpiece_x){
+				if(dx > 0){
+					if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }
+				}
+				else if(dx < 0){
+					if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }
+				}
+				tpiece_x = tpiece_x->next;
+			}
+			if(cont) { tpiece = tpiece->next; continue; }	
+		
+			terrain_piece* tpiece_y = _tpiece_y;
+			cont = 0;
+			while(tpiece_y){
+				if(dy > 0){
+					if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
+				}
+				else if(dy < 0){
+					if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }
+				}
+				tpiece_y = tpiece_y->next;
+			}
+			if(cont) { tpiece = tpiece->next; continue; }
+		}
+		new_node.tpiece = tpiece;
+		tnode_dynarray_push(node_buf, new_node);
+		tpiece = tpiece->next;
 	}
 }
 
@@ -319,7 +310,7 @@ path path_find(const hexahedron* h, vec3f target)
 	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
 	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
 	if(!cur_node->tpiece) return (path){0, NULL};
-	cur_node->tpiece = get_nearest_tpiece(center.y, cur_node->tpiece->next);
+	cur_node->tpiece = get_nearest_tpiece(center.y, cur_node->tpiece);
 	if(!cur_node->tpiece) return (path){0, NULL};
 	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
 	tnode_calc_heuristic(*cur_node, target_xz);

@@ -31,7 +31,17 @@ void terrain_init()
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
-			/* TEST */
+			p->z_floor[0] = p->z_floor[1] = p->z_floor[2] = p->z_floor[3] = 0;
+			p->z_ceil[0] = 1;
+			p->z_ceil[1] = 1;
+			p->z_ceil[2] = 1;
+			p->z_ceil[3] = 1;
+
+			for(size_t j = 1; j < 5; ++j)
+				p->atex[j] = atlas_texture_find("grass_side");
+			p->atex[5] = atlas_texture_find("grass_top");
+			p->atex[0] = atlas_texture_find("dirt");
+
 			if(x >= 2 && x <= 4 && y == 2){
 				TEST_ADD_TPIECE()
 				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1 + (x - 2);
@@ -86,22 +96,6 @@ void terrain_init()
 				add2->z_ceil[3] = 10;
 				terrain_piece_add(p, add2);
 			}
-			/* TEST END */
-
-			terrain_piece* add = malloc(sizeof(terrain_piece));
-
-			add->z_floor[0] = add->z_floor[1] = add->z_floor[2] = add->z_floor[3] = 0;
-			add->z_ceil[0] = 1;
-			add->z_ceil[1] = 1;
-			add->z_ceil[2] = 1;
-			add->z_ceil[3] = 1;
-
-			for(size_t j = 1; j < 5; ++j)
-				add->atex[j] = atlas_texture_find("grass_side");
-			add->atex[5] = atlas_texture_find("grass_top");
-			add->atex[0] = atlas_texture_find("dirt");
-
-			terrain_piece_add(p, add);
 
 			terrain_mark_changed_piece(x, y);
 		}
@@ -121,7 +115,7 @@ terrain_chunk* terrain_get_chunk_anyway(uint32_t x, uint32_t y)
 }
 terrain_chunk* terrain_create_chunk(uint32_t x, uint32_t y)
 {
-	terrain_chunk chnk = {.data = memset(malloc(sizeof(terrain_piece) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), 0, sizeof(terrain_piece) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), .flags = TERRAIN_CHUNK_FLAG_RENDER_CHANGED};
+	terrain_chunk chnk = {.data = memset(malloc(sizeof(terrain_piece*) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), 0, sizeof(terrain_piece*) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), .flags = TERRAIN_CHUNK_FLAG_RENDER_CHANGED};
 	return chunk_dict_insert(&chunks, COORD_KEY(x, y), chnk);
 }
 void terrain_mark_changed_chunk(uint32_t x, uint32_t y)
@@ -133,7 +127,7 @@ void terrain_mark_changed_chunk(uint32_t x, uint32_t y)
 
 terrain_piece* terrain_get_chunk_piece(terrain_chunk* chnk, uint32_t x, uint32_t y)
 {
-	return &chnk->data[y * TERRAIN_CHUNK_SIZE + x];
+	return chnk->data[y * TERRAIN_CHUNK_SIZE + x];
 }
 terrain_piece* terrain_get_piece(uint32_t x, uint32_t y)
 {
@@ -145,9 +139,18 @@ terrain_piece* terrain_get_piece(uint32_t x, uint32_t y)
 terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t y)
 {
 	terrain_chunk* chnk = terrain_get_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
-	if(chnk)
-		return terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, y % TERRAIN_CHUNK_SIZE);
-	return terrain_get_chunk_piece(terrain_create_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE), x % TERRAIN_CHUNK_SIZE, y % TERRAIN_CHUNK_SIZE);
+	terrain_piece* tpiece = NULL;
+	if(!chnk)
+		chnk = terrain_create_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
+	tpiece = terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, y % TERRAIN_CHUNK_SIZE);
+	if(tpiece)
+		return tpiece;
+
+	tpiece = malloc(sizeof(terrain_piece));
+	tpiece->prev = NULL;
+	tpiece->next = NULL;
+	chnk->data[y * TERRAIN_CHUNK_SIZE + x] = tpiece;
+	return tpiece;
 }
 void terrain_mark_changed_piece(uint32_t x, uint32_t y)
 {

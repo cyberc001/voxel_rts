@@ -32,7 +32,7 @@ float tpiece_max_z_ceil(terrain_piece* tpiece);
 #define TERRAIN_CHUNK_FLAG_RENDER_CHANGED	0x1
 
 typedef struct {
-	terrain_piece* data; // 2d array of size TERRAIN_CHUNK_SIZE x TERRAIN_CHUNK_SIZE
+	terrain_piece** data; // array of size TERRAIN_CHUNK_SIZE x TERRAIN_CHUNK_SIZE (accessed as 2d array)
 	render_obj render_data;
 	int flags;
 } terrain_chunk;
@@ -48,7 +48,7 @@ void terrain_mark_changed_chunk(uint32_t x, uint32_t y); // sets the flag to re-
 
 terrain_piece* terrain_get_chunk_piece(terrain_chunk* chnk, uint32_t x, uint32_t y); // in chunk coordinates, not world coodinates
 terrain_piece* terrain_get_piece(uint32_t x, uint32_t y);
-terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t y); // use it also for creating terrain pieces
+terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t y); // use it also for creating terrain pieces. Returns an uninitialized piece that only has fields prev and next set.
 void terrain_mark_changed_piece(uint32_t x, uint32_t y); // same as terrain_mark_changed_chunk(), just calculates chunk coordinates for you
 
 void terrain_piece_add(terrain_piece* list, terrain_piece* toadd);
