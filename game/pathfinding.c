@@ -1,15 +1,6 @@
 #include "game/pathfinding.h"
 #include "htable_oa.h"
 #include "pqueue.h"
-#include "dyn_array.h"
-
-typedef struct tnode tnode;
-struct tnode {
-	vec2i pos; float y;
-	terrain_piece* tpiece;
-	float cost, heuristic;
-	struct tnode* parent;
-};
 
 static float heuristic(vec2i v1, vec2i v2)
 {
@@ -28,22 +19,6 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 {
 	if((*t1)->cost + (*t1)->heuristic < (*t2)->cost + (*t2)->heuristic) return -1;
 	return (*t1)->cost + (*t1)->heuristic > (*t2)->cost + (*t2)->heuristic;
-}
-DEF_DYN_ARRAY(tnode_dynarray, tnode)
-
-static terrain_piece* get_nearest_tpiece(float z, terrain_piece* tpiece)
-{
-	float min_z = INFINITY;
-	terrain_piece* nearest_tpiece = NULL;
-	while(tpiece){
-		float avg_z = tpiece_avg_z_ceil(*tpiece); 
-		if(avg_z <= z && avg_z < min_z){
-			min_z = avg_z;
-			nearest_tpiece = tpiece;
-		}
-		tpiece = tpiece->next;
-	}
-	return nearest_tpiece;
 }
 
 #define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
@@ -206,30 +181,6 @@ void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
 	}
 }
 
-#define PUT_TPIECE_BUF(dx, dy){\
-	int _x = _cur_node->pos.x + x, _y = _cur_node->pos.y + y;\
-	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
-	if(!tpiece_buf[buf_i]){\
-		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
-		tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
-		if(cur_node_base.tpiece){\
-			cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
-			tnode* cur_node = &cur_node_base;\
-			get_successor(-(dx), -(dy), cur_node, &node_buf);\
-			for(size_t i = 0; i < node_buf.busy; ++i){\
-				terrain_piece* res_tpiece = node_buf.data[i].tpiece;\
-				if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
-					cur_node_base.tpiece = res_tpiece;\
-					cur_node_base.pos.y += _y;\
-					tpiece_buf[buf_i] = res_tpiece;\
-					cur_node_base.pos.x += _x;\
-					break;\
-				}\
-			}\
-		}\
-	}\
-}
-
 static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, bbox3f h_bbox, vec3f center)
 {
 	printf("start %d %d\n", _cur_node->pos.x, _cur_node->pos.y);
@@ -245,10 +196,123 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	int buf_ln = bbox_w*bbox_h;
 	terrain_piece** tpiece_buf = malloc(buf_ln * sizeof(terrain_piece*));
 	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
+	get_all_occupied_tpieces(bbox_w, bbox_h, _cur_node->pos, _cur_node->tpiece, tpiece_buf, &node_buf);
 
-	// push all blocks in buffer
+	PUSH_SUCCESSOR(1, 0)
+	PUSH_SUCCESSOR(0, 1)
+	PUSH_SUCCESSOR(-1, 0)
+	PUSH_SUCCESSOR(0, -1)
+	PUSH_SUCCESSOR(1, 1)
+	PUSH_SUCCESSOR(-1, 1)
+	PUSH_SUCCESSOR(1, -1)
+	PUSH_SUCCESSOR(-1, -1)
+
+	free(tpiece_buf);
+	tnode_dynarray_destroy(&node_buf);
+	printf("end\n");
+}
+path path_find(const hexahedron* h, vec3f target)
+{
+	// figure out the starting point
+	vec3f center = hexahedron_get_center(h);
+	vec2i target_xz = {target.x, target.z};
+	bbox3f h_bbox = hexahedron_get_bbox(h);
+	h_bbox.min = vec3_sub(h_bbox.min, center);
+	h_bbox.max = vec3_sub(h_bbox.max, center);
+	float h_bbox_y = h_bbox.min.y;
+	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
+	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
+	h_bbox.max.x += 0.5; h_bbox.max.z += 0.5;
+
+	tnode* cur_node = malloc(sizeof(tnode));
+	cur_node->cost = 0; cur_node->parent = NULL;
+	cur_node->pos = (vec2i){center.x, center.z};
+	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
+	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
+	if(!cur_node->tpiece) return (path){0, NULL, NULL};
+	cur_node->tpiece = terrain_get_nearest_piece(center.y, cur_node->tpiece);
+	if(!cur_node->tpiece) return (path){0, NULL, NULL};
+	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
+	tnode_calc_heuristic(*cur_node, target_xz);
+
+	tptr_set closed;
+	tptr_set_create(&closed, 16, tptr_hash);
+	tnode_pqueue open;
+	tnode_pqueue_create(&open, tnode_cmp);
+	tptr_set_insert(&closed, cur_node->tpiece, cur_node);
+	tnode_pqueue_push(&open, cur_node);
+
+	while(!tnode_pqueue_is_empty(&open)){
+		cur_node = tnode_pqueue_pop(&open);
+		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
+			break;
+		push_successors(&open, &closed, cur_node, target_xz, h_bbox, center);
+	}
+
+	tnode* n = cur_node;
+	if(!vec2_eq(n->pos, target_xz) || DIFF_MORE(n->y, target.y)){ // haven't reached the goal
+		for(size_t i = 0; i < closed.size; ++i)
+			if(tptr_set_is_allocated(&closed, i))
+				free(closed.data[i]);
+		tnode_pqueue_destroy(&open);
+		tptr_set_destroy(&closed);
+		return (path){0, NULL, NULL};
+	}
+
+	path out_p = {.ln = 0};
+	while(n){
+		++out_p.ln;
+		n = n->parent;
+	}
+	n = cur_node;
+	out_p.points = malloc(sizeof(vec3f) * out_p.ln);
+	out_p.tpieces = malloc(sizeof(terrain_piece*) * out_p.ln);
+	for(size_t i = 0; n; ++i){
+		printf("%d %d\n", n->pos.x, n->pos.y);
+		out_p.points[out_p.ln - i - 1] = (vec2f){n->pos.x, n->pos.y};
+		out_p.tpieces[out_p.ln - i - 1] = n->tpiece;
+		n = n->parent;
+	}
+	// free resources
+	for(size_t i = 0; i < closed.size; ++i)
+		if(tptr_set_is_allocated(&closed, i))
+			free(closed.data[i]);
+	tnode_pqueue_destroy(&open);
+	tptr_set_destroy(&closed);
+
+	return out_p;
+}
+
+#define PUT_TPIECE_BUF(dx, dy){\
+	int _x = cur_pos.x + x, _y = cur_pos.y + y;\
+	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
+	if(abs(x) < bbox_w/2+1 && abs(y) < bbox_h/2+1 && !tpiece_buf[buf_i]){\
+		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
+		tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
+		if(cur_node_base.tpiece){\
+			cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
+			tnode* cur_node = &cur_node_base;\
+			get_successor(-(dx), -(dy), cur_node, node_buf);\
+			for(size_t i = 0; i < node_buf->busy; ++i){\
+				terrain_piece* res_tpiece = node_buf->data[i].tpiece;\
+				if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
+					cur_node_base.tpiece = res_tpiece;\
+					cur_node_base.pos.y += _y;\
+					tpiece_buf[buf_i] = res_tpiece;\
+					cur_node_base.pos.x += _x;\
+					break;\
+				}\
+			}\
+		}\
+	}\
+}
+
+void get_all_occupied_tpieces(int bbox_w, int bbox_h,
+				vec2i cur_pos, terrain_piece* cur_tpiece,
+				terrain_piece** tpiece_buf, tnode_dynarray* node_buf)
+{
 	int bbox_max_side = max(bbox_w, bbox_h);
-	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = _cur_node->tpiece;
+	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = cur_tpiece;
 	for(int square_side = 3; square_side <= bbox_max_side; square_side += 2){
 		// TODO optimize by breaking early if square didn't yield any blocks?
 		// left side
@@ -277,86 +341,7 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 			int y = -square_side/2;
 			PUT_TPIECE_BUF(0, 1)
 			PUT_TPIECE_BUF(-1, 1)
-		PUT_TPIECE_BUF(1, 1)
+			PUT_TPIECE_BUF(1, 1)
 		}
 	}
-
-	PUSH_SUCCESSOR(1, 0)
-	PUSH_SUCCESSOR(0, 1)
-	PUSH_SUCCESSOR(-1, 0)
-	PUSH_SUCCESSOR(0, -1)
-	PUSH_SUCCESSOR(1, 1)
-	PUSH_SUCCESSOR(-1, 1)
-	PUSH_SUCCESSOR(1, -1)
-	PUSH_SUCCESSOR(-1, -1)
-	printf("end\n");
-}
-path path_find(const hexahedron* h, vec3f target)
-{
-	// figure out the starting point
-	vec3f center = hexahedron_get_center(h);
-	vec2i target_xz = {target.x, target.z};
-	bbox3f h_bbox = hexahedron_get_bbox(h);
-	h_bbox.min = vec3_sub(h_bbox.min, center);
-	h_bbox.max = vec3_sub(h_bbox.max, center);
-	float h_bbox_y = h_bbox.min.y;
-	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
-	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
-	h_bbox.max.x += 0.5; h_bbox.max.z += 0.5;
-
-	tnode* cur_node = malloc(sizeof(tnode));
-	cur_node->cost = 0; cur_node->parent = NULL;
-	cur_node->pos = (vec2i){center.x, center.z};
-	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
-	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
-	if(!cur_node->tpiece) return (path){0, NULL};
-	cur_node->tpiece = get_nearest_tpiece(center.y, cur_node->tpiece);
-	if(!cur_node->tpiece) return (path){0, NULL};
-	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
-	tnode_calc_heuristic(*cur_node, target_xz);
-
-	tptr_set closed;
-	tptr_set_create(&closed, 16, tptr_hash);
-	tnode_pqueue open;
-	tnode_pqueue_create(&open, tnode_cmp);
-	tptr_set_insert(&closed, cur_node->tpiece, cur_node);
-	tnode_pqueue_push(&open, cur_node);
-
-	while(!tnode_pqueue_is_empty(&open)){
-		cur_node = tnode_pqueue_pop(&open);
-		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
-			break;
-		push_successors(&open, &closed, cur_node, target_xz, h_bbox, center);
-	}
-
-	tnode* n = cur_node;
-	if(!vec2_eq(n->pos, target_xz) || DIFF_MORE(n->y, target.y)){ // haven't reached the goal
-		for(size_t i = 0; i < closed.size; ++i)
-			if(tptr_set_is_allocated(&closed, i))
-				free(closed.data[i]);
-		tnode_pqueue_destroy(&open);
-		tptr_set_destroy(&closed);
-		return (path){0, NULL};
-	}
-
-	path out_p = {.ln = 0};
-	while(n){
-		++out_p.ln;
-		n = n->parent;
-	}
-	n = cur_node;
-	out_p.points = malloc(sizeof(vec3f) * out_p.ln);
-	for(size_t i = 0; n; ++i){
-		printf("%d %d\n", n->pos.x, n->pos.y);
-		out_p.points[out_p.ln - i - 1] = (vec2f){n->pos.x, n->pos.y};
-		n = n->parent;
-	}
-	// free resources
-	for(size_t i = 0; i < closed.size; ++i)
-		if(tptr_set_is_allocated(&closed, i))
-			free(closed.data[i]);
-	tnode_pqueue_destroy(&open);
-	tptr_set_destroy(&closed);
-
-	return out_p;
 }

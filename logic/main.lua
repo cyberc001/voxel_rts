@@ -21,17 +21,20 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 
-gravity = -0.05
+gravity = 0---0.05
 
 function _first_tick()
 	game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
+	path.occupy_space(game_object_arr[1].hitbox)
 	game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
+	path.occupy_space(game_object_arr[2].hitbox)
 end
 
 function _tick()
 	if stop then return end
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
+		path.deoccupy_space(v.hitbox)
 		v:path_tick()
 
 		vec3:iadd(v.pos, v.vel)
@@ -61,6 +64,7 @@ function _tick()
 			end
 			v:update_hitbox()
 		end
+		path.occupy_space(v.hitbox)
 	end
 
 	for _,v in ipairs(game_object_arr) do

@@ -6,6 +6,7 @@
 #include "game/types.h"
 #include "render/base.h"
 #include "resources.h"
+#include "math/hexahedron.h"
 
 #define TERRAIN_PIECE_SIZE	1
 
@@ -20,12 +21,11 @@ struct terrain_piece {
 
 	atlas_texture* atex[6]; // each side can have a unique texture
 
+	unsigned occupying_objects; // "reference" counter that increases when an object enters this tile. Used for pathing.
+
 	enum armor_type armor;
 	double health;
 };
-
-#define tpiece_avg_z_ceil(tpiece) (((tpiece).z_ceil[0] + (tpiece).z_ceil[1] + (tpiece).z_ceil[2] + (tpiece).z_ceil[3]) / 4)
-float tpiece_max_z_ceil(terrain_piece* tpiece);
 
 #define TERRAIN_CHUNK_SIZE 16
 
@@ -51,7 +51,16 @@ terrain_piece* terrain_get_piece(uint32_t x, uint32_t y);
 terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t y); // use it also for creating terrain pieces. Returns an uninitialized piece that only has fields prev and next set.
 void terrain_mark_changed_piece(uint32_t x, uint32_t y); // same as terrain_mark_changed_chunk(), just calculates chunk coordinates for you
 
+
+#define tpiece_avg_z_ceil(tpiece) (((tpiece).z_ceil[0] + (tpiece).z_ceil[1] + (tpiece).z_ceil[2] + (tpiece).z_ceil[3]) / 4)
+float tpiece_max_z_ceil(terrain_piece* tpiece);
+terrain_piece* terrain_get_nearest_piece(float z, terrain_piece* tpiece);
+
 void terrain_piece_add(terrain_piece* list, terrain_piece* toadd);
 void terrain_piece_remove(terrain_piece* toremove);
+
+#define terrain_occupy_piece(tpiece) (++(tpiece).occupying_objects)
+#define terrain_deoccupy_piece(tpiece) (--(tpiece).occupying_objects)
+void terrain_occupy_hexahedron(const hexahedron* h, int occupy);
 
 #endif

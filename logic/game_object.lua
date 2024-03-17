@@ -29,18 +29,25 @@ end
 
 function game_object:set_goal(goal)
 	self.goal = goal
-	self.path = path.find_path(self.hitbox, goal)
+	self.path, self.path_pieces = path.find_path(self.hitbox, goal)
 	self.path_i = 1
 end
 function game_object:clear_goal(goal)
 	self.goal = nil
 	self.path = nil
+	self.path_pieces = nil
 end
 
 function game_object:path_tick()
 	if self.path then
 		local center = gmath.hexahedron_get_center(self.hitbox)
 		if self.path and self.path[self.path_i] then
+			print(self.path[self.path_i].x, self.path[self.path_i].y, path.is_space_occupied(self.path_pieces[self.path_i]))
+			if path.is_space_occupied(self.path_pieces[self.path_i]) then
+				self.vel = vec3:new(0, 0, 0)
+				return
+			end
+
 			local diff = vec3:new(self.path[self.path_i].x + 0.5, center.y, self.path[self.path_i].y + 0.5) - center
 			local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
 			if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
