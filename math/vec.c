@@ -4,17 +4,22 @@
 #include <stdio.h>
 
 // debug
-void vec2f_print(vec2f vec)
-{
-	printf("{%f, %f}\n", vec.x, vec.y);
-}
 void vec2i_print(vec2i vec)
 {
 	printf("{%d, %d}\n", vec.x, vec.y);
 }
+
+void vec2f_print(vec2f vec)
+{
+	printf("{%f, %f}\n", vec.x, vec.y);
+}
 void vec3f_print(vec3f vec)
 {
 	printf("{%f, %f, %f}\n", vec.x, vec.y, vec.z);
+}
+void vec4f_print(vec4f vec)
+{
+	printf("{%f, %f, %f, %f}\n", vec.x, vec.y, vec.z, vec.w);
 }
 
 // rotation

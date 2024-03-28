@@ -42,7 +42,6 @@ function game_object:path_tick()
 	if self.path then
 		local center = gmath.hexahedron_get_center(self.hitbox)
 		if self.path and self.path[self.path_i] then
-			print(self.path[self.path_i].x, self.path[self.path_i].y, path.is_space_occupied(self.path_pieces[self.path_i]))
 			if path.is_space_occupied(self.path_pieces[self.path_i]) then
 				self.vel = vec3:new(0, 0, 0)
 				return

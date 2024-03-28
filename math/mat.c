@@ -2,6 +2,7 @@
 #include "more_math.h"
 #include <stdio.h>
 #include <math.h>
+#include <GL/gl.h>
 
 void mat4f_print(const mat4f* mat)
 {
@@ -11,7 +12,6 @@ void mat4f_print(const mat4f* mat)
 		puts("");
 	}
 }
-
 
 mat4f mat4f_mul(mat4f* m1, const mat4f* m2)
 {
@@ -30,6 +30,14 @@ vec3f mat4f_mul_vec3f(mat4f* m, vec3f v) // in vec3f w = 1
 			m->e[1][0]*v.x + m->e[1][1]*v.y + m->e[1][2]*v.z + m->e[1][3],
 			m->e[2][0]*v.x + m->e[2][1]*v.y + m->e[2][2]*v.z + m->e[2][3]};
 }
+vec4f mat4f_mul_vec4f(mat4f* m, vec4f v)
+{
+	return (vec4f){m->e[0][0]*v.x + m->e[0][1]*v.y + m->e[0][2]*v.z + m->e[0][3]*v.w,
+			m->e[1][0]*v.x + m->e[1][1]*v.y + m->e[1][2]*v.z + m->e[1][3]*v.w,
+			m->e[2][0]*v.x + m->e[2][1]*v.y + m->e[2][2]*v.z + m->e[2][3]*v.w,
+			m->e[3][0]*v.x + m->e[3][1]*v.y + m->e[3][2]*v.z + m->e[3][3]*v.w};
+}
+
 
 void mat4f_translate(mat4f* mat, vec3f tr)
 {
@@ -59,4 +67,20 @@ void mat4f_scale(mat4f* mat, vec3f sc)
 			{0, 0, sc.z, 0},
 			{0, 0, 0, 1}}};
 	*mat = mat4f_mul(mat, &sc_mat);
+}
+
+vec2f vec3f_project(vec3f v)
+{
+	GLfloat modelview_mat[16];
+	GLfloat projection_mat[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_mat);
+	glGetFloatv(GL_PROJECTION_MATRIX, projection_mat);
+	mat4f model_mat4 = mat4f_from_gl(modelview_mat);
+	mat4f proj_mat4 = mat4f_from_gl(projection_mat);
+
+	vec4f vec = (vec4f){v.x, v.y, v.z, 1};
+	vec = mat4f_mul_vec4f(&model_mat4, vec);
+	vec = mat4f_mul_vec4f(&proj_mat4, vec);
+	vec = vec4_sdiv(vec, vec.w);
+	return (vec2f){vec.x, vec.y};
 }
