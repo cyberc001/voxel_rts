@@ -425,6 +425,9 @@ void controls_init(const char* cfg_fname)
 	glfwSetMouseButtonCallback(main_wnd, controls_cb_mouse_button);
 	glfwSetCursorPosCallback(main_wnd, controls_cb_mouse_move);
 	glfwSetScrollCallback(main_wnd, controls_cb_scroll);
+
+	// initialize all complex controls
+	controls_init_camera();
 }
 
 static pthread_t event_thr;

@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o  audio.o resources.o controls.o ticker.o utf.o object.o ui.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o  audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -93,8 +93,6 @@ audio.o: audio.c audio.h
 	$(CCO) $< -o $@
 resources.o: resources.c resources.h
 	$(CCO) $< -o $@
-controls.o: controls.c controls.h
-	$(CCO) $< -o $@
 ticker.o: ticker.c ticker.h
 	$(CCO) $< -o $@
 utf.o: utf.c utf.h
@@ -103,3 +101,9 @@ object.o: object.c object.h
 	$(CCO) $< -o $@
 ui.o: ui.c ui.h
 	$(CCO) $< -o $@
+
+controls.o: controls.c controls.h
+	$(CCO) $< -o $@
+controls/camera.o: controls/camera.c controls/camera.h controls.h
+	$(CCO) $< -o $@
+
