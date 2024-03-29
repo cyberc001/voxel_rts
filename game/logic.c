@@ -15,6 +15,7 @@ void game_logic_init()
 	game_logic_init_render(_s);
 	game_logic_init_math(_s);
 	game_logic_init_path(_s);
+	game_logic_init_controls(_s);
 
 	if(luaL_loadfile(_s, base_fname) || lua_pcall(_s, 0, 0, 0)){
 		LOG_ERROR("Error running \"%s\":\n%s\n", base_fname, lua_tostring(_s, -1));

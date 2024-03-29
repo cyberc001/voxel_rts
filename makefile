@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o  audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o  audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -53,6 +53,8 @@ game/logic/render.o: game/logic/render.c game/logic/render.h game/logic.h
 game/logic/math.o: game/logic/math.c game/logic/math.h game/logic.h
 	$(CCO) $< -o $@
 game/logic/path.o: game/logic/path.c game/logic/path.h game/logic.h
+	$(CCO) $< -o $@
+game/logic/controls.o: game/logic/controls.c game/logic/controls.h game/logic.h
 	$(CCO) $< -o $@
 
 ui/ui_element.o: ui/ui_element.c ui/ui_element.h object.h
@@ -106,4 +108,5 @@ controls.o: controls.c controls.h
 	$(CCO) $< -o $@
 controls/camera.o: controls/camera.c controls/camera.h controls.h
 	$(CCO) $< -o $@
-
+controls/selection.o: controls/selection.c controls/selection.h controls.h
+	$(CCO) $< -o $@

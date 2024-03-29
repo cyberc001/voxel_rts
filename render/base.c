@@ -64,7 +64,6 @@ static void render_display()
 	render_obj ro = render_obj_create(GL_POINTS, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
 	render_obj_draw(&ro);
 	render_obj_free(&ro);
-	vec2f_print(pr);
 
 	ui_render();
 

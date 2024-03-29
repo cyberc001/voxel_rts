@@ -428,6 +428,7 @@ void controls_init(const char* cfg_fname)
 
 	// initialize all complex controls
 	controls_init_camera();
+	controls_init_selection();
 }
 
 static pthread_t event_thr;

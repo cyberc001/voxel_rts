@@ -31,7 +31,12 @@ function _first_tick()
 end
 
 function _tick()
-	if stop then return end
+	vmin, vmax = controls.get_selection_query()
+	if vmin ~= nil then
+		print(vmin.x, vmin.y)
+		print(vmax.x, vmax.y)
+	end
+
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
 		path.deoccupy_space(v.hitbox)
