@@ -50,9 +50,9 @@ static void _vslider_key_down(ui_element* _o, key_code key, int mods)
 		vec2f mc = get_mouse_coords();
 		float slider_y = o->size.y * (1 - (o->slider_pos - o->slider_min) / (float)(o->slider_max - o->slider_min));
 		if(o->slider_pos == o->slider_max) slider_y -= o->slider_h;
-		if(is_point_in_rect2f(mc, (vec2f){o->pos.x, o->pos.y + slider_y - o->slider_h}, (vec2f){o->slider_w, o->slider_h}))
+		if(is_point_in_rect2f(mc, (rect2f){(vec2f){o->pos.x, o->pos.y + slider_y - o->slider_h}, (vec2f){o->slider_w, o->slider_h}}))
 			o->dragging_slider = 1;
-		else if(is_point_in_rect2f(mc, o->pos, o->size)){
+		else if(is_point_in_rect2f(mc, (rect2f){o->pos, o->size})){
 			float slider_y = 1 - clamp01(mc.y, o->pos.y, o->pos.y + o->size.y - o->slider_h);
 			o->slider_pos = o->slider_min + (o->slider_max - o->slider_min) * slider_y;
 		}

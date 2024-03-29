@@ -9,13 +9,16 @@
 
 extern GLFWwindow* main_wnd;
 
+extern mat4f last_mview_mat;
+extern mat4f last_proj_mat;
+
 extern vec3f render_cam_pos;
 extern vec3f render_cam_rot;
 
 int render_init();
 void render_loop();
 
-/* Bounding box */
+/* UI Bounding box */
 void render_push_bbox(vec2f pos, vec2f size);
 void render_pop_bbox();
 

@@ -14,7 +14,7 @@ void _ui_element_key_down(ui_element* o, key_code key, int mods)
 	ui_element_list_node* n = o->child_list.head.next;
 	vec2f mc = get_mouse_coords();
 	while(n != &o->child_list.tail){
-		if(is_point_in_rect2f(mc, n->data->pos, n->data->size) && key_code_is_mouse(key)){
+		if(is_point_in_rect2f(mc, (rect2f){n->data->pos, n->data->size}) && key_code_is_mouse(key)){
 			if(o->child_focused)
 				o->child_focused->focused = 0;
 			n->data->focused = 1;

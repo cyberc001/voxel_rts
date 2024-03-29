@@ -30,7 +30,7 @@ static void _button_render(ui_element* _o)
 static void _button_key_down(ui_element* _o, key_code key, int mods)
 {
 	button* o = (button*)_o;
-	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), o->pos, o->size))
+	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), (rect2f){o->pos, o->size}))
 		o->pressed = 1;
 }
 static void _button_key_up(ui_element* _o, key_code key, int mods)

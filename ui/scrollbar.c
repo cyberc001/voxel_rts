@@ -30,13 +30,13 @@ static void _scrollbar_key_down(ui_element* _o, key_code key, int mods)
 	if(key == MOUSE_LEFT){
 		vec2f up_off = {0, o->size.y - o->up_h};
 		vec2f mc = get_mouse_coords();
-		if(is_point_in_rect2f(mc, vec2_add(o->pos, up_off), (vec2f){o->size.x, o->up_h}))
+		if(is_point_in_rect2f(mc, (rect2f){vec2_add(o->pos, up_off), (vec2f){o->size.x, o->up_h}}))
 			o->slider_pos = max(o->slider_min, o->slider_pos - 1);
-		else if(is_point_in_rect2f(mc, o->pos, (vec2f){o->size.x + o->up_h + o->mid_h, o->down_h}))
+		else if(is_point_in_rect2f(mc, (rect2f){o->pos, (vec2f){o->size.x + o->up_h + o->mid_h, o->down_h}}))
 			o->slider_pos = min(o->slider_max, o->slider_pos + 1);
 		else{
 			float slider_y = (o->mid_h - o->slider_h) * (1 - (o->slider_pos - o->slider_min) / (float)(o->slider_max - o->slider_min));
-			if(is_point_in_rect2f(mc, (vec2f){o->pos.x, o->pos.y + o->down_h + slider_y}, (vec2f){o->size.x, o->slider_h}))
+			if(is_point_in_rect2f(mc, (rect2f){(vec2f){o->pos.x, o->pos.y + o->down_h + slider_y}, (vec2f){o->size.x, o->slider_h}}))
 				o->dragging_slider = 1;
 		}
 	}

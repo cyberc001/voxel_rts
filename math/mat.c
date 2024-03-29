@@ -1,5 +1,6 @@
 #include "math/mat.h"
 #include "more_math.h"
+#include "render/base.h"
 #include <stdio.h>
 #include <math.h>
 #include <GL/gl.h>
@@ -71,16 +72,9 @@ void mat4f_scale(mat4f* mat, vec3f sc)
 
 vec2f vec3f_project(vec3f v)
 {
-	GLfloat modelview_mat[16];
-	GLfloat projection_mat[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_mat);
-	glGetFloatv(GL_PROJECTION_MATRIX, projection_mat);
-	mat4f model_mat4 = mat4f_from_gl(modelview_mat);
-	mat4f proj_mat4 = mat4f_from_gl(projection_mat);
-
 	vec4f vec = (vec4f){v.x, v.y, v.z, 1};
-	vec = mat4f_mul_vec4f(&model_mat4, vec);
-	vec = mat4f_mul_vec4f(&proj_mat4, vec);
+	vec = mat4f_mul_vec4f(&last_mview_mat, vec);
+	vec = mat4f_mul_vec4f(&last_proj_mat, vec);
 	vec = vec4_sdiv(vec, vec.w);
 	return (vec2f){vec.x, vec.y};
 }

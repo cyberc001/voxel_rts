@@ -25,7 +25,7 @@ static void _checkbox_render(ui_element* _o)
 static void _checkbox_key_down(ui_element* _o, key_code key, int mods)
 {
 	checkbox* o = (checkbox*)_o;
-	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), o->pos, o->size))
+	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), (rect2f){o->pos, o->size}))
 		o->checked = !o->checked;
 }
 

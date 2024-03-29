@@ -1,4 +1,5 @@
 #include "game/logic/math.h"
+#include "controls/selection.h"
 
 static int lua_vec3_rot(lua_State* L)
 {
@@ -33,7 +34,6 @@ static int lua_hexahedron_from_cube_centered(lua_State* L)
 	lua_push_hexahedron(L, hexahedron_from_cube_centered(luaL_checknumber(L, 1)));
 	return 1;
 }
-
 
 static int lua_hexahedron_get_center(lua_State* L)
 {
@@ -98,6 +98,32 @@ static int lua_hexahedron_check_terrain_collision(lua_State* L)
 	return 1;
 }
 
+#define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
+#define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
+static int lua_hexahedron_is_selected(lua_State* L)
+{
+	hexahedron h = lua_get_hexahedron(L, 1);
+	bbox3f bbox = hexahedron_get_bbox(&h);
+	vec2f proj_min = {INFINITY, INFINITY}, proj_max = {-INFINITY, -INFINITY};
+	for(int max_bits = 0; max_bits < 8; ++max_bits){
+		vec3f pt = {
+			max_bits & 1 ? bbox.max.x : bbox.min.x,
+			max_bits & 2 ? bbox.max.y : bbox.min.y,
+			max_bits & 4 ? bbox.max.z : bbox.min.z,
+		};
+		vec2f proj = vec3f_project(pt);
+		SET_MIN(proj_min.x, proj.x);
+		SET_MIN(proj_min.y, proj.y);
+		SET_MAX(proj_max.x, proj.x);
+		SET_MAX(proj_max.y, proj.y);
+	}
+
+	lua_pushboolean(L,
+			proj_min.x < controls_selection_max.x && proj_max.x > controls_selection_min.x &&
+			proj_min.y < controls_selection_max.y && proj_max.y > controls_selection_min.y);
+	return 1;
+}
+
 static const struct luaL_Reg cfuncs[] = {
 	{"vec3_rot", lua_vec3_rot},
 	{"vec3_lookat_rot", lua_vec3_lookat_rot},
@@ -107,12 +133,14 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cuboid_centered", lua_hexahedron_from_cuboid_centered},
 	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
 
-
 	{"hexahedron_transform", lua_hexahedron_transform},
 	{"hexahedron_get_center", lua_hexahedron_get_center},
 
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
 	{"hexahedron_check_terrain_collision", lua_hexahedron_check_terrain_collision},
+
+	{"hexahedron_is_selected", lua_hexahedron_is_selected},
+
 	{NULL, NULL}
 };
 

@@ -52,7 +52,7 @@ static void _radiobox_render(ui_element* _o)
 static void _radiobox_key_down(ui_element* _o, key_code key, int mods)
 {
 	radiobox* o = (radiobox*)_o;
-	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), o->pos, o->size)){
+	if(key == MOUSE_LEFT && is_point_in_rect2f(get_mouse_coords(), (rect2f){o->pos, o->size})){
 		if(o->group)
 			radiobox_group_select(o->group, o);
 		else

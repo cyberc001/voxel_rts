@@ -2,17 +2,9 @@
 
 static int lua_get_selection_query(lua_State* L)
 {
-	if(!controls_selection_queried)
-		return 0;
-
-	vec2f vmin = {min(controls_selection_start.x, controls_selection_end.x),
-			min(controls_selection_start.y, controls_selection_end.y)};
-	vec2f vmax = {max(controls_selection_start.x, controls_selection_end.x),
-			max(controls_selection_start.y, controls_selection_end.y)};
-	lua_push_vec2(L, vmin);
-	lua_push_vec2(L, vmax);
+	lua_pushboolean(L, controls_selection_queried);
 	controls_selection_queried = 0;
-	return 2;
+	return 1;
 }
 
 

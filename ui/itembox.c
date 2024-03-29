@@ -49,7 +49,7 @@ static void _itembox_key_down(ui_element* _o, key_code key, int mods)
 {
 	itembox* o = (itembox*)_o;
 	vec2f mc = get_mouse_coords();
-	if(key == MOUSE_LEFT && is_point_in_rect2f(mc, vec2_add(o->pos, o->corner_size), (vec2f){o->size.x - o->corner_size.x*2, o->size.y - o->corner_size.y*2})){
+	if(key == MOUSE_LEFT && is_point_in_rect2f(mc, (rect2f){vec2_add(o->pos, o->corner_size), (vec2f){o->size.x - o->corner_size.x*2, o->size.y - o->corner_size.y*2}})){
 		float y = 1 - (mc.y - o->corner_size.y - o->pos.y) / o->size.y;
 		size_t i = y * ((o->size.y - o->corner_size.y*2) / o->item_h + 1) - 1;
 		i += o->sb->slider_pos;

@@ -14,6 +14,9 @@
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
+mat4f last_mview_mat = mat4f_identity();
+mat4f last_proj_mat = mat4f_identity();
+
 vec3f render_cam_pos = {-4.07, -12.2, 3.93};
 vec3f render_cam_rot = {40, 180, 0};
 
@@ -45,11 +48,18 @@ static void render_display()
 	glRotatef(render_cam_rot.y, 0, 1, 0);
 	glRotatef(render_cam_rot.z, 0, 0, 1);
 	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
+
+	GLfloat modelview_mat[16];
+	GLfloat projection_mat[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_mat);
+	glGetFloatv(GL_PROJECTION_MATRIX, projection_mat);
+	last_mview_mat = mat4f_from_gl(modelview_mat);
+	last_proj_mat = mat4f_from_gl(projection_mat);
 	
 	game_logic_render();
 	render_terrain();
 
-	vec2f pr = vec3f_project((vec3f){0, 0, 0});
+	vec2f pr = vec3f_project((vec3f){1.5, 1.8, 0.5});
 	
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);

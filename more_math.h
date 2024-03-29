@@ -22,7 +22,8 @@ float clamp_angle_360(float a);
 #define rad_to_ang(a) ((a) * 180. / M_PI)
 
 // collision checks
-int is_point_in_rect2f(vec2f point, vec2f coords, vec2f size);
+#define in_range(x, _min, _max) ((x) >= (_min) && (x) <= (_max))
+int is_point_in_rect2f(vec2f point, rect2f rect);
 
 // misc
 vec3f perpendicular_3f(line3f line, vec3f point);

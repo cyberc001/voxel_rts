@@ -7,10 +7,10 @@ float clamp_angle_360(float a)
 	return a;
 }
 
-int is_point_in_rect2f(vec2f point, vec2f coords, vec2f size)
+int is_point_in_rect2f(vec2f point, rect2f rect)
 {
-	return point.x >= coords.x && point.x <= coords.x + size.x
-		&& point.y >= coords.y && point.y <= coords.y + size.y;
+	return point.x >= rect.pos.x && point.x <= rect.pos.x + rect.size.x
+		&& point.y >= rect.pos.y && point.y <= rect.pos.y + rect.size.y;
 }
 
 vec3f perpendicular_3f(line3f line, vec3f point)

@@ -24,17 +24,18 @@ table.insert(game_object_arr, game_object:new({
 gravity = 0---0.05
 
 function _first_tick()
-	game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
+	--game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
 	path.occupy_space(game_object_arr[1].hitbox)
 	game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
-	path.occupy_space(game_object_arr[2].hitbox)
+	--path.occupy_space(game_object_arr[2].hitbox)
 end
 
 function _tick()
-	vmin, vmax = controls.get_selection_query()
-	if vmin ~= nil then
-		print(vmin.x, vmin.y)
-		print(vmax.x, vmax.y)
+	selection_queried = controls.get_selection_query()
+	if selection_queried then
+		for _,v in ipairs(game_object_arr) do
+			print(gmath.hexahedron_is_selected(v.hitbox))
+		end
 	end
 
 	-- handle velocity and collision
