@@ -13,6 +13,8 @@ end
 function game_object:new(o)
 	o = o or {}
 	o.speed = o.speed or 0.01
+	o.team = 1
+
 	game_object:create_tables(o)
 	setmetatable(o, self)
 	self.__index = self
@@ -22,7 +24,7 @@ end
 
 function game_object:update_hitbox()
 	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
-	self.robj_hitbox = render.render_hexahedron(self.hitbox)
+	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
 end
 
 -- pathfinding
@@ -82,9 +84,6 @@ end
 
 function game_object:render()
 	if render_hitboxes then
-		if not self.robj_hitbox then
-			self.robj_hitbox = render.render_hexahedron(self.hitbox)
-		end
 		render.render_obj_draw(self.robj_hitbox)
 	end
 

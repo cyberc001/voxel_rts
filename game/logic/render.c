@@ -54,6 +54,11 @@ static int lua_render_hexahedron(lua_State* L)
 	hexahedron h = lua_get_hexahedron(L, 1);
 	render_obj* robj_ptr = lua_newuserdata(L, sizeof(render_obj));
 	*robj_ptr = render_hexahedron(h);
+	if(!lua_isnoneornil(L, 2)){
+		luaL_checktype(L, 2, LUA_TTABLE);
+		vec3f clr = lua_get_vec3(L, 2);
+		robj_ptr->colorize = clr;
+	}
 	luaL_setmetatable(L, "render_obj");
 	return 1;
 }

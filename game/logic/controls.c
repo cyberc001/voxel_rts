@@ -7,7 +7,6 @@ static int lua_get_selection_query(lua_State* L)
 	return 1;
 }
 
-
 static const struct luaL_Reg cfuncs[] = {
 	{"get_selection_query", lua_get_selection_query},
 

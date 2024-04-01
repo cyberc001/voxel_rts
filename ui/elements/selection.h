@@ -7,6 +7,7 @@ typedef struct selection selection;
 struct selection {
 	struct ui_element;
 
+	ui_element sel_bounds;
 	struct ui_full_box_textures box_tex;
 	render_obj sel_robj;
 };

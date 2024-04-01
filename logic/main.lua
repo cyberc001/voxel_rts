@@ -1,9 +1,10 @@
 render_hitboxes = true
+player_team = 1
+game_object_arr = {}
 
 require "./logic/game_object"
 require "./logic/render_object"
-
-local game_object_arr = {}
+require "./logic/controls"
 
 --test
 table.insert(game_object_arr, game_object:new({
@@ -31,12 +32,7 @@ function _first_tick()
 end
 
 function _tick()
-	selection_queried = controls.get_selection_query()
-	if selection_queried then
-		for _,v in ipairs(game_object_arr) do
-			print(gmath.hexahedron_is_selected(v.hitbox))
-		end
-	end
+	controls_tick()
 
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
