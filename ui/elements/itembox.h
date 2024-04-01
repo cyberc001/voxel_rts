@@ -3,7 +3,7 @@
 
 #include "ui/ui_element.h"
 #include "render/texture.h"
-#include "ui/scrollbar.h"
+#include "ui/elements/scrollbar.h"
 #include "dyn_array.h"
 
 typedef struct {

@@ -1,4 +1,4 @@
-#include "ui/hslider.h"
+#include "ui/elements/hslider.h"
 #include "more_math.h"
 
 #define RERENDER(){\

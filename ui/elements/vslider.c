@@ -1,4 +1,4 @@
-#include "ui/vslider.h"
+#include "ui/elements/vslider.h"
 #include "more_math.h"
 
 #define RERENDER(){\

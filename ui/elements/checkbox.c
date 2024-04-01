@@ -1,4 +1,4 @@
-#include "ui/checkbox.h"
+#include "ui/elements/checkbox.h"
 
 #define RERENDER(){\
 	render_obj_free(&o->ro_check);\

@@ -1,4 +1,4 @@
-#include "ui/textbox.h"
+#include "ui/elements/textbox.h"
 
 #define RERENDER_ALL(){\
 	RERENDER_TEXT(); RERENDER_ATEX();\

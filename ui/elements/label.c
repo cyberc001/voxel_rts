@@ -1,4 +1,4 @@
-#include "ui/label.h"
+#include "ui/elements/label.h"
 
 #define RERENDER(){\
 	if(o->rendered_already)\

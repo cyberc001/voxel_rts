@@ -13,7 +13,12 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o  formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o  game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o  ui/ui_element.o ui/label.o ui/button.o ui/textbox.o ui/scrollbar.o ui/listbox.o ui/itembox.o ui/hslider.o ui/vslider.o ui/checkbox.o ui/radiobox.o  more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o  audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o 
+libvoxel_rts.a: formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o
+libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o
+libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o
+libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o 
+libvoxel_rts.a: audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
 	$(CC) $< -o $@ -L. -lvoxel_rts
@@ -59,25 +64,25 @@ game/logic/controls.o: game/logic/controls.c game/logic/controls.h game/logic.h
 
 ui/ui_element.o: ui/ui_element.c ui/ui_element.h object.h
 	$(CCO) $< -o $@
-ui/label.o: ui/label.c ui/label.h ui/ui_element.h
+ui/elements/label.o: ui/elements/label.c ui/elements/label.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/button.o: ui/button.c ui/button.h ui/ui_element.h
+ui/elements/button.o: ui/elements/button.c ui/elements/button.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/textbox.o: ui/textbox.c ui/textbox.h ui/ui_element.h
+ui/elements/textbox.o: ui/elements/textbox.c ui/elements/textbox.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/scrollbar.o: ui/scrollbar.c ui/scrollbar.h ui/ui_element.h
+ui/elements/scrollbar.o: ui/elements/scrollbar.c ui/elements/scrollbar.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/listbox.o: ui/listbox.c ui/listbox.h ui/ui_element.h
+ui/elements/listbox.o: ui/elements/listbox.c ui/elements/listbox.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/itembox.o: ui/itembox.c ui/itembox.h ui/ui_element.h
+ui/elements/itembox.o: ui/elements/itembox.c ui/elements/itembox.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/hslider.o: ui/hslider.c ui/hslider.h ui/ui_element.h
+ui/elements/hslider.o: ui/elements/hslider.c ui/elements/hslider.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/vslider.o: ui/vslider.c ui/vslider.h ui/ui_element.h
+ui/elements/vslider.o: ui/elements/vslider.c ui/elements/vslider.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/checkbox.o: ui/checkbox.c ui/checkbox.h ui/ui_element.h
+ui/elements/checkbox.o: ui/elements/checkbox.c ui/elements/checkbox.h ui/ui_element.h
 	$(CCO) $< -o $@
-ui/radiobox.o: ui/radiobox.c ui/checkbox.h ui/ui_element.h
+ui/elements/radiobox.o: ui/elements/radiobox.c ui/elements/checkbox.h ui/ui_element.h
 	$(CCO) $< -o $@
 
 more_math.o: more_math.c more_math.h
