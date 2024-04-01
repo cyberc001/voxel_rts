@@ -3,6 +3,9 @@
 
 #include "math/vec.h"
 
+extern int controls_is_selecting;
+extern vec2f controls_selection_start;
+
 extern int controls_selection_queried;
 extern vec2f controls_selection_min, controls_selection_max;
 

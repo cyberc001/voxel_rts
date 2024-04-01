@@ -3,15 +3,15 @@
 #include "math/vec.h"
 #include "controls.h"
 
-static int is_selecting = 0;
-static vec2f controls_selection_start;
+int controls_is_selecting = 0;
+vec2f controls_selection_start;
 int controls_selection_queried = 0;
 vec2f controls_selection_min, controls_selection_max;
 
 static void selection_kb_down(key_code key, int mods)
 {
 	if(check_key_bind(key, "select")) {
-		is_selecting = 1;
+		controls_is_selecting = 1;
 		controls_selection_start = get_mouse_coords();
 		TRANSLATE_ORTHO_COORDS(controls_selection_start);
 	}
@@ -19,7 +19,7 @@ static void selection_kb_down(key_code key, int mods)
 static void selection_kb_up(key_code key, int mods)
 {
 	if(check_key_bind(key, "select")) {
-		is_selecting = 0;
+		controls_is_selecting = 0;
 		vec2f controls_selection_end = get_mouse_coords();
 		TRANSLATE_ORTHO_COORDS(controls_selection_end);
 

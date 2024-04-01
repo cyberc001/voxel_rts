@@ -52,7 +52,7 @@ static void camera_mouse_move(float x, float y)
 	prev_x = x; prev_y = y;
 }
 
-void camera_ui_tick(unsigned ms)
+static void camera_ui_tick(unsigned ms)
 {
 	float s_frac = ms / 1000.; // fractions of a second
 	vec3f ang = {render_cam_rot.x, render_cam_rot.y, render_cam_rot.z};

@@ -59,8 +59,6 @@ static void render_display()
 	game_logic_render();
 	render_terrain();
 
-	vec2f pr = vec3f_project((vec3f){1.5, 1.8, 0.5});
-	
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -69,12 +67,6 @@ static void render_display()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	GLfloat verts[] = {pr.x, pr.y, 0};
-	render_obj ro = render_obj_create(GL_POINTS, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
-	render_obj_draw(&ro);
-	render_obj_free(&ro);
-
 	ui_render();
 
 	glfwSwapBuffers(main_wnd);

@@ -16,7 +16,7 @@ clean:
 libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o 
 libvoxel_rts.a: formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o
 libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o
-libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o
+libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o ui/elements/selection.o
 libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o 
 libvoxel_rts.a: audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
 	$(CLC) $@ $^
@@ -83,6 +83,11 @@ ui/elements/vslider.o: ui/elements/vslider.c ui/elements/vslider.h ui/ui_element
 ui/elements/checkbox.o: ui/elements/checkbox.c ui/elements/checkbox.h ui/ui_element.h
 	$(CCO) $< -o $@
 ui/elements/radiobox.o: ui/elements/radiobox.c ui/elements/checkbox.h ui/ui_element.h
+	$(CCO) $< -o $@
+ui/elements/selection.o: ui/elements/selection.c ui/ui_element.h
+	$(CCO) $< -o $@
+
+ui/tickers/selection.o: ui/tickers/selection.c ui/tickers/selection.h ticker.h
 	$(CCO) $< -o $@
 
 more_math.o: more_math.c more_math.h

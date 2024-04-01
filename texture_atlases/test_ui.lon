@@ -18,5 +18,7 @@ texture_atlases/test_ui.png
 
 	{ id: checkbox_c, w: 8, h: 8 }, { id: checkbox_uc },
 
-	{ id: radiobox_c }, { id: radiobox_uc }
+	{ id: radiobox_c }, { id: radiobox_uc },
+
+	{ id: selbox_lt, x: 0, y: 30, w: 2, h: 2 }, { id: selbox_rt }, { id: selbox_lb }, { id: selbox_rb }, { id: selbox_u, w: 1 }, { id: selbox_d }, { id: selbox_l, w: 2, h: 1 }, { id: selbox_r, x: 10, y: 31 }, { id: selbox_m, x: 12, y: 30, w: 1 }
 ]
