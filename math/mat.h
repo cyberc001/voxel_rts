@@ -20,6 +20,6 @@ void mat4f_translate(mat4f* mat, vec3f tr);
 void mat4f_rotate(mat4f* mat, float angle, vec3f rot); // normalizes vec3f rot just like OpenGL does
 void mat4f_scale(mat4f* mat, vec3f sc);
 
-vec2f vec3f_project(vec3f vec);
+vec2f vec3f_project2(vec3f vec);
 
 #endif

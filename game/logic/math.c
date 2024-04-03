@@ -111,7 +111,7 @@ static int lua_hexahedron_is_selected(lua_State* L)
 			max_bits & 2 ? bbox.max.y : bbox.min.y,
 			max_bits & 4 ? bbox.max.z : bbox.min.z,
 		};
-		vec2f proj = vec3f_project(pt);
+		vec2f proj = vec3f_project2(pt);
 		SET_MIN(proj_min.x, proj.x);
 		SET_MIN(proj_min.y, proj.y);
 		SET_MAX(proj_max.x, proj.x);

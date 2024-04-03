@@ -70,7 +70,7 @@ void mat4f_scale(mat4f* mat, vec3f sc)
 	*mat = mat4f_mul(mat, &sc_mat);
 }
 
-vec2f vec3f_project(vec3f v)
+vec2f vec3f_project2(vec3f v)
 {
 	vec4f vec = (vec4f){v.x, v.y, v.z, 1};
 	vec = mat4f_mul_vec4f(&last_mview_mat, vec);
