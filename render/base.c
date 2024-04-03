@@ -11,6 +11,9 @@
 
 #include "game/logic.h"
 
+//TEST
+#include "controls.h"
+
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
@@ -58,6 +61,17 @@ static void render_display()
 	
 	game_logic_render();
 	render_terrain();
+
+	vec2f mouse = get_mouse_coords();
+	TRANSLATE_ORTHO_COORDS(mouse);
+	vec3f proj = vec2f_project3((vec3f){mouse.x, mouse.y, 0});
+	GLfloat verts[] = {
+		0, 0, 0,
+		proj.x, proj.y, proj.z
+	};
+	render_obj robj = render_obj_create(GL_LINES, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
+	render_obj_draw(&robj);
+	render_obj_free(&robj);
 
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);

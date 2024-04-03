@@ -27,7 +27,6 @@ int main()
 	ui_add_element((ui_element*)&sel);
 
 	game_logic_init();
-
 	//audio_play_sound(sound_find("its a jhonny"));
 
 	terrain_init();
