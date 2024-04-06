@@ -20,7 +20,7 @@ static vec2i wnd_shape = {0, 0};
 mat4f last_mview_mat = mat4f_identity();
 mat4f last_proj_mat = mat4f_identity();
 
-vec3f render_cam_pos = {-4.07, -12.2, 3.93};
+vec3f render_cam_pos = {4.07, 12.2, -3.93};
 vec3f render_cam_rot = {40, 180, 0};
 
 static GLuint __dummy_tex; // 1x1 texture that signals that main texture is not in use
@@ -50,7 +50,7 @@ static void render_display()
 	glRotatef(render_cam_rot.x, 1, 0, 0);
 	glRotatef(render_cam_rot.y, 0, 1, 0);
 	glRotatef(render_cam_rot.z, 0, 0, 1);
-	glTranslatef(render_cam_pos.x, render_cam_pos.y, render_cam_pos.z);
+	glTranslatef(-render_cam_pos.x, -render_cam_pos.y, -render_cam_pos.z);
 
 	GLfloat modelview_mat[16];
 	GLfloat projection_mat[16];
@@ -64,7 +64,7 @@ static void render_display()
 
 	vec2f mouse = get_mouse_coords();
 	TRANSLATE_ORTHO_COORDS(mouse);
-	vec3f proj = vec2f_project3((vec3f){mouse.x, mouse.y, 0});
+	vec3f proj = vec2f_project3((vec2f){mouse.x, mouse.y});
 	GLfloat verts[] = {
 		0, 0, 0,
 		proj.x, proj.y, proj.z

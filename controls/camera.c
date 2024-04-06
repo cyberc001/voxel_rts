@@ -12,29 +12,29 @@ static vec3f cam_pos_change = {0, 0, 0}; // x - forward/backward, z - left/right
 static void camera_kb_down(key_code key, int mods)
 {
 	if(check_key_bind(key, "camera_up"))
-		cam_pos_change.x += cam_scroll_speed_keys;
-	else if(check_key_bind(key, "camera_down"))
 		cam_pos_change.x -= cam_scroll_speed_keys;
+	else if(check_key_bind(key, "camera_down"))
+		cam_pos_change.x += cam_scroll_speed_keys;
 	else if(check_key_bind(key, "camera_left"))
-		cam_pos_change.z += cam_scroll_speed_keys;
-	else if(check_key_bind(key, "camera_right"))
 		cam_pos_change.z -= cam_scroll_speed_keys;
+	else if(check_key_bind(key, "camera_right"))
+		cam_pos_change.z += cam_scroll_speed_keys;
 	else if(check_key_bind(key, "camera_zoom_in"))
-		render_cam_pos.y += cam_zoom_speed;
-	else if(check_key_bind(key, "camera_zoom_out"))
 		render_cam_pos.y -= cam_zoom_speed;
+	else if(check_key_bind(key, "camera_zoom_out"))
+		render_cam_pos.y += cam_zoom_speed;
 
 }
 static void camera_kb_up(key_code key, int mods)
 {
 	if(check_key_bind(key, "camera_up"))
-		cam_pos_change.x -= cam_scroll_speed_keys;
-	else if(check_key_bind(key, "camera_down"))
 		cam_pos_change.x += cam_scroll_speed_keys;
+	else if(check_key_bind(key, "camera_down"))
+		cam_pos_change.x -= cam_scroll_speed_keys;
 	else if(check_key_bind(key, "camera_left"))
-		cam_pos_change.z -= cam_scroll_speed_keys;
-	else if(check_key_bind(key, "camera_right"))
 		cam_pos_change.z += cam_scroll_speed_keys;
+	else if(check_key_bind(key, "camera_right"))
+		cam_pos_change.z -= cam_scroll_speed_keys;
 }
 
 static void camera_mouse_move(float x, float y)
