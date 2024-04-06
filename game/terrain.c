@@ -230,3 +230,43 @@ void terrain_occupy_hexahedron(const hexahedron* h, int occupy)
 	free(tpiece_buf);
 	tnode_dynarray_destroy(&node_buf);
 }
+
+terrain_piece* __check_against_line(vec2f v, line3f* l)
+{
+	v.x = round(v.x); v.y = round(v.y);
+	vec2f_print(v);
+	return NULL;
+}
+#define CHECK_AGAINST_LINE(x, z, l) {terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l); if(tpiece) return (tpiece);}
+terrain_piece* terrain_find_first_piece_in_line(line3f l)
+{
+	float x0 = l.p1.x, z0 = l.p1.z;
+	float x1 = l.p2.x, z1 = l.p2.z;
+	// Find all terrain piece candidates using slightly modified Bresenham's line algorithm
+	float dx = fabs(x1 - x0), dz = -fabs(z1 - z0);
+	float sx = (x0 < x1 ? 1 : -1), sz = (z0 < z1 ? 1 : -1);
+	float error = dx + dz;
+
+	CHECK_AGAINST_LINE(x0, z0, &l);
+	for(;;){
+		if(round(x0) == round(x1) && round(z0) == round(z1))
+			break;
+		float e2 = 2*error;
+		if(e2 >= dz){
+			if(round(x0) == round(x1))
+				break;
+			error += dz;
+			x0 += sx;
+			CHECK_AGAINST_LINE(x0, z0, &l);
+		}
+		if(e2 <= dx){
+			if(round(z0) == round(z1))
+				break;
+			error += dx;
+			z0 += sz;
+			CHECK_AGAINST_LINE(x0, z0, &l);
+		}
+	}
+
+	return NULL;
+}

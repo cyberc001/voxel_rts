@@ -1,6 +1,8 @@
 render_hitboxes = true
-player_team = 1
+
 game_object_arr = {}
+
+player_team = 1
 
 require "./logic/game_object"
 require "./logic/render_object"

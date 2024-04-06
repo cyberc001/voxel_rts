@@ -12,5 +12,6 @@
 	camera_zoom_in: mouse_up,
 	camera_zoom_out: mouse_down,
 
-	select: mouse1
+	select: mouse1,
+	order: mouse1
 }

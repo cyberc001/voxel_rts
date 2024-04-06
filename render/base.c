@@ -64,8 +64,8 @@ static void render_display()
 
 	vec2f mouse = get_mouse_coords();
 	TRANSLATE_ORTHO_COORDS(mouse);
-	vec3f proj = vec2f_project3((vec2f){mouse.x, mouse.y});
-	vec3f_print(proj);
+	vec3f proj = vec2f_project3(mouse);
+	proj = vec3_norm(proj);
 	proj = vec3_smul(proj, 10);
 	GLfloat verts[] = {
 		render_cam_pos.x, 0, render_cam_pos.z,

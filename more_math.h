@@ -5,6 +5,8 @@
 #include "math/vec.h"
 #include "math/mat.h"
 
+#define swap(x, y) {typeof(x) __tmp = (x); (x) = (y); (y) = __tmp; }
+
 typedef struct {
 	vec3f p1, p2;
 } line3f;
@@ -15,6 +17,7 @@ typedef struct {
 #define clamp01(x, _min, _max) ( ( (double)clamp(x, _min, _max) - (_min) ) / ((_max) - (_min)) )
 
 #define sign(x) ((x) < 0 ? -1 : !!(x))
+#define frac(x) ((x) - floor(x))
 
 // trigonometry
 float clamp_angle_360(float a);

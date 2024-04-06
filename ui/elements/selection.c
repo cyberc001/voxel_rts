@@ -23,7 +23,7 @@ static void _selection_render(ui_element* _o)
 	selection* o = (selection*)_o;
 	if(controls_is_selecting){
 		RERENDER();
-		if(o->sel_bounds.size.x > 0.01 || o->sel_bounds.size.y > 0.01)
+		if(o->sel_bounds.size.x > UI_SELECTION_MIN || o->sel_bounds.size.y > UI_SELECTION_MIN)
 			render_obj_draw(&o->sel_robj);
 	}
 }

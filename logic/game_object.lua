@@ -13,7 +13,7 @@ end
 function game_object:new(o)
 	o = o or {}
 	o.speed = o.speed or 0.01
-	o.team = 1
+	o.team = o.team or 1
 
 	game_object:create_tables(o)
 	setmetatable(o, self)

@@ -40,6 +40,7 @@ void vec4f_print(vec4f vec);
 
 #define vec2_sub(v1, v2) ( (typeof(v1)){(v1).x - (v2).x, (v1).y - (v2).y} )
 #define vec3_sub(v1, v2) ( (typeof(v1)){(v1).x - (v2).x, (v1).y - (v2).y, (v1).z - (v2).z} )
+#define vec4_sub(v1, v2) ( (typeof(v1)){(v1).x - (v2).x, (v1).y - (v2).y, (v1).z - (v2).z, (v1).w - (v2).w} )
 
 #define vec2_ln(vec) ( sqrt((vec).x*(vec).x + (vec).y*(vec).y) )
 #define vec3_ln(vec) ( sqrt((vec).x*(vec).x + (vec).y*(vec).y + (vec).z*(vec).z) )
