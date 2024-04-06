@@ -217,7 +217,9 @@ vec2f vec3f_project2(vec3f v)
 vec3f vec2f_project3(vec2f v)
 {
 	vec4f vec = (vec4f){v.x, v.y, 0, 1};
-	mat4f last_mview_mat_inv = mat4f_inverse(&last_mview_mat);
+	mat4f _last_mview_mat = last_mview_mat;
+	mat4f_translate(&_last_mview_mat, render_cam_pos);
+	mat4f last_mview_mat_inv = mat4f_inverse(&_last_mview_mat);
 	mat4f last_proj_mat_inv = mat4f_inverse(&last_proj_mat);
 	vec = mat4f_mul_vec4f(&last_proj_mat_inv, vec);
 	vec = mat4f_mul_vec4f(&last_mview_mat_inv, vec);

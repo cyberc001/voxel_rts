@@ -65,9 +65,11 @@ static void render_display()
 	vec2f mouse = get_mouse_coords();
 	TRANSLATE_ORTHO_COORDS(mouse);
 	vec3f proj = vec2f_project3((vec2f){mouse.x, mouse.y});
+	vec3f_print(proj);
+	proj = vec3_smul(proj, 10);
 	GLfloat verts[] = {
-		0, 0, 0,
-		proj.x, proj.y, proj.z
+		render_cam_pos.x, 0, render_cam_pos.z,
+		render_cam_pos.x + proj.x, proj.y, render_cam_pos.z + proj.z
 	};
 	render_obj robj = render_obj_create(GL_LINES, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
 	render_obj_draw(&robj);
