@@ -231,13 +231,21 @@ void terrain_occupy_hexahedron(const hexahedron* h, int occupy)
 	tnode_dynarray_destroy(&node_buf);
 }
 
-terrain_piece* __check_against_line(vec2f v, line3f* l)
+terrain_piece* __check_against_line(vec2f v, line3f* l, int x_changed)
 {
-	v.x = round(v.x); v.y = round(v.y);
-	vec2f_print(v);
+	vec3f dir = vec3_sub(l->p2, l->p1);
+	dir = vec3_norm(dir);
+	// find min and max y from x and z
+	float t = x_changed ? ((floor(v.x) - l->p1.x) / dir.x) : ((floor(v.y) - l->p1.z) / dir.z);
+	float y1 = l->p1.y + t*dir.y;
+	t = x_changed ? ((ceil(v.x) - l->p1.x) / dir.x) : ((ceil(v.y) - l->p1.z) / dir.z);
+	float y2 = l->p1.y + t*dir.y;
+
+	v.x = round(v.x) + 0.5; v.y = round(v.y) + 0.5;
+	printf("y: %f/%f ", y1, y2); vec2f_print(v);
 	return NULL;
 }
-#define CHECK_AGAINST_LINE(x, z, l) {terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l); if(tpiece) return (tpiece);}
+#define CHECK_AGAINST_LINE(x, z, l, x_changed) {terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l, x_changed); if(tpiece) return (tpiece);}
 terrain_piece* terrain_find_first_piece_in_line(line3f l)
 {
 	float x0 = l.p1.x, z0 = l.p1.z;
@@ -247,7 +255,7 @@ terrain_piece* terrain_find_first_piece_in_line(line3f l)
 	float sx = (x0 < x1 ? 1 : -1), sz = (z0 < z1 ? 1 : -1);
 	float error = dx + dz;
 
-	CHECK_AGAINST_LINE(x0, z0, &l);
+	CHECK_AGAINST_LINE(x0, z0, &l, 0);
 	for(;;){
 		if(round(x0) == round(x1) && round(z0) == round(z1))
 			break;
@@ -257,14 +265,14 @@ terrain_piece* terrain_find_first_piece_in_line(line3f l)
 				break;
 			error += dz;
 			x0 += sx;
-			CHECK_AGAINST_LINE(x0, z0, &l);
+			CHECK_AGAINST_LINE(x0, z0, &l, 1);
 		}
 		if(e2 <= dx){
 			if(round(z0) == round(z1))
 				break;
 			error += dx;
 			z0 += sz;
-			CHECK_AGAINST_LINE(x0, z0, &l);
+			CHECK_AGAINST_LINE(x0, z0, &l, 0);
 		}
 	}
 

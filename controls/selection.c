@@ -45,7 +45,7 @@ static void selection_kb_up(key_code key, int mods)
 		vec3f proj = vec2f_project3(controls_order_screen_coords);
 
 		proj = vec3_norm(proj);
-		proj = vec3_smul(proj, 10);
+		proj = vec3_smul(proj, 50);
 
 		vec3f start = render_cam_pos,
 		      end = vec3_add(render_cam_pos, proj);
