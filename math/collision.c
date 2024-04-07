@@ -2,7 +2,18 @@
 #include <stddef.h>
 #include "dyn_array.h"
 
-float triangle_area_heron(vec3f a, vec3f b, vec3f c)
+float triangle2_area_heron(vec2f a, vec2f b, vec2f c)
+{
+	vec2f side_a = vec2_sub(b, a);
+	vec2f side_b = vec2_sub(c, b);
+	vec2f side_c = vec2_sub(a, c);
+	float ln_a = vec2_ln(side_a);
+	float ln_b = vec2_ln(side_b);
+	float ln_c = vec2_ln(side_c);
+	float p = (ln_a + ln_b + ln_c) / 2; // perimeter
+	return sqrt(p*(p - ln_a)*(p - ln_b)*(p - ln_c));
+}
+float triangle3_area_heron(vec3f a, vec3f b, vec3f c)
 {
 	vec3f side_a = vec3_sub(b, a);
 	vec3f side_b = vec3_sub(c, b);
@@ -13,6 +24,7 @@ float triangle_area_heron(vec3f a, vec3f b, vec3f c)
 	float p = (ln_a + ln_b + ln_c) / 2; // perimeter
 	return sqrt(p*(p - ln_a)*(p - ln_b)*(p - ln_c));
 }
+
 
 float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* intersect, vec3f* collided_point)
 { // source: https://stackoverflow.com/questions/5666222/3d-line-plane-intersection?noredirect=1&lq=1
@@ -39,6 +51,24 @@ float line_plane_intersect(line3f line, vec3f surf_norm, vec3f surf_p, vec3f* in
 		*intersect = (vec3f){NAN, NAN, NAN};
 	return 0;
 }
+
+int point_is_in_face2(vec2f pt, const face2f* f)
+{
+	float face_area = triangle2_area_heron(f->p[0], f->p[1], f->p[2]) + triangle2_area_heron(f->p[0], f->p[3], f->p[2]);
+	float pt_area = 0;
+	for(size_t i = 0; i < 4; ++i)
+		pt_area += triangle2_area_heron(f->p[i], f->p[i == 3 ? 0 : i+1], pt);
+	return eqf(face_area, pt_area);
+}
+int point_is_in_face3(vec3f pt, const face3f* f)
+{
+	float face_area = triangle3_area_heron(f->p[0], f->p[1], f->p[2]) + triangle3_area_heron(f->p[0], f->p[3], f->p[2]);
+	float pt_area = 0;
+	for(size_t i = 0; i < 4; ++i)
+		pt_area += triangle3_area_heron(f->p[i], f->p[i == 3 ? 0 : i+1], pt);
+	return eqf(face_area, pt_area);
+}
+
 
 #define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
@@ -169,21 +199,13 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		      proj2 = hexahedron_project_on_axis(h2, axis);
 		if(do_proj_overlap(proj1, proj2)){
 			float o = get_proj_overlap(proj1, proj2);
-			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
-			printf("proj2: %f %f\n", proj2.x, proj2.y);
-			printf("overlap: %f\n", o);*/
 			if(o < overlap){
 				overlap = o;
 				resolution = axis;
 			}
 		}
-		else{
-			/*printf("proj1: %f %f\n", proj1.x, proj1.y);
-			printf("proj2: %f %f\n", proj2.x, proj2.y);
-			printf("axis: "); vec3f_print(axis);
-			printf("DON'T OVERLAP\n");*/
+		else
 			return 0;
-		}
 	}
 
 	//printf("OVERLAP: %f\n", overlap);
@@ -193,8 +215,6 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 	vec3f vd = vec3_sub(p1, p2);
 	if(vec3_dot(vd, resolution) > 0)
 		resolution = vec3_smul(resolution, -1);
-	//float tmp = resolution.y;
-	//resolution.y = resolution.z; resolution.z = tmp;
 	*resol = resolution;
 	return 1;
 }

@@ -225,3 +225,12 @@ vec3f vec2f_project3(vec2f v)
 	vec = mat4f_mul_vec4f(&last_mview_mat_inv, vec);
 	return (vec3f){vec.x, vec.y, vec.z};
 }
+
+vec3f get_camera_center()
+{ // https://stackoverflow.com/questions/49651546/retrieve-center-point-the-viewer-is-looking-at-from-view-perspective-matrix
+	mat4f _last_mview_mat = last_mview_mat;
+	mat4f_translate(&_last_mview_mat, render_cam_pos);
+	vec4f negative_z = vec4_smul(mat4f_get_row(_last_mview_mat, 2), -1);
+	vec4f eye = vec4_add(mat4f_get_row(_last_mview_mat, 3), negative_z);
+	return (vec3f){eye.x + render_cam_pos.x, eye.y + render_cam_pos.y, eye.z + render_cam_pos.z};
+}

@@ -11,6 +11,10 @@ typedef struct {
 	vec3f p1, p2;
 } line3f;
 
+typedef struct {
+	vec2f p[4];
+} face2f;
+
 #define min(x, y) ((x) > (y) ? (y) : (x))
 #define max(x, y) ((x) > (y) ? (x) : (y))
 #define clamp(x, _min, _max) (min(max((x), (_min)), (_max)))
@@ -18,6 +22,9 @@ typedef struct {
 
 #define sign(x) ((x) < 0 ? -1 : !!(x))
 #define frac(x) ((x) - floor(x))
+
+#define EQF_PRECISION	1e-6
+#define eqf(a, b) (fabs((a) - (b)) <= EQF_PRECISION)
 
 // trigonometry
 float clamp_angle_360(float a);

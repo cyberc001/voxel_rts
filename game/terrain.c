@@ -235,14 +235,28 @@ terrain_piece* __check_against_line(vec2f v, line3f* l, int x_changed)
 {
 	vec3f dir = vec3_sub(l->p2, l->p1);
 	dir = vec3_norm(dir);
-	// find min and max y from x and z
-	float t = x_changed ? ((floor(v.x) - l->p1.x) / dir.x) : ((floor(v.y) - l->p1.z) / dir.z);
+	float x = floor(v.x), z = floor(v.y);
+
+	float t = x_changed ? ((x - l->p1.x) / dir.x) : ((z - l->p1.z) / dir.z);
 	float y1 = l->p1.y + t*dir.y;
-	t = x_changed ? ((ceil(v.x) - l->p1.x) / dir.x) : ((ceil(v.y) - l->p1.z) / dir.z);
+	t = x_changed ? ((x + sign(dir.x) - l->p1.x) / dir.x) : ((z + sign(dir.z) - l->p1.z) / dir.z);
 	float y2 = l->p1.y + t*dir.y;
 
-	v.x = round(v.x) + 0.5; v.y = round(v.y) + 0.5;
-	printf("y: %f/%f ", y1, y2); vec2f_print(v);
+	printf("POINT: %f %f %f\n", x, y1, z);
+	terrain_piece* tpiece = terrain_get_piece(x, z);
+	while(tpiece){
+		hexahedron h = hexahedron_from_terrain_piece(x, z, tpiece);
+
+		for(size_t _f = 0; _f < 6; ++_f){
+			vec3f e1 = vec3_sub(h.f[_f].p[1], h.f[_f].p[0]), e2 = vec3_sub(h.f[_f].p[2], h.f[_f].p[1]);
+			vec3f intersect;
+			float fac = line_plane_intersect(*l, vec3_cross(e1, e2), h.f[_f].p[0], &intersect, NULL);
+			if(fac >= 0 && fac <= 1 && !isnan(intersect.x) && point_is_in_face3(intersect, &h.f[_f])){printf("got y\n");
+				return tpiece;}
+		}
+		tpiece = tpiece->next;
+	}
+
 	return NULL;
 }
 #define CHECK_AGAINST_LINE(x, z, l, x_changed) {terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l, x_changed); if(tpiece) return (tpiece);}

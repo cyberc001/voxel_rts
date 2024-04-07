@@ -47,7 +47,7 @@ static void selection_kb_up(key_code key, int mods)
 		proj = vec3_norm(proj);
 		proj = vec3_smul(proj, 50);
 
-		vec3f start = render_cam_pos,
+		vec3f start = get_camera_center(),
 		      end = vec3_add(render_cam_pos, proj);
 		printf("START:"); vec3f_print(start);
 		printf("END:"); vec3f_print(end);
