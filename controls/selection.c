@@ -2,12 +2,12 @@
 
 #include "math/vec.h"
 #include "controls.h"
+#include "game/terrain.h"
 
 int controls_is_selecting = 0;
 vec2f controls_selection_start;
 vec2f controls_selection_min, controls_selection_max;
 
-vec2f controls_order_screen_coords;
 vec3f controls_order_world_coords;
 
 int controls_selection_queried = 0;
@@ -38,20 +38,20 @@ static void selection_kb_up(key_code key, int mods)
 			controls_selection_queried = 1;
 	}
 	if(!controls_selection_queried && check_key_bind(key, "order")){
-		controls_order_screen_coords = get_mouse_coords();
-		TRANSLATE_ORTHO_COORDS(controls_order_screen_coords);
+		vec2f mouse = get_mouse_coords();
+		TRANSLATE_ORTHO_COORDS(mouse);
 
 		// Project a line from camera until distance limit is exhaused or terrain piece is found
-		vec3f proj = vec2f_project3(controls_order_screen_coords);
+		vec3f proj = vec2f_project3(mouse);
 
 		proj = vec3_norm(proj);
-		proj = vec3_smul(proj, 50);
+		proj = vec3_smul(proj, 100);
 
 		vec3f start = get_camera_center(),
 		      end = vec3_add(render_cam_pos, proj);
-		printf("START:"); vec3f_print(start);
-		printf("END:"); vec3f_print(end);
-		terrain_find_first_piece_in_line((line3f){start, end});
+		terrain_piece* tpiece = terrain_find_first_piece_in_line((line3f){start, end}, &controls_order_world_coords);
+		if(tpiece)
+			controls_order_queried = 1;
 	}
 }
 

@@ -29,8 +29,8 @@ gravity = 0---0.05
 function _first_tick()
 	--game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
 	path.occupy_space(game_object_arr[1].hitbox)
-	game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
-	--path.occupy_space(game_object_arr[2].hitbox)
+	--game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
+	path.occupy_space(game_object_arr[2].hitbox)
 end
 
 function _tick()

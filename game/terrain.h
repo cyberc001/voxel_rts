@@ -63,7 +63,6 @@ void terrain_piece_remove(terrain_piece* toremove);
 #define terrain_deoccupy_piece(tpiece) (--(tpiece).occupying_objects)
 void terrain_occupy_hexahedron(const hexahedron* h, int occupy);
 
-
-terrain_piece* terrain_find_first_piece_in_line(line3f line);
+terrain_piece* terrain_find_first_piece_in_line(line3f line, vec3f* pos); // outputs terrain piece's position in pos if pos is non-NULL
 
 #endif

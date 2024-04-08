@@ -1,4 +1,5 @@
 #include "game/logic/controls.h"
+#include "game/logic/math.h"
 
 static int lua_get_selection_query(lua_State* L)
 {
@@ -6,9 +7,18 @@ static int lua_get_selection_query(lua_State* L)
 	controls_selection_queried = 0;
 	return 1;
 }
+static int lua_get_order_query(lua_State* L)
+{
+	if(!controls_order_queried)
+		return 0;
+	lua_push_vec3(L, controls_order_world_coords);
+	controls_order_queried = 0;
+	return 1;
+}
 
 static const struct luaL_Reg cfuncs[] = {
 	{"get_selection_query", lua_get_selection_query},
+	{"get_order_query", lua_get_order_query},
 
 	{NULL, NULL}
 };

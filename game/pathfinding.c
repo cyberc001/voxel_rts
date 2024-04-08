@@ -288,19 +288,21 @@ path path_find(const hexahedron* h, vec3f target)
 	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
 	if(abs(x) < bbox_w/2+1 && abs(y) < bbox_h/2+1 && !tpiece_buf[buf_i]){\
 		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
-		tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
-		if(cur_node_base.tpiece){\
-			cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
-			tnode* cur_node = &cur_node_base;\
-			get_successor(-(dx), -(dy), cur_node, node_buf);\
-			for(size_t i = 0; i < node_buf->busy; ++i){\
-				terrain_piece* res_tpiece = node_buf->data[i].tpiece;\
-				if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
-					cur_node_base.tpiece = res_tpiece;\
-					cur_node_base.pos.y += _y;\
-					tpiece_buf[buf_i] = res_tpiece;\
-					cur_node_base.pos.x += _x;\
-					break;\
+		if(abs(x) < bbox_w/2+1 - (dx) && abs(y) < bbox_h/2+1 - (dy)){\
+			tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
+			if(cur_node_base.tpiece){\
+				cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
+				tnode* cur_node = &cur_node_base;\
+				get_successor(-(dx), -(dy), cur_node, node_buf);\
+				for(size_t i = 0; i < node_buf->busy; ++i){\
+					terrain_piece* res_tpiece = node_buf->data[i].tpiece;\
+					if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
+						cur_node_base.tpiece = res_tpiece;\
+						cur_node_base.pos.y += _y;\
+						tpiece_buf[buf_i] = res_tpiece;\
+						cur_node_base.pos.x += _x;\
+						break;\
+					}\
 				}\
 			}\
 		}\
