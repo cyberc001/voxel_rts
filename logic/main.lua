@@ -24,7 +24,7 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 
-gravity = 0---0.05
+gravity = -0.03
 
 function _first_tick()
 	--game_object_arr[1]:set_goal(vec3:new(1, 10, 6))

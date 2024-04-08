@@ -31,7 +31,8 @@ end
 
 function game_object:set_goal(goal)
 	self.goal = goal
-	self.path, self.path_pieces = path.find_path(self.hitbox, goal)
+	print("POS: ", self.pos)
+	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal)
 	self.path_i = 1
 end
 function game_object:clear_goal(goal)

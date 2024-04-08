@@ -54,7 +54,7 @@ void terrain_mark_changed_piece(uint32_t x, uint32_t y); // same as terrain_mark
 
 #define tpiece_avg_z_ceil(tpiece) (((tpiece).z_ceil[0] + (tpiece).z_ceil[1] + (tpiece).z_ceil[2] + (tpiece).z_ceil[3]) / 4)
 float tpiece_max_z_ceil(terrain_piece* tpiece);
-terrain_piece* terrain_get_nearest_piece(float z, terrain_piece* tpiece);
+terrain_piece* terrain_get_nearest_piece_maxz(float z, terrain_piece* tpiece);
 
 void terrain_piece_add(terrain_piece* list, terrain_piece* toadd);
 void terrain_piece_remove(terrain_piece* toremove);

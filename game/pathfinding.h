@@ -24,7 +24,7 @@ typedef struct {
 	free((p).tpieces);\
 }
 
-path path_find(const hexahedron* h, vec3f target);
+path path_find(const hexahedron* h, vec3f pos, vec3f target);
 
 // bbox_w and bbox_h should be odd. If they aren't, increment by 1.
 // tpiece_buf should be an array of bbox_w*bbox_h pointers, initially set to 0.

@@ -159,14 +159,14 @@ float tpiece_max_z_ceil(terrain_piece* tpiece)
 			_max = tpiece->z_ceil[i];
 	return _max;
 }
-terrain_piece* terrain_get_nearest_piece(float z, terrain_piece* tpiece)
+terrain_piece* terrain_get_nearest_piece_maxz(float z, terrain_piece* tpiece)
 {
-	float min_z = INFINITY;
+	float min_diff = INFINITY;
 	terrain_piece* nearest_tpiece = NULL;
 	while(tpiece){
-		float avg_z = tpiece_avg_z_ceil(*tpiece); 
-		if(avg_z <= z && avg_z < min_z){
-			min_z = avg_z;
+		float max_z = tpiece_max_z_ceil(tpiece);
+		if(fabs(max_z - z) < min_diff){
+			min_diff = fabs(max_z - z);
 			nearest_tpiece = tpiece;
 		}
 		tpiece = tpiece->next;
@@ -205,7 +205,7 @@ void terrain_occupy_hexahedron(const hexahedron* h, int occupy)
 	vec2i cur_pos = (vec2i){center.x, center.z};
 	terrain_piece* cur_tpiece = terrain_get_piece(cur_pos.x, cur_pos.y);
 	if(!cur_tpiece) return;
-	cur_tpiece = terrain_get_nearest_piece(center.y, cur_tpiece);
+	cur_tpiece = terrain_get_nearest_piece_maxz(center.y, cur_tpiece);
 
 	int bbox_w = ceil(h_bbox.max.x - h_bbox.min.x),
 	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);

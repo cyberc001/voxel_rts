@@ -6,8 +6,10 @@
 static int lua_find_path(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
-	vec3f target = lua_get_vec3(L, 2);
-	path out_p = path_find(&h, target);
+	vec3f pos = lua_get_vec3(L, 2);
+	swap(pos.y, pos.z);
+	vec3f target = lua_get_vec3(L, 3);
+	path out_p = path_find(&h, pos, target);
 	// push path node positions
 	lua_createtable(L, out_p.ln, 0);
 	for(size_t i = 0; i < out_p.ln; ++i){

@@ -76,24 +76,27 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 			tnode res_node = node_buf.data[i];\
 			\
 			float max_ceil = tpiece_max_z_ceil(res_tpiece);\
+			printf("max_ceil %lu %p: %f\n", i, res_tpiece, max_ceil);\
 			/* collision check dx*/\
-			bbox3f new_bbox = h_bbox;\
-			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y;\
-			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
-			new_bbox.min.y += max_ceil;\
-			new_bbox.max.y += max_ceil;\
-			if(bbox_check_terrain_collision(new_bbox)) continue;\
-			\
+			if(dx){\
+				bbox3f new_bbox = h_bbox;\
+				new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y;\
+				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
+				new_bbox.min.y += max_ceil;\
+				new_bbox.max.y += max_ceil;\
+				if(bbox_check_terrain_collision(new_bbox)) continue;\
+			}\
 			/* collision check dy*/\
-			new_bbox = h_bbox;\
-			new_bbox.min.x += _cur_node->pos.x; new_bbox.min.z += _cur_node->pos.y + (dy);\
-			new_bbox.max.x += _cur_node->pos.x; new_bbox.max.z += _cur_node->pos.y + (dy);\
-			new_bbox.min.y += max_ceil;\
-			new_bbox.max.y += max_ceil;\
-			if(bbox_check_terrain_collision(new_bbox)) continue;\
-			\
+			if(dy){\
+				bbox3f new_bbox = h_bbox;\
+				new_bbox.min.x += _cur_node->pos.x; new_bbox.min.z += _cur_node->pos.y + (dy);\
+				new_bbox.max.x += _cur_node->pos.x; new_bbox.max.z += _cur_node->pos.y + (dy);\
+				new_bbox.min.y += max_ceil;\
+				new_bbox.max.y += max_ceil;\
+				if(bbox_check_terrain_collision(new_bbox)) continue;\
+			}\
 			/* collision check dx+dy*/\
-			new_bbox = h_bbox;\
+			bbox3f new_bbox = h_bbox;\
 			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
 			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
 			new_bbox.min.y += max_ceil;\
@@ -211,14 +214,11 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	tnode_dynarray_destroy(&node_buf);
 	printf("end\n");
 }
-path path_find(const hexahedron* h, vec3f target)
+path path_find(const hexahedron* h, vec3f pos, vec3f target)
 {
 	// figure out the starting point
-	vec3f center = hexahedron_get_center(h);
 	vec2i target_xz = {target.x, target.z};
 	bbox3f h_bbox = hexahedron_get_bbox(h);
-	h_bbox.min = vec3_sub(h_bbox.min, center);
-	h_bbox.max = vec3_sub(h_bbox.max, center);
 	float h_bbox_y = h_bbox.min.y;
 	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
 	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
@@ -226,11 +226,12 @@ path path_find(const hexahedron* h, vec3f target)
 
 	tnode* cur_node = malloc(sizeof(tnode));
 	cur_node->cost = 0; cur_node->parent = NULL;
-	cur_node->pos = (vec2i){center.x, center.z};
+	cur_node->pos = (vec2i){floor(pos.x), floor(pos.y)};
 	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
 	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
-	cur_node->tpiece = terrain_get_nearest_piece(center.y, cur_node->tpiece);
+	cur_node->tpiece = terrain_get_nearest_piece_maxz(pos.y, cur_node->tpiece);
+	printf("CENTER: %f TPIECE: %f\n", pos.y, tpiece_max_z_ceil(cur_node->tpiece));
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
 	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
 	tnode_calc_heuristic(*cur_node, target_xz);
@@ -246,7 +247,7 @@ path path_find(const hexahedron* h, vec3f target)
 		cur_node = tnode_pqueue_pop(&open);
 		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
 			break;
-		push_successors(&open, &closed, cur_node, target_xz, h_bbox, center);
+		push_successors(&open, &closed, cur_node, target_xz, h_bbox, pos);
 	}
 
 	tnode* n = cur_node;
@@ -288,7 +289,7 @@ path path_find(const hexahedron* h, vec3f target)
 	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
 	if(abs(x) < bbox_w/2+1 && abs(y) < bbox_h/2+1 && !tpiece_buf[buf_i]){\
 		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
-		if(abs(x) < bbox_w/2+1 - (dx) && abs(y) < bbox_h/2+1 - (dy)){\
+		if(abs(x + (dx)) < bbox_w/2+1 && abs(y + (dy)) < bbox_h/2+1){\
 			tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
 			if(cur_node_base.tpiece){\
 				cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
