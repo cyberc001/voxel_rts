@@ -27,9 +27,7 @@ table.insert(game_object_arr, game_object:new({
 gravity = -0.03
 
 function _first_tick()
-	--game_object_arr[1]:set_goal(vec3:new(1, 10, 6))
 	path.occupy_space(game_object_arr[1].hitbox)
-	--game_object_arr[2]:set_goal(vec3:new(1, 10, 6))
 	path.occupy_space(game_object_arr[2].hitbox)
 end
 
@@ -43,6 +41,9 @@ function _tick()
 
 		vec3:iadd(v.pos, v.vel)
 		v.pos.y = v.pos.y + gravity
+		v.rot.x = v.rot.x + (v.rot_goal.x - v.rot.x) * 0.1
+		v.rot.y = v.rot.y + (v.rot_goal.y - v.rot.y) * 0.1
+		v.rot.z = v.rot.z + (v.rot_goal.z - v.rot.z) * 0.1
 		v:update_hitbox()
 
 		for i2,v2 in ipairs(game_object_arr) do
@@ -59,12 +60,11 @@ function _tick()
 			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
 			local center = gmath.hexahedron_get_center(v.hitbox)
-			--print("NEW ROT: ", new_rot.x, new_rot.y, new_rot.z)
-			if new_rot.x == new_rot.x -- test for nan
-				then -- TODO: properly convert vectors from C to objects
-				v.rot.x = v.rot.x + new_rot.x * 0.1
-				v.rot.y = v.rot.y + new_rot.y * 0.1
-				v.rot.z = v.rot.z + new_rot.z * 0.1
+			if new_rot.x == new_rot.x then -- test for nan
+				-- TODO: properly convert vectors from C to objects
+				v.rot_goal.x = v.rot_goal.x + new_rot.x
+				--v.rot_goal.y = v.rot_goal.y + new_rot.y
+				v.rot_goal.z = v.rot_goal.z + new_rot.z
 			end
 			v:update_hitbox()
 		end

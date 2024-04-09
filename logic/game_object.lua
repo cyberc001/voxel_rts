@@ -6,6 +6,7 @@ function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.vel = o.vel or vec3:new()
 	o.rot = o.rot or vec3:new()
+	o.rot_goal = o.rot_goal or vec3:new(0, 0, 0)
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.hitbox or gmath.hexahedron_from_cube(0)
 	o.robj_arr = o.robj_arr or {}
@@ -53,7 +54,7 @@ function game_object:path_tick()
 			local diff = vec3:new(self.path[self.path_i].x + 0.5, center.y, self.path[self.path_i].y + 0.5) - center
 			local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
 			if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-				self.rot.y = self.rot.y + new_rot.y * 0.1
+				self.rot_goal.y = self.rot_goal.y + new_rot.y
 			end
 
 			if(diff:ln() > 0) then
@@ -65,13 +66,13 @@ function game_object:path_tick()
 				self.vel = diff
 				self.path_i = self.path_i + 1
 			end
-			if(self.path[self.path_i] and math.floor(center.x) == self.path[self.path_i].x and math.floor(center.z) == self.path[self.path_i].y) then
+			if(self.path[self.path_i] and math.floor(center.x - 0.5) == self.path[self.path_i].x and math.floor(center.z - 0.5) == self.path[self.path_i].y) then
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.vel = vec3:new(0, 0, 0)
 				end
 			elseif(not self.path[self.path_i]) then
-				v.vel = vec3:new(0, 0, 0)
+				self.vel = vec3:new(0, 0, 0)
 				self:clear_goal()
 			end
 		end

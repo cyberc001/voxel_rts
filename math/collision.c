@@ -208,8 +208,6 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 			return 0;
 	}
 
-	//printf("OVERLAP: %f\n", overlap);
-	//vec3f_print(resolution);
 	resolution = vec3_smul(resolution, overlap);
 	vec3f p1 = hexahedron_get_center(h1), p2 = hexahedron_get_center(h2);
 	vec3f vd = vec3_sub(p1, p2);
@@ -330,11 +328,7 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 
 						if(new_rot){
 							vec3f vel = {0, -1, 0};
-							mat4f tr = mat4f_identity();
-							mat4f_rotate(&tr, orig_rot.x, (vec3f){1, 0, 0});
-							mat4f_rotate(&tr, orig_rot.y, (vec3f){0, 1, 0});
-							mat4f_rotate(&tr, orig_rot.z, (vec3f){0, 0, 1});
-							vel = mat4f_mul_vec3f(&tr, vel);
+							vel = vec3f_rot(vel, orig_rot);
 							*new_rot = vec3f_get_rot_between(vel, norm);
 						}
 					}
