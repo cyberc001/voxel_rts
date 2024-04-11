@@ -32,7 +32,6 @@ end
 
 function game_object:set_goal(goal)
 	self.goal = goal
-	print("POS: ", self.pos)
 	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal)
 	self.path_i = 1
 end
@@ -51,10 +50,21 @@ function game_object:path_tick()
 				return
 			end
 
-			local diff = vec3:new(self.path[self.path_i].x + 0.5, center.y, self.path[self.path_i].y + 0.5) - center
-			local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
-			if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-				self.rot_goal.y = self.rot_goal.y + new_rot.y
+			local diff = vec3:new(self.path[self.path_i].x + 0.5, self.pos.y, self.path[self.path_i].y + 0.5) - self.pos
+
+			if self.path_rotating then -- rotate to face the destination
+				local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
+				if math.abs(new_rot.y) < 0.1 then
+					self.path_rotating = false
+					return
+				end
+				if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
+					if math.abs(self.rot_goal.y) <= 0.1 then
+						self.rot.y = self.rot.y + new_rot.y * 0.1
+						self.vel = vec3:new(0, 0, 0)
+					end
+				end
+				return
 			end
 
 			if(diff:ln() > 0) then
@@ -62,18 +72,28 @@ function game_object:path_tick()
 			else
 				self.vel = vec3:new(0, 0, 0)
 			end
-			if(self.vel:ln() > diff:ln()) then
+
+			local new_path_i = false
+			if(self.vel:ln() > diff:ln()) then -- set immedate destination
 				self.vel = diff
 				self.path_i = self.path_i + 1
+				new_path_i = true
 			end
-			if(self.path[self.path_i] and math.floor(center.x - 0.5) == self.path[self.path_i].x and math.floor(center.z - 0.5) == self.path[self.path_i].y) then
+			if(self.path[self.path_i] and math.floor(self.pos.x - 0.5) == self.path[self.path_i].x and math.floor(self.pos.z - 0.5) == self.path[self.path_i].y) then -- set immedate destination
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.vel = vec3:new(0, 0, 0)
+				else
+					new_path_i = true
 				end
 			elseif(not self.path[self.path_i]) then
 				self.vel = vec3:new(0, 0, 0)
 				self:clear_goal()
+				return
+			end
+
+			if new_path_i then
+				self.path_rotating = true
 			end
 		end
 	end

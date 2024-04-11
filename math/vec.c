@@ -41,9 +41,9 @@ vec3f vec3f_get_rot_between(vec3f v1, vec3f v2)
 	else{
 		mat4f trmat = mat4f_identity(); // get 3 separate rotation angles from rotation matrix (https://nghiaho.com/?page_id=846)
 		mat4f_rotate(&trmat, ang, axis);
-		return (vec3f){atan2f(trmat.e[2][1], trmat.e[2][2]),
-				atan2f(-trmat.e[2][0], sqrt(trmat.e[2][1]*trmat.e[2][1] + trmat.e[2][2]*trmat.e[2][2])),
-				atan2f(trmat.e[1][0], trmat.e[0][0])};
+		return (vec3f){rad_to_ang(atan2f(trmat.e[2][1], trmat.e[2][2])),
+				rad_to_ang(atan2f(-trmat.e[2][0], sqrt(trmat.e[2][1]*trmat.e[2][1] + trmat.e[2][2]*trmat.e[2][2]))),
+				rad_to_ang(atan2f(trmat.e[1][0], trmat.e[0][0]))};
 	}
 }	
 vec3f vec3f_lookat_rot(vec3f cur_rot, vec3f look_pt)

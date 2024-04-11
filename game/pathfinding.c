@@ -216,6 +216,7 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 }
 path path_find(const hexahedron* h, vec3f pos, vec3f target)
 {
+	printf("POS: "); vec3f_print(pos);
 	// figure out the starting point
 	vec2i target_xz = {target.x, target.z};
 	bbox3f h_bbox = hexahedron_get_bbox(h);
@@ -230,8 +231,8 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target)
 	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
 	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
-	cur_node->tpiece = terrain_get_nearest_piece_maxz(pos.y, cur_node->tpiece);
-	printf("CENTER: %f TPIECE: %f\n", pos.y, tpiece_max_z_ceil(cur_node->tpiece));
+	cur_node->tpiece = terrain_get_nearest_piece_maxz(pos.z, cur_node->tpiece);
+	printf("CENTER: %f TPIECE: %f\n", pos.z, tpiece_max_z_ceil(cur_node->tpiece));
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
 	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
 	tnode_calc_heuristic(*cur_node, target_xz);

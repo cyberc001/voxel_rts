@@ -16,19 +16,19 @@ table.insert(game_object_arr, game_object:new({
 		render_object:new({model = render.model_find("kirov")})
 	}
 }))
-table.insert(game_object_arr, game_object:new({
+--[[table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(1.5, 1.8, 0.5), rot = vec3:new(0, 0, 0),
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("kirov")})
 	}
-}))
+}))]]--
 
 gravity = -0.03
 
 function _first_tick()
 	path.occupy_space(game_object_arr[1].hitbox)
-	path.occupy_space(game_object_arr[2].hitbox)
+	--path.occupy_space(game_object_arr[2].hitbox)
 end
 
 function _tick()
@@ -41,9 +41,10 @@ function _tick()
 
 		vec3:iadd(v.pos, v.vel)
 		v.pos.y = v.pos.y + gravity
-		v.rot.x = v.rot.x + (v.rot_goal.x - v.rot.x) * 0.1
-		v.rot.y = v.rot.y + (v.rot_goal.y - v.rot.y) * 0.1
-		v.rot.z = v.rot.z + (v.rot_goal.z - v.rot.z) * 0.1
+		v.rot.x = v.rot.x + v.rot_goal.x * 0.1
+		v.rot.y = v.rot.y + v.rot_goal.y * 0.1
+		v.rot.z = v.rot.z + v.rot_goal.z * 0.1
+		v.rot_goal = v.rot_goal - v.rot_goal * 0.1
 		v:update_hitbox()
 
 		for i2,v2 in ipairs(game_object_arr) do
@@ -62,9 +63,9 @@ function _tick()
 			local center = gmath.hexahedron_get_center(v.hitbox)
 			if new_rot.x == new_rot.x then -- test for nan
 				-- TODO: properly convert vectors from C to objects
-				v.rot_goal.x = v.rot_goal.x + new_rot.x
-				--v.rot_goal.y = v.rot_goal.y + new_rot.y
-				v.rot_goal.z = v.rot_goal.z + new_rot.z
+				v.rot_goal.x = new_rot.x
+				v.rot_goal.y = new_rot.y
+				v.rot_goal.z = new_rot.z
 			end
 			v:update_hitbox()
 		end
