@@ -248,29 +248,16 @@ int bbox_check_terrain_collision(bbox3f bbox)
 				tpiece_bbox.min = vec3_smul(tpiece_bbox.min, TERRAIN_PIECE_SIZE);
 				tpiece_bbox.max = vec3_smul(tpiece_bbox.max, TERRAIN_PIECE_SIZE);
 
-				if(tpiece_bbox.max.y - bbox.min.y > 0.1 && bbox_check_collision(&bbox, &tpiece_bbox)){
-					printf("BBOX\n");
-					vec3f_print(bbox.min);
-					vec3f_print(bbox.max);
-					printf("COLLIDED WITH\n");
-					vec3f_print(tpiece_bbox.min);
-					vec3f_print(tpiece_bbox.max);
+				if(tpiece_bbox.max.y - bbox.min.y > 0.1 && bbox_check_collision(&bbox, &tpiece_bbox))
 					return 1;
-				}
 				piece = piece->next;
 			}
 		}
 	return 0;
 }
 
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* new_rot)
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* desired_rot, mat4f* new_trmat)
 {
-	vec3f orig_rot;
-	if(new_rot){
-		orig_rot = *new_rot;
-		*new_rot = (vec3f){NAN, NAN, NAN};
-	}
-
 	bbox3f bbox = hexahedron_get_bbox(h);
 	vec3f terrain_min = {0, 0, 0};
 	vec3_setmin(bbox.min, terrain_min);
@@ -321,15 +308,67 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 				vec3f resol;
 				int _collided = hexahedron_check_collision(h, &tpiece_h, &resol);
 				if(_collided){
-					if(vec3_ln(resol) > vec3_ln(max_resol)){
+					if(vec3_ln(resol) >= vec3_ln(max_resol)){
 						max_resol = resol;
 						vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
-						vec3f norm = vec3_cross(e1, e2);
+						vec3f norm = vec3_norm(vec3_cross(e1, e2));
 
-						if(new_rot){
-							vec3f vel = {0, -1, 0};
-							vel = vec3f_rot(vel, orig_rot);
-							*new_rot = vec3f_get_rot_between(vel, norm);
+						if(new_trmat){
+							mat4f trmat = mat4f_identity();
+							if(desired_rot){
+								printf("desired rot: "); vec3f_print(*desired_rot);
+							}
+							vec3f up = vec3_smul(norm, -1);
+							printf("up: "); vec3f_print(up);
+							vec3f forward = (vec3f){1, 0, 0};
+							//vec3f forward = (vec3f){up.y + up.z, up.z - up.x, -up.x - up.y};
+							//forward = vec3_norm(forward);
+							vec3f n = (vec3f){0, 1, 0};
+							float forward_ang = rad_to_ang(acos(vec3_dot(n, up)));
+							vec3f forward_axis = vec3_norm(vec3_cross(n, up));
+							printf("rot angle: %f\n", forward_ang);
+							printf("rot axis: "); vec3f_print(forward_axis);
+							if(!isnan(forward_axis.x)){
+								mat4f forward_trmat = mat4f_identity();
+								mat4f_rotate(&forward_trmat, forward_ang, forward_axis);
+								forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, forward));
+							}
+							printf("forward: "); vec3f_print(forward);
+							if(desired_rot){
+								mat4f forward_trmat = mat4f_identity();
+								mat4f_rotate(&forward_trmat, desired_rot->y, up);
+								forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, forward));
+								printf("desired forward: "); vec3f_print(forward);
+							}
+							vec3f right = vec3_norm(vec3_cross(forward, up));
+							printf("right: "); vec3f_print(right);
+
+							trmat.e[0][0] = forward.x;
+							trmat.e[0][1] = forward.y;
+							trmat.e[0][2] = forward.z;
+							trmat.e[1][0] = up.x;
+							trmat.e[1][1] = up.y;
+							trmat.e[1][2] = up.z;
+							trmat.e[2][0] = right.x;
+							trmat.e[2][1] = right.y;
+							trmat.e[2][2] = right.z;
+
+							printf("trmat:\n"); mat4f_print(&trmat);
+
+							/*printf("xyz: "); vec3f_print(mat4f_get_rotation_xyz(&trmat));
+							printf("xzy: "); vec3f_print(mat4f_get_rotation_xzy(&trmat));
+							printf("yxz: "); vec3f_print(mat4f_get_rotation_yxz(&trmat));
+							printf("yzx: "); vec3f_print(mat4f_get_rotation_yzx(&trmat));
+							printf("zxy: "); vec3f_print(mat4f_get_rotation_zxy(&trmat));
+							printf("zyx: "); vec3f_print(mat4f_get_rotation_zyx(&trmat));*/
+
+							/**new_rot = (vec3f){rad_to_ang(atan2(trmat.e[2][1], trmat.e[2][2])),
+										rad_to_ang(atan2(-trmat.e[2][0], sqrt(trmat.e[2][1]*trmat.e[2][1] + trmat.e[2][2]*trmat.e[2][2]))),
+										rad_to_ang(atan2(trmat.e[1][0], trmat.e[0][0]))};*/
+							//*new_rot = mat4f_get_rotation_yzx(&trmat);
+							//printf("new_rot: "); vec3f_print(*new_rot);
+							*new_trmat = trmat;
+							puts("");
 						}
 					}
 					collided = 1;

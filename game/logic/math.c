@@ -45,26 +45,33 @@ static int lua_hexahedron_transform(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
 	vec3f tr = {0, 0, 0};
-	vec3f rot = {0, 0, 0};
+	mat4f rot = mat4f_identity();
+	//vec3f rot = {0, 0, 0};
 	vec3f sc = {1, 1, 1};
 
-	for(int i = 2; i <= lua_gettop(L) && i <= 4; ++i){
-		if(lua_type(L, i) != LUA_TTABLE)
-			break;
-		switch(i){
-			case 2: tr = lua_get_vec3(L, i); break;
-			case 3: rot = lua_get_vec3(L, i); break;
-			case 4: sc = lua_get_vec3(L, i); break;
+	if(lua_type(L, 2) == LUA_TTABLE)
+		tr = lua_get_vec3(L, 2);
+	if(lua_type(L, 3) == LUA_TTABLE)
+		rot = lua_get_mat4(L, 3);
+		//rot = lua_get_vec3(L, 3);
+	if(lua_type(L, 4) == LUA_TTABLE)
+		sc = lua_get_vec3(L, 4);
+
+	for(size_t i = 0; i < 6; ++i)
+		for(size_t j = 0; j < 4; ++j){
+			vec4f v = vec4f_mul_mat4f(&rot, (vec4f){h.f[i].p[j].x,
+					h.f[i].p[j].y, h.f[i].p[j].z, 1});
+			h.f[i].p[j] = (vec3f){v.x, v.y, v.z};
 		}
-	}
 
 	mat4f trmat = mat4f_identity();
 	mat4f_translate(&trmat, tr);
-	mat4f_rotate(&trmat, rot.x, (vec3f){1, 0, 0});
+	//trmat = mat4f_mul(&trmat, &rot);
+	/*mat4f_rotate(&trmat, rot.x, (vec3f){1, 0, 0});
 	mat4f_rotate(&trmat, rot.y, (vec3f){0, 1, 0});
-	mat4f_rotate(&trmat, rot.z, (vec3f){0, 0, 1});
+	mat4f_rotate(&trmat, rot.z, (vec3f){0, 0, 1});*/
 	mat4f_scale(&trmat, sc);
-	
+		
 	h = hexahedron_transform(&h, &trmat);
 
 	lua_push_hexahedron(L, h);
@@ -87,13 +94,22 @@ static int lua_hexahedron_check_collision(lua_State* L)
 static int lua_hexahedron_check_terrain_collision(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
-	vec3f resolution; vec3f new_rot = lua_get_vec3(L, 2);
-	int collided = hexahedron_check_terrain_collision(&h, &resolution, &new_rot);
+	vec3f resolution; 
+	vec3f* desired_rot = NULL;
+	vec3f _desired_rot;
+	if(lua_istable(L, 2)){
+		_desired_rot = lua_get_vec3(L, 2);
+		desired_rot = &_desired_rot;
+	}
+	mat4f new_trmat = mat4f_identity();
+
+	int collided = hexahedron_check_terrain_collision(&h, &resolution, desired_rot, &new_trmat);
 	lua_pushboolean(L, collided);
 	if(collided){
 		lua_push_vec3(L, resolution);
-		lua_push_vec3(L, new_rot);
-		return 3;
+		if(desired_rot)
+			lua_push_mat4(L, &new_trmat);
+		return 2 + !!desired_rot;
 	}
 	return 1;
 }
@@ -185,6 +201,29 @@ void lua_push_vec3(lua_State* L, vec3f v)
 	lua_pushstring(L, "x"); lua_pushnumber(L, v.x); lua_settable(L, -3);
 	lua_pushstring(L, "y"); lua_pushnumber(L, v.y); lua_settable(L, -3);
 	lua_pushstring(L, "z"); lua_pushnumber(L, v.z); lua_settable(L, -3);
+}
+
+void lua_push_mat4(lua_State* L, mat4f* m)
+{
+	lua_newtable(L);
+	for(size_t i = 0; i < 4; ++i)
+		for(size_t j = 0; j < 4; ++j){
+			lua_pushinteger(L, i*4 + j + 1);
+			lua_pushnumber(L, m->e[i][j]);
+			lua_settable(L, -3);
+		}
+}
+mat4f lua_get_mat4(lua_State* L, int matidx)
+{
+	matidx = lua_to_const_idx(L, matidx);
+	mat4f m;
+	for(size_t i = 0; i < 16; ++i){
+		lua_pushinteger(L, i+1);
+		lua_gettable(L, matidx);
+		m.e[i / 4][i % 4] = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	}
+	return m;
 }
 
 hexahedron lua_get_hexahedron(lua_State* L, int hexaidx)

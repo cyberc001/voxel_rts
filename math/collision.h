@@ -17,6 +17,6 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2);
 
 int bbox_check_terrain_collision(bbox3f bbox);
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution);
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* new_rot); // resolution and new_rot can be NULL. If new_rot is not NULL, it should be passed a current rotation vector of hexahedron.
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f* desired_rot, mat4f* new_trmat);
 
 #endif

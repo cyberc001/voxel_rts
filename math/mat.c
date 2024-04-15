@@ -206,6 +206,104 @@ void mat4f_scale(mat4f* mat, vec3f sc)
 	*mat = mat4f_mul(mat, &sc_mat);
 }
 
+vec3f mat4f_get_rotation_xyz(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[0][2] < 1){
+		if(mat->e[0][2] > -1)
+			res = (vec3f){atan2(-mat->e[1][2], mat->e[2][2]), asin(mat->e[0][2]), atan2(-mat->e[0][1], mat->e[0][0])};
+		else // mat->e[0][2] == -1
+			res = (vec3f){-atan2(mat->e[1][0], mat->e[1][1]), -M_PI / 2, 0};
+	}
+	else
+		res = (vec3f){atan2(mat->e[1][0], mat->e[1][1]), M_PI / 2, 0};
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+vec3f mat4f_get_rotation_xzy(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[0][1] < 1){
+		if(mat->e[0][1] > -1)
+			res = (vec3f){atan2(mat->e[2][1], mat->e[1][1]), atan2(mat->e[0][2], mat->e[0][0]), asin(-mat->e[0][1])};
+		else // mat->e[0][1] == -1
+			res = (vec3f){-atan2(-mat->e[2][0], mat->e[2][2]), 0, M_PI / 2};
+	}
+	else
+		res = (vec3f){atan2(-mat->e[2][0], mat->e[2][2]), 0, -M_PI / 2};
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+vec3f mat4f_get_rotation_zyx(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[2][0] < 1){
+		if(mat->e[2][0] > -1)
+			res = (vec3f){atan2(mat->e[2][1], mat->e[2][2]), asin(-mat->e[2][0]), atan2(mat->e[1][0], mat->e[0][0])};
+		else // mat->e[2][0] == -1
+			res = (vec3f){0, M_PI / 2, -atan2(mat->e[1][2], mat->e[1][1])};
+	}
+	else
+		res = (vec3f){0, -M_PI / 2, atan2(-mat->e[1][2], mat->e[1][1])};
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+vec3f mat4f_get_rotation_zxy(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[2][1] < 1){
+		if(mat->e[2][1] > -1)
+			res = (vec3f){asin(mat->e[2][1]), atan2(-mat->e[2][0], mat->e[2][2]), atan2(-mat->e[0][1], mat->e[1][1])};
+		else
+			res = (vec3f){-M_PI / 2, 0, -atan2(mat->e[0][2], mat->e[0][0])};
+	}
+	else
+		res = (vec3f){M_PI / 2, 0, atan2(mat->e[0][2], mat->e[0][0])};
+
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+vec3f mat4f_get_rotation_yxz(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[1][2] < 1){
+		if(mat->e[1][2] > -1)
+			res = (vec3f){asin(-mat->e[1][2]), atan2(mat->e[0][2], mat->e[2][2]), atan2(mat->e[1][0], mat->e[1][1])};
+		else
+			res = (vec3f){M_PI / 2, -atan2(mat->e[0][1], mat->e[0][0]), 0};
+	}
+	else
+		res = (vec3f){-M_PI / 2, atan2(-mat->e[0][1], mat->e[0][0]), 0};
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+vec3f mat4f_get_rotation_yzx(mat4f* mat)
+{
+	vec3f res;
+	if(mat->e[1][0] < 1){
+		if(mat->e[1][0] > -1)
+			res = (vec3f){atan2(-mat->e[1][2], mat->e[1][1]), atan2(-mat->e[2][0], mat->e[0][0]), asin(mat->e[1][0])};
+		else
+			res = (vec3f){0, -atan2(mat->e[2][1], mat->e[2][2]), -M_PI / 2};
+	}
+	else
+		res = (vec3f){0, atan2(mat->e[2][1], mat->e[2][2]), M_PI / 2};
+	res.x = rad_to_ang(res.x);
+	res.y = rad_to_ang(res.y);
+	res.z = rad_to_ang(res.z);
+	return res;
+}
+
 vec2f vec3f_project2(vec3f v)
 {
 	vec4f vec = (vec4f){v.x, v.y, v.z, 1};

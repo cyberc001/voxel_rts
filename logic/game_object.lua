@@ -1,12 +1,17 @@
 require "./logic/math/vec"
+require "./logic/math/mat"
 
 game_object = {}
 
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
+	o.trmat = o.trmat or mat4:new()
+	--o.rot = o.rot or vec3:new()
 	o.vel = o.vel or vec3:new()
-	o.rot = o.rot or vec3:new()
-	o.rot_goal = o.rot_goal or vec3:new(0, 0, 0)
+
+	o.collision_rot = o.collision_rot or vec3:new(0, 0, 0)
+	o.path_rot = o.path_rot or vec3:new(0, 0, 0)
+
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.hitbox or gmath.hexahedron_from_cube(0)
 	o.robj_arr = o.robj_arr or {}
@@ -24,7 +29,7 @@ function game_object:new(o)
 end
 
 function game_object:update_hitbox()
-	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
+	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.trmat, self.size)
 	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
 end
 
@@ -51,49 +56,32 @@ function game_object:path_tick()
 			end
 
 			local diff = vec3:new(self.path[self.path_i].x + 0.5, self.pos.y, self.path[self.path_i].y + 0.5) - self.pos
-
-			if self.path_rotating then -- rotate to face the destination
-				local new_rot = gmath.vec3_lookat_rot(self.rot, diff:unit())
-				if math.abs(new_rot.y) < 0.1 then
-					self.path_rotating = false
-					return
-				end
-				if self.vel:ln() <= diff:ln() and new_rot.y == new_rot.y then -- test for nan
-					if math.abs(self.rot_goal.y) <= 0.1 then
-						self.rot.y = self.rot.y + new_rot.y * 0.1
-						self.vel = vec3:new(0, 0, 0)
-					end
-				end
-				return
+			local new_rot = gmath.vec3_lookat_rot(vec3:new(), diff:unit())
+			if new_rot.y == new_rot.y then
+				self.path_rot.y = new_rot.y
+			else
+				self.path_rot.y = 0
 			end
-
+	
 			if(diff:ln() > 0) then
 				self.vel = diff:unit() * self.speed
 			else
 				self.vel = vec3:new(0, 0, 0)
 			end
 
-			local new_path_i = false
 			if(self.vel:ln() > diff:ln()) then -- set immedate destination
 				self.vel = diff
 				self.path_i = self.path_i + 1
-				new_path_i = true
 			end
 			if(self.path[self.path_i] and math.floor(self.pos.x - 0.5) == self.path[self.path_i].x and math.floor(self.pos.z - 0.5) == self.path[self.path_i].y) then -- set immedate destination
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.vel = vec3:new(0, 0, 0)
-				else
-					new_path_i = true
 				end
 			elseif(not self.path[self.path_i]) then
 				self.vel = vec3:new(0, 0, 0)
 				self:clear_goal()
 				return
-			end
-
-			if new_path_i then
-				self.path_rotating = true
 			end
 		end
 	end
