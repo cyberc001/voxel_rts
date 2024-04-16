@@ -25,24 +25,25 @@ static int lua_render_obj_draw(lua_State* L)
 	const render_obj* robj = lua_topointer(L, 1);
 
 	vec3f tr = {0, 0, 0};
-	vec2f rot = {0, 0};
+	mat4f rot = mat4f_identity();
 	vec3f sc = {1, 1, 1};
 
-	for(int i = 2; i <= lua_gettop(L) && i <= 4; ++i){
-		if(lua_type(L, i) != LUA_TTABLE)
-			break;
-		switch(i){
-			case 2: tr = lua_get_vec3(L, i); break;
-			case 3: rot = lua_get_vec2(L, i); break;
-			case 4: sc = lua_get_vec3(L, i); break;
-		}
-	}
+	if(lua_type(L, 2) == LUA_TTABLE)
+		tr = lua_get_vec3(L, 2);
+	if(lua_type(L, 3) == LUA_TTABLE)
+		rot = lua_get_mat4(L, 3);
+	if(lua_type(L, 4) == LUA_TTABLE)
+		sc = lua_get_vec3(L, 4);
 
 	glPushMatrix();
 	glTranslatef(tr.x, tr.y, tr.z);
-	glRotatef(rot.x, 0, 1, 0);
-	glRotatef(rot.y, 1, 0, 0);
+	GLfloat trmatf[] = { rot.e[0][0], rot.e[0][1], rot.e[0][2], rot.e[0][3],
+		rot.e[1][0], rot.e[1][1], rot.e[1][2], rot.e[1][3],
+		rot.e[2][0], rot.e[2][1], rot.e[2][2], rot.e[2][3],
+		rot.e[3][0], rot.e[3][1], rot.e[3][2], rot.e[3][3],
+	};
 	glScalef(sc.x, sc.y, sc.z);
+	glMultMatrixf(trmatf);
 
 	render_obj_draw(robj);
 	glPopMatrix();

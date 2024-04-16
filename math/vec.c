@@ -49,9 +49,3 @@ vec3f vec3f_get_rot_between(vec3f v1, vec3f v2)
 		return mat4f_get_rotation_zyx(&trmat);
 	}
 }	
-vec3f vec3f_lookat_rot(vec3f cur_rot, vec3f look_pt)
-{
-	vec3f v = (vec3f){1, 0, 0};
-	float ang = acos(vec3_dot(v, look_pt) / vec3_ln(look_pt));
-	return (vec3f){0, -rad_to_ang(ang), 0};
-}

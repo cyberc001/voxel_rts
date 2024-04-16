@@ -7,12 +7,6 @@ static int lua_vec3_rot(lua_State* L)
 	lua_push_vec3(L, vec3f_rot(v, rot));
 	return 1;
 }
-static int lua_vec3_lookat_rot(lua_State* L)
-{
-	vec3f cur_rot = lua_get_vec3(L, 1), look_pt = lua_get_vec3(L, 2);
-	lua_push_vec3(L, vec3f_lookat_rot(cur_rot, look_pt));
-	return 1;
-}
 
 static int lua_hexahedron_from_cuboid(lua_State* L)
 {
@@ -46,14 +40,12 @@ static int lua_hexahedron_transform(lua_State* L)
 	hexahedron h = lua_get_hexahedron(L, 1);
 	vec3f tr = {0, 0, 0};
 	mat4f rot = mat4f_identity();
-	//vec3f rot = {0, 0, 0};
 	vec3f sc = {1, 1, 1};
 
 	if(lua_type(L, 2) == LUA_TTABLE)
 		tr = lua_get_vec3(L, 2);
 	if(lua_type(L, 3) == LUA_TTABLE)
 		rot = lua_get_mat4(L, 3);
-		//rot = lua_get_vec3(L, 3);
 	if(lua_type(L, 4) == LUA_TTABLE)
 		sc = lua_get_vec3(L, 4);
 
@@ -66,10 +58,6 @@ static int lua_hexahedron_transform(lua_State* L)
 
 	mat4f trmat = mat4f_identity();
 	mat4f_translate(&trmat, tr);
-	//trmat = mat4f_mul(&trmat, &rot);
-	/*mat4f_rotate(&trmat, rot.x, (vec3f){1, 0, 0});
-	mat4f_rotate(&trmat, rot.y, (vec3f){0, 1, 0});
-	mat4f_rotate(&trmat, rot.z, (vec3f){0, 0, 1});*/
 	mat4f_scale(&trmat, sc);
 		
 	h = hexahedron_transform(&h, &trmat);
@@ -95,21 +83,17 @@ static int lua_hexahedron_check_terrain_collision(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
 	vec3f resolution; 
-	vec3f* desired_rot = NULL;
-	vec3f _desired_rot;
-	if(lua_istable(L, 2)){
-		_desired_rot = lua_get_vec3(L, 2);
-		desired_rot = &_desired_rot;
-	}
+	vec3f forward = (vec3f){1, 0, 0};
+	if(lua_istable(L, 2))
+		forward = lua_get_vec3(L, 2);
 	mat4f new_trmat = mat4f_identity();
 
-	int collided = hexahedron_check_terrain_collision(&h, &resolution, desired_rot, &new_trmat);
+	int collided = hexahedron_check_terrain_collision(&h, &resolution, forward, &new_trmat);
 	lua_pushboolean(L, collided);
 	if(collided){
 		lua_push_vec3(L, resolution);
-		if(desired_rot)
-			lua_push_mat4(L, &new_trmat);
-		return 2 + !!desired_rot;
+		lua_push_mat4(L, &new_trmat);
+		return 3;
 	}
 	return 1;
 }
@@ -142,7 +126,6 @@ static int lua_hexahedron_is_selected(lua_State* L)
 
 static const struct luaL_Reg cfuncs[] = {
 	{"vec3_rot", lua_vec3_rot},
-	{"vec3_lookat_rot", lua_vec3_lookat_rot},
 
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},

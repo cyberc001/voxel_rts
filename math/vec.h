@@ -57,7 +57,6 @@ void vec4f_print(vec4f vec);
 vec3f vec3f_rot(vec3f v, vec3f rot); // rotate a vector using transformation matrix
 float vec3f_get_ang_between(vec3f v1, vec3f v2);
 vec3f vec3f_get_rot_between(vec3f v1, vec3f v2); // returns a rotation vector between v1 and v2. Returns (NAN, NAN, NAN) if rotation is not needed.
-vec3f vec3f_lookat_rot(vec3f cur_rot, vec3f look_pt); 
 
 // misc
 #define vec3_setmin(v1, vmin) { if((v1).x < (vmin).x) (v1).x = (vmin).x; if((v1).y < (vmin).y) (v1).y = (vmin).y; if((v1).z < (vmin).z) (v1).z = (vmin).z; }

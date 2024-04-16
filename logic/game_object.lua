@@ -6,11 +6,9 @@ game_object = {}
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.trmat = o.trmat or mat4:new()
-	--o.rot = o.rot or vec3:new()
 	o.vel = o.vel or vec3:new()
 
-	o.collision_rot = o.collision_rot or vec3:new(0, 0, 0)
-	o.path_rot = o.path_rot or vec3:new(0, 0, 0)
+	o.path_forward = o.path_forward or vec3:new(1, 0, 0)
 
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.hitbox or gmath.hexahedron_from_cube(0)
@@ -56,13 +54,10 @@ function game_object:path_tick()
 			end
 
 			local diff = vec3:new(self.path[self.path_i].x + 0.5, self.pos.y, self.path[self.path_i].y + 0.5) - self.pos
-			local new_rot = gmath.vec3_lookat_rot(vec3:new(), diff:unit())
-			if new_rot.y == new_rot.y then
-				self.path_rot.y = new_rot.y
-			else
-				self.path_rot.y = 0
+			if diff:ln() > 0 then
+				self.path_forward = diff:unit()
 			end
-	
+
 			if(diff:ln() > 0) then
 				self.vel = diff:unit() * self.speed
 			else
@@ -98,6 +93,6 @@ function game_object:render()
 	end
 
 	for _,v in ipairs(self.robj_arr) do
-		--v:render(self)
+		v:render(self)
 	end
 end
