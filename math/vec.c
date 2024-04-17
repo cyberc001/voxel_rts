@@ -46,6 +46,6 @@ vec3f vec3f_get_rot_between(vec3f v1, vec3f v2)
 	else{
 		mat4f trmat = mat4f_identity(); // get 3 separate rotation angles from rotation matrix (https://nghiaho.com/?page_id=846)
 		mat4f_rotate(&trmat, ang, axis);
-		return mat4f_get_rotation_zyx(&trmat);
+		return mat4f_get_rotation_xyz(&trmat);
 	}
 }	

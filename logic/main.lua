@@ -13,7 +13,7 @@ table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(1.5, 10.5, 6.5), --vec3:new(1.5, 1.8, 4.5), 
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
-		render_object:new({model = render.model_find("harvester")})
+		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
 }))
 --[[table.insert(game_object_arr, game_object:new({
@@ -42,6 +42,7 @@ function _tick()
 
 		vec3:iadd(v.pos, v.vel)
 		v.pos.y = v.pos.y + gravity
+		v.trmat = gmath.interp_mat4(v.trmat, v.trmat_goal, 0.1)
 		v:update_hitbox()
 
 		for i2,v2 in ipairs(game_object_arr) do
@@ -57,7 +58,7 @@ function _tick()
 		if collided then
 			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
-			v.trmat = new_trmat
+			v.trmat_goal = new_trmat
 			v:update_hitbox()
 		end
 		path.occupy_space(v.hitbox)

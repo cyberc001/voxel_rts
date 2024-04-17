@@ -5,8 +5,10 @@ game_object = {}
 
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
-	o.trmat = o.trmat or mat4:new()
 	o.vel = o.vel or vec3:new()
+
+	o.trmat = o.trmat or mat4:new()
+	o.trmat_goal = o.trmat_goal or mat4:new()
 
 	o.path_forward = o.path_forward or vec3:new(1, 0, 0)
 

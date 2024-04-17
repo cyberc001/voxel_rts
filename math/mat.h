@@ -13,6 +13,8 @@ void mat4f_print(const mat4f* mat);
 #define mat4f_identity() (mat4f){.e = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}
 #define mat4f_from_gl(mat_gl) (mat4f){.e = {{(mat_gl)[0], (mat_gl)[4], (mat_gl)[8], (mat_gl)[12]}, {(mat_gl)[1], (mat_gl)[5], (mat_gl)[9], (mat_gl)[13]}, {(mat_gl)[2], (mat_gl)[6], (mat_gl)[10], (mat_gl)[14]}, {(mat_gl)[3], (mat_gl)[7], (mat_gl)[11], (mat_gl)[15]}}}
 
+#define mat4f_trace(m) ((m).e[0][0] + (m).e[1][1] + (m).e[2][2] + (m).e[3][3])
+
 #define mat4f_get_row(m, ri) ((vec4f){(m).e[ri][0], (m).e[ri][1], (m).e[ri][2], (m).e[ri][3]})
 
 mat4f mat4f_inverse(mat4f* m);
@@ -28,11 +30,6 @@ void mat4f_rotate(mat4f* mat, float angle, vec3f rot); // normalizes vec3f rot j
 void mat4f_scale(mat4f* mat, vec3f sc);
 
 vec3f mat4f_get_rotation_xyz(mat4f* mat);
-vec3f mat4f_get_rotation_xzy(mat4f* mat);
-vec3f mat4f_get_rotation_zyx(mat4f* mat);
-vec3f mat4f_get_rotation_zxy(mat4f* mat);
-vec3f mat4f_get_rotation_yxz(mat4f* mat);
-vec3f mat4f_get_rotation_yzx(mat4f* mat);
 
 vec2f vec3f_project2(vec3f vec);
 vec3f vec2f_project3(vec2f vec);

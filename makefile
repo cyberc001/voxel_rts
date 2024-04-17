@@ -17,7 +17,7 @@ libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o ren
 libvoxel_rts.a: formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o
 libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o
 libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o ui/elements/selection.o
-libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o 
+libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o math/quat.o
 libvoxel_rts.a: audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
@@ -99,6 +99,8 @@ math/hexahedron.o: math/hexahedron.c math/hexahedron.h
 math/vec.o: math/vec.c math/vec.h
 	$(CCO) $< -o $@
 math/mat.o: math/mat.c math/mat.h
+	$(CCO) $< -o $@
+math/quat.o: math/quat.c math/quat.h math/vec.h math/mat.h
 	$(CCO) $< -o $@
 
 audio.o: audio.c audio.h

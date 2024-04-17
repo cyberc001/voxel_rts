@@ -1,5 +1,6 @@
 #include "game/logic/math.h"
 #include "controls/selection.h"
+#include "math/quat.h"
 
 static int lua_vec3_rot(lua_State* L)
 {
@@ -63,6 +64,21 @@ static int lua_hexahedron_transform(lua_State* L)
 	h = hexahedron_transform(&h, &trmat);
 
 	lua_push_hexahedron(L, h);
+	return 1;
+}
+static int lua_interp_mat4(lua_State* L)
+{
+	mat4f m_cur = lua_get_mat4(L, 1);
+	mat4f m_end = lua_get_mat4(L, 2);
+	float frac = luaL_checknumber(L, 3);
+
+	vec4f quat_cur = vec4_norm(quat_from_rot_mat(&m_cur));
+	vec4f quat_end = vec4_norm(quat_from_rot_mat(&m_end));
+
+	vec4f quat_m = quat_slerp(quat_cur, quat_end, frac);
+	mat4f restored = mat_from_quat(quat_m);
+
+	lua_push_mat4(L, &restored);
 	return 1;
 }
 
@@ -133,6 +149,7 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
 
 	{"hexahedron_transform", lua_hexahedron_transform},
+	{"interp_mat4", lua_interp_mat4},
 	{"hexahedron_get_center", lua_hexahedron_get_center},
 
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
