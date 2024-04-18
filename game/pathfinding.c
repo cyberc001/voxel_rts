@@ -2,12 +2,12 @@
 #include "htable_oa.h"
 #include "pqueue.h"
 
-static float heuristic(vec2i v1, vec2i v2)
+static float heuristic(vec3f v1, vec3f v2)
 {
-	vec2i dist = vec2_sub(v1, v2);
-	return dist.x*dist.x + dist.y*dist.y; // avoid square root - doesn't matter when comparing distances
+	vec3f dist = vec3_sub(v1, v2);
+	return dist.x*dist.x + dist.y*dist.y + dist.z*dist.z; // avoid square root - doesn't matter when comparing distances
 }
-#define tnode_calc_heuristic(t, goal) ( (t).heuristic = heuristic((t).pos, (goal)) )
+#define tnode_calc_heuristic(t, goal, goal_y) ( (t).heuristic = heuristic((vec3f){(t).pos.x, (t).y, (t).pos.y}, (vec3f){(goal).x, (goal_y), (goal).y}) )
 
 DEF_PHTABLE_OA(tptr_set, terrain_piece*, tnode*)
 size_t tptr_hash(size_t table_sz, const terrain_piece** key)
@@ -107,7 +107,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
 				res_node.y = tpiece_avg_z_ceil(*res_tpiece);\
 				res_node.cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
-				tnode_calc_heuristic(res_node, goal);\
+				tnode_calc_heuristic(res_node, goal, goal_y);\
 				res_node.parent = cur_node;\
 				res_node.tpiece = res_tpiece;\
 				tnode* new_node_ptr = malloc(sizeof(tnode));\
@@ -117,7 +117,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				printf("pushed %d %d %f\n", res_node.pos.x, res_node.pos.y, max_ceil);\
 			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
 				(*old_node)->cost = cur_node->cost + max(dx, dy);\
-				tnode_calc_heuristic(**old_node, goal);\
+				tnode_calc_heuristic(**old_node, goal, goal_y);\
 				(*old_node)->parent = cur_node;\
 				tnode_pqueue_heapify(open);\
 				printf("updated %d %d\n", res_node.pos.x, res_node.pos.y);\
@@ -184,7 +184,7 @@ void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
 	}
 }
 
-static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, bbox3f h_bbox, vec3f center)
+static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, float goal_y, bbox3f h_bbox, vec3f center)
 {
 	printf("start %d %d\n", _cur_node->pos.x, _cur_node->pos.y);
 
@@ -235,7 +235,7 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target)
 	printf("CENTER: %f TPIECE: %f\n", pos.z, tpiece_max_z_ceil(cur_node->tpiece));
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
 	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
-	tnode_calc_heuristic(*cur_node, target_xz);
+	tnode_calc_heuristic(*cur_node, target_xz, target.y);
 
 	tptr_set closed;
 	tptr_set_create(&closed, 16, tptr_hash);
@@ -248,7 +248,7 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target)
 		cur_node = tnode_pqueue_pop(&open);
 		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
 			break;
-		push_successors(&open, &closed, cur_node, target_xz, h_bbox, pos);
+		push_successors(&open, &closed, cur_node, target_xz, target.y, h_bbox, pos);
 	}
 
 	tnode* n = cur_node;

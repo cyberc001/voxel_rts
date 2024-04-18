@@ -10,7 +10,7 @@ require "./logic/controls"
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 10.5, 6.5), --vec3:new(1.5, 1.8, 4.5), 
+	pos = vec3:new(1.5, 1.8, 4.5), 
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
