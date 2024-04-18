@@ -40,19 +40,20 @@ static int lua_hexahedron_transform(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
 	vec3f tr = {0, 0, 0};
-	mat4f rot = mat4f_identity();
+	vec4f rot = {0, 0, 0, 1};
 	vec3f sc = {1, 1, 1};
 
 	if(lua_type(L, 2) == LUA_TTABLE)
 		tr = lua_get_vec3(L, 2);
 	if(lua_type(L, 3) == LUA_TTABLE)
-		rot = lua_get_mat4(L, 3);
+		rot = lua_get_vec4(L, 3);
 	if(lua_type(L, 4) == LUA_TTABLE)
 		sc = lua_get_vec3(L, 4);
 
+	mat4f rot_mat = mat_from_quat(rot);
 	for(size_t i = 0; i < 6; ++i)
 		for(size_t j = 0; j < 4; ++j){
-			vec4f v = vec4f_mul_mat4f(&rot, (vec4f){h.f[i].p[j].x,
+			vec4f v = vec4f_mul_mat4f(&rot_mat, (vec4f){h.f[i].p[j].x,
 					h.f[i].p[j].y, h.f[i].p[j].z, 1});
 			h.f[i].p[j] = (vec3f){v.x, v.y, v.z};
 		}
@@ -66,19 +67,14 @@ static int lua_hexahedron_transform(lua_State* L)
 	lua_push_hexahedron(L, h);
 	return 1;
 }
-static int lua_interp_mat4(lua_State* L)
+static int lua_interp_quat(lua_State* L)
 {
-	mat4f m_cur = lua_get_mat4(L, 1);
-	mat4f m_end = lua_get_mat4(L, 2);
+	vec4f quat_cur = vec4_norm(lua_get_vec4(L, 1));
+	vec4f quat_end = vec4_norm(lua_get_vec4(L, 2));
 	float frac = luaL_checknumber(L, 3);
 
-	vec4f quat_cur = vec4_norm(quat_from_rot_mat(&m_cur));
-	vec4f quat_end = vec4_norm(quat_from_rot_mat(&m_end));
-
 	vec4f quat_m = quat_slerp(quat_cur, quat_end, frac);
-	mat4f restored = mat_from_quat(quat_m);
-
-	lua_push_mat4(L, &restored);
+	lua_push_vec4(L, quat_m);
 	return 1;
 }
 
@@ -102,13 +98,13 @@ static int lua_hexahedron_check_terrain_collision(lua_State* L)
 	vec3f forward = (vec3f){1, 0, 0};
 	if(lua_istable(L, 2))
 		forward = lua_get_vec3(L, 2);
-	mat4f new_trmat = mat4f_identity();
+	vec4f new_rot = {0, 0, 0, 1};
 
-	int collided = hexahedron_check_terrain_collision(&h, &resolution, forward, &new_trmat);
+	int collided = hexahedron_check_terrain_collision(&h, &resolution, forward, &new_rot);
 	lua_pushboolean(L, collided);
 	if(collided){
 		lua_push_vec3(L, resolution);
-		lua_push_mat4(L, &new_trmat);
+		lua_push_vec4(L, new_rot);
 		return 3;
 	}
 	return 1;
@@ -149,7 +145,7 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
 
 	{"hexahedron_transform", lua_hexahedron_transform},
-	{"interp_mat4", lua_interp_mat4},
+	{"interp_quat", lua_interp_quat},
 	{"hexahedron_get_center", lua_hexahedron_get_center},
 
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
@@ -189,6 +185,17 @@ vec3f lua_get_vec3(lua_State* L, int vecidx)
 	lua_pop(L, 3);
 	return v;
 }
+vec4f lua_get_vec4(lua_State* L, int vecidx)
+{
+	vecidx = lua_to_const_idx(L, vecidx);
+	lua_pushstring(L, "w"); lua_gettable(L, vecidx);
+	lua_pushstring(L, "z"); lua_gettable(L, vecidx);
+	lua_pushstring(L, "y"); lua_gettable(L, vecidx);
+	lua_pushstring(L, "x"); lua_gettable(L, vecidx);
+	vec4f v = {lua_tonumber(L, -1), lua_tonumber(L, -2), lua_tonumber(L, -3), lua_tonumber(L, -4)};
+	lua_pop(L, 4);
+	return v;
+}
 void lua_push_vec2(lua_State* L, vec2f v)
 {
 	lua_newtable(L);
@@ -201,6 +208,14 @@ void lua_push_vec3(lua_State* L, vec3f v)
 	lua_pushstring(L, "x"); lua_pushnumber(L, v.x); lua_settable(L, -3);
 	lua_pushstring(L, "y"); lua_pushnumber(L, v.y); lua_settable(L, -3);
 	lua_pushstring(L, "z"); lua_pushnumber(L, v.z); lua_settable(L, -3);
+}
+void lua_push_vec4(lua_State* L, vec4f v)
+{
+	lua_newtable(L);
+	lua_pushstring(L, "x"); lua_pushnumber(L, v.x); lua_settable(L, -3);
+	lua_pushstring(L, "y"); lua_pushnumber(L, v.y); lua_settable(L, -3);
+	lua_pushstring(L, "z"); lua_pushnumber(L, v.z); lua_settable(L, -3);
+	lua_pushstring(L, "w"); lua_pushnumber(L, v.w); lua_settable(L, -3);
 }
 
 void lua_push_mat4(lua_State* L, mat4f* m)

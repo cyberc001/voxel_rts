@@ -1,5 +1,4 @@
 require "./logic/math/vec"
-require "./logic/math/mat"
 
 game_object = {}
 
@@ -7,8 +6,8 @@ function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 	o.vel = o.vel or vec3:new()
 
-	o.trmat = o.trmat or mat4:new()
-	o.trmat_goal = o.trmat_goal or mat4:new()
+	o.rot = o.rot or vec4:new(0, 0, 0, 1)
+	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
 
 	o.path_forward = o.path_forward or vec3:new(1, 0, 0)
 
@@ -29,7 +28,7 @@ function game_object:new(o)
 end
 
 function game_object:update_hitbox()
-	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.trmat, self.size)
+	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
 	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
 end
 
@@ -90,11 +89,13 @@ function game_object:tick()
 end
 
 function game_object:render()
+	if true then
 	if render_hitboxes then
 		render.render_obj_draw(self.robj_hitbox)
 	end
 
 	for _,v in ipairs(self.robj_arr) do
 		v:render(self)
+	end
 	end
 end

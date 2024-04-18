@@ -2,6 +2,7 @@
 #include "game/logic/math.h"
 #include "resources.h"
 #include "render/primitive.h"
+#include "math/quat.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -25,22 +26,23 @@ static int lua_render_obj_draw(lua_State* L)
 	const render_obj* robj = lua_topointer(L, 1);
 
 	vec3f tr = {0, 0, 0};
-	mat4f rot = mat4f_identity();
+	vec4f rot = {0, 0, 0, 1};
 	vec3f sc = {1, 1, 1};
 
 	if(lua_type(L, 2) == LUA_TTABLE)
 		tr = lua_get_vec3(L, 2);
 	if(lua_type(L, 3) == LUA_TTABLE)
-		rot = lua_get_mat4(L, 3);
+		rot = lua_get_vec4(L, 3);
 	if(lua_type(L, 4) == LUA_TTABLE)
 		sc = lua_get_vec3(L, 4);
 
 	glPushMatrix();
 	glTranslatef(tr.x, tr.y, tr.z);
-	GLfloat trmatf[] = { rot.e[0][0], rot.e[0][1], rot.e[0][2], rot.e[0][3],
-		rot.e[1][0], rot.e[1][1], rot.e[1][2], rot.e[1][3],
-		rot.e[2][0], rot.e[2][1], rot.e[2][2], rot.e[2][3],
-		rot.e[3][0], rot.e[3][1], rot.e[3][2], rot.e[3][3],
+	mat4f rot_mat = mat_from_quat(rot);
+	GLfloat trmatf[] = { rot_mat.e[0][0], rot_mat.e[0][1], rot_mat.e[0][2], rot_mat.e[0][3],
+		rot_mat.e[1][0], rot_mat.e[1][1], rot_mat.e[1][2], rot_mat.e[1][3],
+		rot_mat.e[2][0], rot_mat.e[2][1], rot_mat.e[2][2], rot_mat.e[2][3],
+		rot_mat.e[3][0], rot_mat.e[3][1], rot_mat.e[3][2], rot_mat.e[3][3],
 	};
 	glScalef(sc.x, sc.y, sc.z);
 	glMultMatrixf(trmatf);

@@ -17,6 +17,6 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2);
 
 int bbox_check_terrain_collision(bbox3f bbox);
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution);
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f forward, mat4f* new_trmat);
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f forward, vec4f* new_rot);
 
 #endif

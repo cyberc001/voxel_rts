@@ -1,6 +1,7 @@
 #include "math/collision.h"
 #include <stddef.h>
 #include "dyn_array.h"
+#include "math/quat.h"
 
 float triangle2_area_heron(vec2f a, vec2f b, vec2f c)
 {
@@ -256,7 +257,7 @@ int bbox_check_terrain_collision(bbox3f bbox)
 	return 0;
 }
 
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f _forward, mat4f* new_trmat)
+int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f _forward, vec4f* new_rot)
 {
 	bbox3f bbox = hexahedron_get_bbox(h);
 	vec3f terrain_min = {0, 0, 0};
@@ -313,7 +314,7 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
 						vec3f norm = vec3_norm(vec3_cross(e1, e2));
 
-						if(new_trmat){
+						if(new_rot){
 							mat4f trmat = mat4f_identity();
 							vec3f up = vec3_smul(norm, -1);
 							printf("up: "); vec3f_print(up);
@@ -343,7 +344,7 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 							trmat.e[2][2] = right.z;
 
 							printf("trmat:\n"); mat4f_print(&trmat);
-							*new_trmat = trmat;
+							*new_rot = quat_from_rot_mat(&trmat);
 							puts("");
 						}
 					}

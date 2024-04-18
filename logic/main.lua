@@ -42,7 +42,7 @@ function _tick()
 
 		vec3:iadd(v.pos, v.vel)
 		v.pos.y = v.pos.y + gravity
-		v.trmat = gmath.interp_mat4(v.trmat, v.trmat_goal, 0.1)
+		v.rot = gmath.interp_quat(v.rot, v.rot_goal, 0.1)
 		v:update_hitbox()
 
 		for i2,v2 in ipairs(game_object_arr) do
@@ -54,11 +54,11 @@ function _tick()
 			end
 			::continue::
 		end
-		local collided, resolution, new_trmat = gmath.hexahedron_check_terrain_collision(v.hitbox, v.path_forward)
+		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.path_forward)
 		if collided then
 			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
-			v.trmat_goal = new_trmat
+			v.rot_goal = new_rot
 			v:update_hitbox()
 		end
 		path.occupy_space(v.hitbox)
