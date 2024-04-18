@@ -54,10 +54,8 @@ function game_object:path_tick()
 				return
 			end
 
-			local diff = vec3:new(self.path[self.path_i].x + 0.5, self.pos.y, self.path[self.path_i].y + 0.5) - self.pos
-			if diff:ln() > 0 then
-				self.path_forward = diff:unit()
-			end
+			local immgoal = self.path[self.path_i] -- immediate goal
+			local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
 
 			if(diff:ln() > 0) then
 				self.vel = diff:unit() * self.speed
@@ -68,8 +66,13 @@ function game_object:path_tick()
 			if(self.vel:ln() > diff:ln()) then -- set immedate destination
 				self.vel = diff
 				self.path_i = self.path_i + 1
+			else
+				if diff:ln() > 0 then
+					self.path_forward = diff:unit()
+				end
 			end
-			if(self.path[self.path_i] and math.floor(self.pos.x - 0.5) == self.path[self.path_i].x and math.floor(self.pos.z - 0.5) == self.path[self.path_i].y) then -- set immedate destination
+
+			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.vel = vec3:new(0, 0, 0)

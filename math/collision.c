@@ -322,8 +322,6 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 							vec3f n = (vec3f){0, 1, 0};
 							float forward_ang = rad_to_ang(acos(vec3_dot(n, up)));
 							vec3f forward_axis = vec3_norm(vec3_cross(n, up));
-							printf("rot angle: %f\n", forward_ang);
-							printf("rot axis: "); vec3f_print(forward_axis);
 							printf("forward: "); vec3f_print(forward);
 							mat4f forward_trmat = mat4f_identity();
 							if(!isnan(forward_axis.x))
