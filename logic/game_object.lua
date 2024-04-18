@@ -50,7 +50,9 @@ function game_object:path_tick()
 		local center = gmath.hexahedron_get_center(self.hitbox)
 		if self.path and self.path[self.path_i] then
 			if path.is_space_occupied(self.path_pieces[self.path_i]) then
-				self.vel = vec3:new(0, 0, 0)
+				local immgoal = self.path[self.path_i - 1] or self.pos
+				local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
+				self.vel = diff:unit() * self.speed
 				return
 			end
 

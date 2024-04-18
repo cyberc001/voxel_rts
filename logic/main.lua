@@ -16,20 +16,19 @@ table.insert(game_object_arr, game_object:new({
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
 }))
---[[table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 1.8, 0.5), rot = vec3:new(0, 0, 0),
+table.insert(game_object_arr, game_object:new({
+	pos = vec3:new(1.5, 1.8, 0.5),
 	hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
-		render_object:new({model = render.model_find("kirov")})
+		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
-}))]]--
+}))
 
---gravity = 0
 gravity = -0.03
 
 function _first_tick()
 	path.occupy_space(game_object_arr[1].hitbox)
-	--path.occupy_space(game_object_arr[2].hitbox)
+	path.occupy_space(game_object_arr[2].hitbox)
 end
 
 function _tick()
