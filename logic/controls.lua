@@ -14,6 +14,7 @@ function controls_tick()
 	if order_pos then
 		for k in pairs(player_selected_objects) do
 			k:set_goal(order_pos)
+			pointer_flash(vec3:new(order_pos.x, order_pos.y + 0.5, order_pos.z))
 		end
 	end
 end

@@ -7,6 +7,7 @@ player_team = 1
 require "./logic/game_object"
 require "./logic/render_object"
 require "./logic/controls"
+require "./logic/pointer"
 
 --test
 table.insert(game_object_arr, game_object:new({
@@ -33,6 +34,7 @@ end
 
 function _tick()
 	controls_tick()
+	pointer_tick()
 
 	-- handle velocity and collision
 	for i,v in ipairs(game_object_arr) do
@@ -71,4 +73,5 @@ function _render()
 	for _,v in ipairs(game_object_arr) do
 		v:render()
 	end
+	pointer_render()
 end
