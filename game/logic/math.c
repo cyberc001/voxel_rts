@@ -73,9 +73,6 @@ static int lua_interp_quat(lua_State* L)
 	vec4f quat_end = vec4_norm(lua_get_vec4(L, 2));
 	float frac = luaL_checknumber(L, 3);
 
-	printf("quat_cur: "); vec4f_print(quat_cur);
-	printf("quat_end: "); vec4f_print(quat_end);
-
 	vec4f quat_m = quat_slerp(quat_cur, quat_end, frac);
 	lua_push_vec4(L, quat_m);
 	return 1;

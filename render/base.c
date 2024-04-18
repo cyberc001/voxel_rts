@@ -62,22 +62,6 @@ static void render_display()
 	game_logic_render();
 	render_terrain();
 
-	vec2f mouse = get_mouse_coords();
-	TRANSLATE_ORTHO_COORDS(mouse);
-	vec3f proj = vec2f_project3(mouse);
-	proj = vec3_norm(proj);
-	proj = vec3_smul(proj, 1000);
-	vec3f eye = get_camera_center();
-	GLfloat verts[] = {
-		eye.x, eye.y, eye.z,
-		eye.x + proj.x, eye.y + proj.y, eye.z + proj.z
-		//render_cam_pos.x, render_cam_pos.y - 0.1, render_cam_pos.z,
-		//render_cam_pos.x + proj.x, render_cam_pos.y - 0.1 + proj.y, render_cam_pos.z + proj.z
-	};
-	render_obj robj = render_obj_create(GL_LINES, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
-	render_obj_draw(&robj);
-	render_obj_free(&robj);
-
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

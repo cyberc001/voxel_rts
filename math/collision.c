@@ -317,19 +317,19 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 						if(new_rot){
 							mat4f trmat = mat4f_identity();
 							vec3f up = vec3_smul(norm, -1);
-							printf("up: "); vec3f_print(up);
+							//printf("up: "); vec3f_print(up);
 							vec3f forward = _forward;
 							vec3f n = (vec3f){0, 1, 0};
 							float forward_ang = rad_to_ang(acos(vec3_dot(n, up)));
 							vec3f forward_axis = vec3_norm(vec3_cross(n, up));
-							printf("forward: "); vec3f_print(forward);
+							//printf("forward: "); vec3f_print(forward);
 							mat4f forward_trmat = mat4f_identity();
 							if(!isnan(forward_axis.x))
 								mat4f_rotate(&forward_trmat, forward_ang, forward_axis);
 							forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, forward));
-							printf("desired forward: "); vec3f_print(forward);
+							//printf("desired forward: "); vec3f_print(forward);
 							vec3f right = vec3_norm(vec3_cross(forward, up));
-							printf("right: "); vec3f_print(right);
+							//printf("right: "); vec3f_print(right);
 
 							trmat.e[0][0] = forward.x;
 							trmat.e[0][1] = forward.y;
@@ -341,9 +341,9 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 							trmat.e[2][1] = right.y;
 							trmat.e[2][2] = right.z;
 
-							printf("trmat:\n"); mat4f_print(&trmat);
+							//printf("trmat:\n"); mat4f_print(&trmat);
 							*new_rot = quat_from_rot_mat(&trmat);
-							puts("");
+							//puts("");
 						}
 					}
 					collided = 1;
