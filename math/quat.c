@@ -47,20 +47,47 @@ mat4f mat_from_quat(vec4f q)
 		{0, 0, 0, 1}
 	}};
 }
+vec4f quat_from_rot(vec3f rot)
+{
+	rot.x = ang_to_rad(rot.x), rot.y = ang_to_rad(rot.y), rot.z = ang_to_rad(rot.z);
+	float c1 = cos(rot.x/2), c2 = cos(rot.y/2), c3 = cos(rot.z/2),
+	      s1 = sin(rot.x/2), s2 = sin(rot.y/2), s3 = sin(rot.z/2);
+	return (vec4f){
+		s1*s2*c3 + c1*c2*s3,
+		s1*c2*c3 + c1*s2*s3,
+		c1*s2*c3 - s1*c2*s3,
+		c1*c2*c3 - s1*s2*s3
+	};
+}
+vec3f rot_from_quat(vec4f q)
+{
+	return (vec3f){rad_to_ang(atan2(2*q.y*q.w - 2*q.x*q.z, 1 - 2*q.y*q.y - 2*q.z*q.z)),
+			rad_to_ang(asin(2*q.x*q.y + 2*q.z*q.w)),
+			rad_to_ang(atan2(2*q.x*q.w - 2*q.y*q.z, 1 - 2*q.x*q.x - 2*q.z*q.z))};
+}
 
 vec4f quat_slerp(vec4f start, vec4f end, float t)
 { // https://stackoverflow.com/questions/4099369/interpolate-between-rotation-matrices
-	float cos_half_theta = vec4_dot(start, end);
-	if(fabs(cos_half_theta) >= 1)
-		return start;
-	float half_theta = acos(cos_half_theta);
-	float sin_half_theta = sqrt(1 - cos_half_theta*cos_half_theta);
-	if(fabs(sin_half_theta) < 0.001){
-		vec4f m1 = vec4_smul(start, 0.5), m2 = vec4_smul(end, 0.5);
-		return vec4_add(m1, m2);
+	vec3f rot_start = rot_from_quat(start);
+	vec3f rot_end = rot_from_quat(end);
+	if(isnan(rot_start.x))
+		return end;
+
+	if(fabs(rot_start.x - rot_end.x) > 180){
+		if(fabs(rot_start.x) > fabs(rot_end.x)) rot_start.x -= sign(rot_start.x)*360;
+		else	rot_end.x -= sign(rot_end.x)*360;
 	}
-	float ratio_a = sin((1 - t) * half_theta) / sin_half_theta;
-	float ratio_b = sin(t * half_theta) / sin_half_theta;
-	vec4f m1 = vec4_smul(start, ratio_a), m2 = vec4_smul(end, ratio_b);
-	return vec4_add(m1, m2);
+	if(fabs(rot_start.y - rot_end.y) > 180){
+		if(fabs(rot_start.y) > fabs(rot_end.y)) rot_start.y -= sign(rot_start.y)*360;
+		else	rot_end.y -= sign(rot_end.y)*360;
+	}
+	if(fabs(rot_start.z - rot_end.z) > 180){
+		if(fabs(rot_start.z) > fabs(rot_end.z)) rot_start.z -= sign(rot_start.z)*360;
+		else	rot_end.z -= sign(rot_end.z)*360;
+	}
+
+	rot_start = vec3_smul(rot_start, 1 - t);
+	rot_end = vec3_smul(rot_end, t);
+	vec3f rot_m = vec3_add(rot_start, rot_end);
+	return quat_from_rot(rot_m);
 }
