@@ -91,7 +91,15 @@ bbox3f hexahedron_get_bbox(const hexahedron* h)
 		}
 	return (bbox3f){_min, _max};
 }
-
+bbox3f hexahedron_get_interaction_box(const hexahedron* h, float expand)
+{
+	bbox3f ibox = hexahedron_get_bbox(h);
+	ibox.min.x -= fabs(ibox.min.x)*expand;
+	ibox.min.z -= fabs(ibox.min.z)*expand;
+	ibox.max.x += fabs(ibox.max.x)*expand;
+	ibox.max.z += fabs(ibox.max.z)*expand;
+	return ibox;
+}
 
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat)
 {

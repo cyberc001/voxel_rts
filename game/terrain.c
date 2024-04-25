@@ -12,7 +12,6 @@ static size_t chunk_hash(size_t table_sz, const uint64_t* key)
 
 #define TEST_ADD_TPIECE()\
 	terrain_piece* add2 = malloc(sizeof(terrain_piece));\
-	add2->occupying_objects = 0;\
 	add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1;\
 	for(size_t j = 0; j < 6; ++j)\
 		add2->atex[j] = atlas_texture_find("gravel");\
@@ -24,7 +23,6 @@ void terrain_init()
 		for(size_t y = 0; y < 10; ++y){
 			terrain_piece* p = terrain_get_piece_anyway(x, y);
 
-			p->occupying_objects = 0;
 			p->z_floor[0] = p->z_floor[1] = p->z_floor[2] = p->z_floor[3] = 0;
 			p->z_ceil[0] = 1;
 			p->z_ceil[1] = 1;
@@ -189,46 +187,6 @@ void terrain_piece_remove(terrain_piece* toremove)
 		toremove->prev->next = toremove->next;
 	if(toremove->next)
 		toremove->next->prev = toremove->prev;
-}
-
-void terrain_occupy_hexahedron(const hexahedron* h, int occupy)
-{
-	vec3f center = hexahedron_get_center(h);
-	bbox3f h_bbox = hexahedron_get_bbox(h);
-	h_bbox.min = vec3_sub(h_bbox.min, center);
-	h_bbox.max = vec3_sub(h_bbox.max, center);
-	float h_bbox_y = h_bbox.min.y;
-	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
-	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
-	h_bbox.max.x += 0.5; h_bbox.max.z += 0.5;
-
-	vec2i cur_pos = (vec2i){center.x, center.z};
-	terrain_piece* cur_tpiece = terrain_get_piece(cur_pos.x, cur_pos.y);
-	if(!cur_tpiece) return;
-	cur_tpiece = terrain_get_nearest_piece_maxz(center.y, cur_tpiece);
-
-	int bbox_w = ceil(h_bbox.max.x - h_bbox.min.x),
-	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);
-	if(bbox_w % 2 == 0) ++bbox_w;
-	if(bbox_h % 2 == 0) ++bbox_h;
-
-	int buf_ln = bbox_w*bbox_h;
-	terrain_piece** tpiece_buf = malloc(sizeof(terrain_piece*)*buf_ln);
-	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
-	tnode_dynarray node_buf;
-	tnode_dynarray_create(&node_buf);
-	get_all_occupied_tpieces(bbox_w, bbox_h,
-					cur_pos, cur_tpiece,
-					tpiece_buf, &node_buf);
-
-	for(int i = 0; i < buf_ln; ++i)
-		if(tpiece_buf[i]){
-			if(occupy) 	terrain_occupy_piece(*tpiece_buf[i]);
-			else		terrain_deoccupy_piece(*tpiece_buf[i]);
-		}
-
-	free(tpiece_buf);
-	tnode_dynarray_destroy(&node_buf);
 }
 
 terrain_piece* __check_against_line(vec2f v, line3f* l, int x_changed)

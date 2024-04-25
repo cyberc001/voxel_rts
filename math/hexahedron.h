@@ -23,6 +23,7 @@ hexahedron hexahedron_from_terrain_piece(unsigned tx, unsigned ty, terrain_piece
 
 vec3f hexahedron_get_center(const hexahedron* h1);
 bbox3f hexahedron_get_bbox(const hexahedron* h);
+bbox3f hexahedron_get_interaction_box(const hexahedron* h, float expand); // expand is a fraction by how much expand in xz plane (0.1 means 10% bigger bounding box)
 
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat);
 

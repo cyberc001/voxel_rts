@@ -21,8 +21,6 @@ struct terrain_piece {
 
 	atlas_texture* atex[6]; // each side can have a unique texture
 
-	unsigned occupying_objects; // "reference" counter that increases when an object enters this tile. Used for pathing.
-
 	enum armor_type armor;
 	double health;
 };
@@ -58,10 +56,6 @@ terrain_piece* terrain_get_nearest_piece_maxz(float z, terrain_piece* tpiece);
 
 void terrain_piece_add(terrain_piece* list, terrain_piece* toadd);
 void terrain_piece_remove(terrain_piece* toremove);
-
-#define terrain_occupy_piece(tpiece) (++(tpiece).occupying_objects)
-#define terrain_deoccupy_piece(tpiece) (--(tpiece).occupying_objects)
-void terrain_occupy_hexahedron(const hexahedron* h, int occupy);
 
 terrain_piece* terrain_find_first_piece_in_line(line3f line, vec3f* pos); // outputs terrain piece's position in pos if pos is non-NULL
 

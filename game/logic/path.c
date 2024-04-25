@@ -28,31 +28,9 @@ static int lua_find_path(lua_State* L)
 	return 2;
 }
 
-static int lua_is_space_occupied(lua_State* L)
-{
-	const terrain_piece* tpiece = lua_topointer(L, 1);
-	lua_pushboolean(L, tpiece->occupying_objects);
-	return 1;
-}
-static int lua_occupy_space(lua_State* L)
-{
-	hexahedron h = lua_get_hexahedron(L, 1);
-	terrain_occupy_hexahedron(&h, 1);
-	return 0;
-}
-static int lua_deoccupy_space(lua_State* L)
-{
-	hexahedron h = lua_get_hexahedron(L, 1);
-	terrain_occupy_hexahedron(&h, 0);
-	return 0;
-}
-
 static const struct luaL_Reg cfuncs[] = {
 	{"find_path", lua_find_path},
 
-	{"is_space_occupied", lua_is_space_occupied},
-	{"occupy_space", lua_occupy_space},
-	{"deoccupy_space", lua_deoccupy_space},
 	{NULL, NULL}
 };
 

@@ -36,6 +36,14 @@ static int lua_hexahedron_get_center(lua_State* L)
 	lua_push_vec3(L, hexahedron_get_center(&h));
 	return 1;
 }
+static int lua_hexahedron_get_interaction_box(lua_State* L)
+{
+	hexahedron h = lua_get_hexahedron(L, 1);
+	float expand = lua_isnumber(L, 2) ? lua_tonumber(L, 2) : 0.2;
+	lua_push_bbox(L, hexahedron_get_interaction_box(&h, expand));
+	return 1;
+}
+
 static int lua_hexahedron_transform(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
@@ -67,6 +75,7 @@ static int lua_hexahedron_transform(lua_State* L)
 	lua_push_hexahedron(L, h);
 	return 1;
 }
+
 static int lua_interp_quat(lua_State* L)
 {
 	vec4f quat_cur = vec4_norm(lua_get_vec4(L, 1));
@@ -109,6 +118,13 @@ static int lua_hexahedron_check_terrain_collision(lua_State* L)
 	}
 	return 1;
 }
+static int lua_bbox_check_collision(lua_State* L)
+{
+	bbox3f b1 = lua_get_bbox(L, 1);
+	bbox3f b2 = lua_get_bbox(L, 2);
+	lua_pushboolean(L, bbox_check_collision(&b1, &b2));
+	return 1;
+}
 
 #define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
@@ -144,12 +160,16 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cuboid_centered", lua_hexahedron_from_cuboid_centered},
 	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
 
-	{"hexahedron_transform", lua_hexahedron_transform},
-	{"interp_quat", lua_interp_quat},
 	{"hexahedron_get_center", lua_hexahedron_get_center},
+	{"hexahedron_get_interaction_box", lua_hexahedron_get_interaction_box},
+
+	{"hexahedron_transform", lua_hexahedron_transform},
+
+	{"interp_quat", lua_interp_quat},
 
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
 	{"hexahedron_check_terrain_collision", lua_hexahedron_check_terrain_collision},
+	{"bbox_check_collision", lua_bbox_check_collision},
 
 	{"hexahedron_is_selected", lua_hexahedron_is_selected},
 
@@ -266,4 +286,24 @@ void lua_push_hexahedron(lua_State* L, hexahedron h)
 		}
 		lua_rawseti(L, -2, i+1);
 	}
+}
+
+bbox3f lua_get_bbox(lua_State* L, int bboxidx)
+{
+	bbox3f bbox;
+	lua_rawgeti(L, bboxidx, 1);
+	bbox.min = lua_get_vec3(L, -1);
+	lua_pop(L, 1);
+	lua_rawgeti(L, bboxidx, 2);
+	bbox.max = lua_get_vec3(L, -1);
+	lua_pop(L, 1);
+	return bbox;
+}
+void lua_push_bbox(lua_State* L, bbox3f bbox)
+{
+	lua_newtable(L);
+	lua_push_vec3(L, bbox.min);
+	lua_rawseti(L, -2, 1);
+	lua_push_vec3(L, bbox.max);
+	lua_rawseti(L, -2, 2);
 }
