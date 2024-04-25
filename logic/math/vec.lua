@@ -6,7 +6,7 @@
 vec2 = { x = 0, y = 0 }
 
 function vec2:new(x, y)
-	o = {}
+	local o = {}
 	if type(x) == "table" then
 		o = {x = x.x, y = x.y}
 	else -- type(x, y) == "number"
@@ -58,6 +58,7 @@ end
 vec3 = { x = 0, y = 0, z = 0 }
 
 function vec3:new(x, y, z)
+	local o = {}
 	if type(x) == "table" then
 		o = {x = x.x, y = x.y, z = x.z}
 	else -- type(x, y, z) == "number"
@@ -121,6 +122,7 @@ end
 vec4 = { x = 0, y = 0, z = 0 }
 
 function vec4:new(x, y, z, w)
+	local o = {}
 	if type(x) == "table" then
 		o = {x = x.x, y = x.y, z = x.z, w = x.w}
 	else -- type(x, y, z, w) == "number"

@@ -2,7 +2,7 @@
 mat4 = {}
 
 function mat4:new(fill)
-	o = {}
+	local o = {}
 	for i = 1, 16 do
 		o[i] = type(fill) == "number" and fill or 0
 	end
