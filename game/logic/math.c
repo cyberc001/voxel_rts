@@ -36,6 +36,12 @@ static int lua_hexahedron_get_center(lua_State* L)
 	lua_push_vec3(L, hexahedron_get_center(&h));
 	return 1;
 }
+static int lua_hexahedron_get_bbox(lua_State* L)
+{
+	hexahedron h = lua_get_hexahedron(L, 1);
+	lua_push_bbox(L, hexahedron_get_bbox(&h));
+	return 1;
+}
 static int lua_hexahedron_get_interaction_box(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
@@ -125,6 +131,13 @@ static int lua_bbox_check_collision(lua_State* L)
 	lua_pushboolean(L, bbox_check_collision(&b1, &b2));
 	return 1;
 }
+static int lua_bbox_contains_bbox(lua_State* L)
+{
+	bbox3f container = lua_get_bbox(L, 1);
+	bbox3f containee = lua_get_bbox(L, 2);
+	lua_pushboolean(L, bbox_contains_bbox(&container, &containee));
+	return 1;
+}
 
 #define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
@@ -161,6 +174,7 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
 
 	{"hexahedron_get_center", lua_hexahedron_get_center},
+	{"hexahedron_get_bbox", lua_hexahedron_get_bbox},
 	{"hexahedron_get_interaction_box", lua_hexahedron_get_interaction_box},
 
 	{"hexahedron_transform", lua_hexahedron_transform},
@@ -170,6 +184,7 @@ static const struct luaL_Reg cfuncs[] = {
 	{"hexahedron_check_collision", lua_hexahedron_check_collision},
 	{"hexahedron_check_terrain_collision", lua_hexahedron_check_terrain_collision},
 	{"bbox_check_collision", lua_bbox_check_collision},
+	{"bbox_contains_bbox", lua_bbox_contains_bbox},
 
 	{"hexahedron_is_selected", lua_hexahedron_is_selected},
 

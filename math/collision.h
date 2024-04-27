@@ -14,6 +14,7 @@ int point_is_in_face3(vec3f pt, const face3f* f);
 
 int hexahedron_check_projection_collision(const hexahedron* h1, const hexahedron* h2);
 int bbox_check_collision(const bbox3f* b1, const bbox3f* b2);
+int bbox_contains_bbox(const bbox3f* container, const bbox3f* containee);
 
 int bbox_check_terrain_collision(bbox3f bbox);
 int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution);

@@ -30,6 +30,7 @@ end
 function game_object:update_hitbox()
 	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
 	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
+	self.bbox = gmath.hexahedron_get_bbox(self.hitbox)
 	self.interaction_box = gmath.hexahedron_get_interaction_box(self.hitbox)
 end
 
@@ -77,6 +78,8 @@ function game_object:path_tick()
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.vel = vec3:new(0, 0, 0)
+					self:clear_goal()
+					return
 				end
 			elseif(not self.path[self.path_i]) then
 				self.vel = vec3:new(0, 0, 0)
@@ -90,7 +93,7 @@ function game_object:path_tick()
 end
 
 function game_object:path_remaining()
-	if not self.path then
+	if self.path == nil then
 		return math.huge
 	end
 	return #self.path - self.path_i

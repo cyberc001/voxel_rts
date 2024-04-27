@@ -105,6 +105,15 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2)
 	       && !(b1->max.y < b2->min.y || b2->max.y < b1->min.y)
 	       && !(b1->max.z < b2->min.z || b2->max.z < b1->min.z);
 }
+int bbox_contains_bbox(const bbox3f* container, const bbox3f* containee)
+{
+	return in_range(containee->min.x, container->min.x, container->max.x)
+	       && in_range(containee->max.x, container->min.x, container->max.x)
+	       && in_range(containee->min.y, container->min.y, container->max.y)
+	       && in_range(containee->max.y, container->min.y, container->max.y)
+	       && in_range(containee->min.z, container->min.z, container->max.z)
+	       && in_range(containee->max.z, container->min.z, container->max.z);
+}
 
 /* SAT */
 
