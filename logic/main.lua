@@ -64,9 +64,11 @@ function _tick()
 		v.moves_this_tick = true
 
 		local clusters = oc.obj_clusters[v]
+		local checked_objects = {}
 		for cluster_i in pairs(clusters) do -- for each cluster that intersects with the object
 			for v2 in pairs(oc.clusters[cluster_i]) do -- check collision with objects in these clusters
-				if v ~= v2 then
+				if v ~= v2 and checked_objects[v2] == nil then
+					checked_objects[v2] = true
 					local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
 					if collided then
 						vec3:isub(v.pos, resolution)
@@ -77,7 +79,7 @@ function _tick()
 					if collided then
 						game_object.decide_who_moves(v, v2)
 					end
-						end
+				end
 			end
 		end
 	
