@@ -3,23 +3,23 @@
 #include "game/logic/render.h"
 #include "game/logic/math.h"
 
-static lua_State* _s;
+lua_State* global_lua_state;
 static const char* base_fname = "logic/main.lua";
 
 void game_logic_init()
 {
 	// create Lua state
-	_s = luaL_newstate();
-	luaL_openlibs(_s);
+	global_lua_state = luaL_newstate();
+	luaL_openlibs(global_lua_state);
 
-	game_logic_init_render(_s);
-	game_logic_init_math(_s);
-	game_logic_init_path(_s);
-	game_logic_init_controls(_s);
+	game_logic_init_render(global_lua_state);
+	game_logic_init_math(global_lua_state);
+	game_logic_init_path(global_lua_state);
+	game_logic_init_controls(global_lua_state);
 
-	if(luaL_loadfile(_s, base_fname) || lua_pcall(_s, 0, 0, 0)){
-		LOG_ERROR("Error running \"%s\":\n%s\n", base_fname, lua_tostring(_s, -1));
-		lua_pop(_s, 1);
+	if(luaL_loadfile(global_lua_state, base_fname) || lua_pcall(global_lua_state, 0, 0, 0)){
+		LOG_ERROR("Error running \"%s\":\n%s\n", base_fname, lua_tostring(global_lua_state, -1));
+		lua_pop(global_lua_state, 1);
 		return;
 	}
 }
@@ -29,23 +29,23 @@ void game_logic_tick()
 {
 	if(first_tick){
 		first_tick = 0;
-		lua_getglobal(_s, "_first_tick");
-		if(lua_pcall(_s, 0, 0, 0)){
-			LOG_ERROR("global logic _first_tick() returned an error:\n%s\n", lua_tostring(_s, -1));
-			lua_pop(_s, 1);
+		lua_getglobal(global_lua_state, "_first_tick");
+		if(lua_pcall(global_lua_state, 0, 0, 0)){
+			LOG_ERROR("global function _first_tick() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
+			lua_pop(global_lua_state, 1);
 		}
 	}
-	lua_getglobal(_s, "_tick");
-	if(lua_pcall(_s, 0, 0, 0)){
-		LOG_ERROR("global logic _tick() returned an error:\n%s\n", lua_tostring(_s, -1));
-		lua_pop(_s, 1);
+	lua_getglobal(global_lua_state, "_tick");
+	if(lua_pcall(global_lua_state, 0, 0, 0)){
+		LOG_ERROR("global function _tick() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
+		lua_pop(global_lua_state, 1);
 	}
 }
 void game_logic_render()
 {
-	lua_getglobal(_s, "_render");
-	if(lua_pcall(_s, 0, 0, 0)){
-		LOG_ERROR("global logic _render() returned an error:\n%s\n", lua_tostring(_s, -1));
-		lua_pop(_s, 1);
+	lua_getglobal(global_lua_state, "_render");
+	if(lua_pcall(global_lua_state, 0, 0, 0)){
+		LOG_ERROR("global function _render() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
+		lua_pop(global_lua_state, 1);
 	}
 }

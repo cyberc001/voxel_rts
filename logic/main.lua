@@ -12,7 +12,7 @@ require "./logic/math/octree"
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(4.5, 1.8, 4.5), 
+	pos = vec3:new(1.5, 1.8, 4.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
@@ -29,7 +29,7 @@ table.insert(game_object_arr, game_object:new({
 gravity = -0.03
 
 function _first_tick()
-	local oc = octree:new(game_object_arr)
+	--[[local oc = octree:new(game_object_arr)
 	for i,cluster in pairs(oc.clusters) do
 		print("cluster", i)
 		if oc.children[i] ~= nil then
@@ -53,7 +53,7 @@ function _first_tick()
 		for k in pairs(clusters) do
 			print("", k)
 		end
-	end
+	end]]--
 end
 
 function _tick()
@@ -62,7 +62,7 @@ function _tick()
 
 	-- handle velocity and collision
 	
-	local oc = octree:new(game_object_arr)
+	cur_octree = octree:new(game_object_arr)
 
 	for _,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel)
@@ -72,10 +72,10 @@ function _tick()
 
 		v.moves_this_tick = true
 
-		local clusters = oc.obj_clusters[v]
+		local clusters = cur_octree.obj_clusters[v]
 		local checked_objects = {}
 		for cluster_i in pairs(clusters) do -- for each cluster that intersects with the object
-			for v2 in pairs(oc.clusters[cluster_i]) do -- check collision with objects in these clusters
+			for v2 in pairs(cur_octree.clusters[cluster_i]) do -- check collision with objects in these clusters
 				if v ~= v2 and checked_objects[v2] == nil then
 					checked_objects[v2] = true
 					local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)

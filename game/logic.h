@@ -5,6 +5,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+extern lua_State* global_lua_state;
 void game_logic_init();
 
 void game_logic_tick();

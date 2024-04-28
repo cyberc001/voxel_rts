@@ -1,6 +1,7 @@
 #include "game/pathfinding.h"
 #include "htable_oa.h"
 #include "pqueue.h"
+#include "game/logic/path.h"
 
 static float heuristic(vec3f v1, vec3f v2)
 {
@@ -77,7 +78,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 			\
 			float max_ceil = tpiece_max_z_ceil(res_tpiece);\
 			printf("max_ceil %lu %p: %f\n", i, res_tpiece, max_ceil);\
-			/* collision check dx*/\
+			/* terrain collision check dx*/\
 			if(dx){\
 				bbox3f new_bbox = h_bbox;\
 				new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y;\
@@ -86,7 +87,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.max.y += max_ceil;\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
 			}\
-			/* collision check dy*/\
+			/* terrain collision check dy*/\
 			if(dy){\
 				bbox3f new_bbox = h_bbox;\
 				new_bbox.min.x += _cur_node->pos.x; new_bbox.min.z += _cur_node->pos.y + (dy);\
@@ -95,14 +96,16 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.max.y += max_ceil;\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
 			}\
-			/* collision check dx+dy*/\
+			/* terrain collision check dx+dy*/\
 			bbox3f new_bbox = h_bbox;\
 			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
 			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
 			new_bbox.min.y += max_ceil;\
 			new_bbox.max.y += max_ceil;\
 			if(bbox_check_terrain_collision(new_bbox)) continue;\
-\
+			/* octree collision check */\
+			if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
+			/* add to queue */\
 			tnode** old_node;\
 			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
 				res_node.y = tpiece_avg_z_ceil(*res_tpiece);\

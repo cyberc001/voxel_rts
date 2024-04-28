@@ -8,3 +8,7 @@ function bbox:new(min, max)
 	self.__index = self
 	return o
 end
+function bbox.tostring(v1)
+	return "[ min: " .. vec3.tostring(v1[1]) .. " max: " .. vec3.tostring(v1[2]) .. " ]"
+end
+bbox.__tostring = bbox.tostring

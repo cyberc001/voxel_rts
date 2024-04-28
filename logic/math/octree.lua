@@ -85,3 +85,26 @@ function octree:divide(cluster_i)
 	end
 	return true
 end
+
+function _check_bbox_octree_collision(bb, cluster_i) -- is to be called by C engine
+	cluster_i = cluster_i or 1
+	print("cluster", cluster_i)
+	if cur_octree.children[cluster_i] ~= nil then
+		for _, new_cluster_i in ipairs(cur_octree.children[cluster_i]) do
+			if gmath.bbox_check_collision(cur_octree.bboxes[new_cluster_i], bb) then
+				if _check_bbox_octree_collision(bb, new_cluster_i) then
+					return true
+				end
+			end
+		end
+	else -- it's a leaf cluster, check collisions between bb and all other objects inside it
+		for k in pairs(cur_octree.clusters[cluster_i]) do
+			print("check", bbox.tostring(bb), bbox.tostring(k.bbox))
+			if gmath.bbox_check_collision(bb, k.bbox) then
+				print("collision")
+				return true
+			end
+		end
+	end
+	return false
+end

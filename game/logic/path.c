@@ -2,6 +2,7 @@
 #include "math/collision.h"
 #include "game/pathfinding.h"
 #include "game/terrain.h"
+#include "log.h"
 
 static int lua_find_path(lua_State* L)
 {
@@ -39,4 +40,16 @@ void game_logic_init_path(lua_State* _s)
 	lua_newtable(_s);
 	luaL_setfuncs(_s, cfuncs, 0);
 	lua_setglobal(_s, "path");
+}
+
+int check_bbox_octree_collision(lua_State* L, bbox3f bbox)
+{
+	lua_getglobal(L, "_check_bbox_octree_collision");
+	lua_push_bbox(L, bbox);
+	if(lua_pcall(L, 1, 1, 0)){
+		LOG_ERROR("function _check_bbox_octree_collision returned an error:\n%s\n", lua_tostring(L, -1));
+		lua_pop(L, 1);
+		return 0;
+	}
+	return lua_toboolean(L, -1);
 }

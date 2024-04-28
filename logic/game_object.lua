@@ -38,7 +38,17 @@ end
 
 function game_object:set_goal(goal)
 	self.goal = goal
+
+	-- temporarily remove object from octree
+	local clusters = cur_octree.obj_clusters[self]
+	for cluster_i in pairs(clusters) do
+		cur_octree.clusters[cluster_i][self] = nil
+	end
 	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal)
+	-- restore object in octree
+	for cluster_i in pairs(clusters) do
+		cur_octree.clusters[cluster_i][self] = true
+	end
 	self.path_i = 1
 end
 function game_object:clear_goal(goal)
