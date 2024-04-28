@@ -14,12 +14,12 @@ function octree:new(objects)
 	local mincr = vec3:new(math.huge, math.huge, math.huge)
 	local maxcr = -mincr
 	for _,v in ipairs(objects) do
-		if v.bbox[1].x < mincr.x then mincr.x = v.bbox[1].x end
-		if v.bbox[1].y < mincr.y then mincr.y = v.bbox[1].y end
-		if v.bbox[1].z < mincr.z then mincr.z = v.bbox[1].z end
-		if v.bbox[2].x > maxcr.x then maxcr.x = v.bbox[2].x end
-		if v.bbox[2].y > maxcr.y then maxcr.y = v.bbox[2].y end
-		if v.bbox[2].z > maxcr.z then maxcr.z = v.bbox[2].z end
+		if v.interaction_box[1].x < mincr.x then mincr.x = v.interaction_box[1].x end
+		if v.interaction_box[1].y < mincr.y then mincr.y = v.interaction_box[1].y end
+		if v.interaction_box[1].z < mincr.z then mincr.z = v.interaction_box[1].z end
+		if v.interaction_box[2].x > maxcr.x then maxcr.x = v.interaction_box[2].x end
+		if v.interaction_box[2].y > maxcr.y then maxcr.y = v.interaction_box[2].y end
+		if v.interaction_box[2].z > maxcr.z then maxcr.z = v.interaction_box[2].z end
 
 		o:add_object_to_cluster(v, 1)
 	end
@@ -69,7 +69,7 @@ function octree:divide(cluster_i)
 		self.bboxes[new_cluster_i][2].z = math.max(corner.z, center.z)
 
 		for k in pairs(self.clusters[cluster_i]) do
-			if gmath.bbox_check_collision(self.bboxes[new_cluster_i], k.bbox) then
+			if gmath.bbox_check_collision(self.bboxes[new_cluster_i], k.interaction_box) then
 				self:add_object_to_cluster(k, new_cluster_i, cluster_i)
 			end
 		end
