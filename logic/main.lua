@@ -29,8 +29,17 @@ table.insert(game_object_arr, game_object:new({
 gravity = -0.03
 
 function _first_tick()
-	--[[for i,cluster in pairs(oc.clusters) do
-		print("cluster", i, "depth", oc.depths[i])
+	local oc = octree:new(game_object_arr)
+	for i,cluster in pairs(oc.clusters) do
+		print("cluster", i)
+		if oc.children[i] ~= nil then
+			local children_str = "children: "
+			for i,v in ipairs(oc.children[i]) do
+				children_str = children_str .. tostring(v) .. " "
+			end
+			print(children_str)
+		end
+
 		print("min corner", oc.bboxes[i][1])
 		print("max corner", oc.bboxes[i][2])
 		for k in pairs(cluster) do
@@ -44,7 +53,7 @@ function _first_tick()
 		for k in pairs(clusters) do
 			print("", k)
 		end
-	end]]--
+	end
 end
 
 function _tick()

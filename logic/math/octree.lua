@@ -7,9 +7,9 @@ function octree:new(objects)
 	setmetatable(o, self)
 	self.__index = self
 
-	o.depths = {0}
 	o.obj_clusters = {} -- maps object to a set of clusters
 	o.clusters = {{}} -- maps cluster to a set of objects
+	o.children = {}
 
 	local mincr = vec3:new(math.huge, math.huge, math.huge)
 	local maxcr = -mincr
@@ -33,10 +33,10 @@ end
 function octree:add_object_to_cluster(obj, cluster_i, old_cluster_i)
 	self.clusters[cluster_i][obj] = true
 	if self.obj_clusters[obj] == nil then
-		self.obj_clusters[obj] = {}
+		self.obj_clusters[obj] = {} -- create a set of clusters
 	end
 	self.obj_clusters[obj][cluster_i] = true
-	if old_cluster_i ~= nil then
+	if old_cluster_i ~= nil then -- remove old cluster, it's not a leaf
 		self.obj_clusters[obj][old_cluster_i] = nil
 	end
 end
@@ -49,7 +49,8 @@ function octree:divide(cluster_i)
 		return false -- cluster is too small diagonally, terminate
 	end
 
-	local had_child_clusters = false
+	self.children[cluster_i] = {} -- create a set of cluster's children
+
 	for i = 1, 8 do
 		local corner = vec3:new()
 		corner.x = (i & 1 == 0 and mincr.x or maxcr.x)
@@ -78,15 +79,9 @@ function octree:divide(cluster_i)
 			self.clusters[new_cluster_i] = nil
 			self.bboxes[new_cluster_i] = nil
 		else
-			self.depths[new_cluster_i] = self.depths[cluster_i] + 1
+			table.insert(self.children[cluster_i], new_cluster_i)
 			self:divide(new_cluster_i)
-			had_child_clusters = true
 		end
-	end
-	if had_child_clusters then -- leave only leafs in the tree
-		self.clusters[cluster_i] = nil
-		self.bboxes[cluster_i] = nil
-		self.depths[cluster_i] = nil
 	end
 	return true
 end
