@@ -86,6 +86,7 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.min.y += max_ceil;\
 				new_bbox.max.y += max_ceil;\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
+				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
 			}\
 			/* terrain collision check dy*/\
 			if(dy){\
@@ -95,16 +96,18 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.min.y += max_ceil;\
 				new_bbox.max.y += max_ceil;\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
+				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
 			}\
 			/* terrain collision check dx+dy*/\
-			bbox3f new_bbox = h_bbox;\
-			new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
-			new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
-			new_bbox.min.y += max_ceil;\
-			new_bbox.max.y += max_ceil;\
-			if(bbox_check_terrain_collision(new_bbox)) continue;\
-			/* octree collision check */\
-			if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
+			if(dx && dy){\
+				bbox3f new_bbox = h_bbox;\
+				new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
+				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
+				new_bbox.min.y += max_ceil;\
+				new_bbox.max.y += max_ceil;\
+				if(bbox_check_terrain_collision(new_bbox)) continue;\
+				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
+			}\
 			/* add to queue */\
 			tnode** old_node;\
 			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
