@@ -3,8 +3,8 @@
 
 static int lua_get_selection_query(lua_State* L)
 {
-	lua_pushboolean(L, controls_selection_queried);
-	controls_selection_queried = 0;
+	lua_pushinteger(L, controls_selection_queried);
+	controls_selection_queried = CONTROLS_SELECTION_NOT_QUERIED;
 	return 1;
 }
 static int lua_get_order_query(lua_State* L)

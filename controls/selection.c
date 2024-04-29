@@ -32,12 +32,13 @@ static void selection_kb_up(key_code key, int mods)
 				min(controls_selection_start.y, controls_selection_end.y)};
 		controls_selection_max = (vec2f){max(controls_selection_start.x, controls_selection_end.x),
 				max(controls_selection_start.y, controls_selection_end.y)};
-
 		vec2f delta = vec2_sub(controls_selection_max, controls_selection_min);
 		if(delta.x > UI_SELECTION_MIN && delta.y > UI_SELECTION_MIN)
-			controls_selection_queried = 1;
+			controls_selection_queried = CONTROLS_SELECTION_QUERIED_AREA;
+		else
+			controls_selection_queried = CONTROLS_SELECTION_QUERIED_SINGLE_POINT;
 	}
-	if(!controls_selection_queried && check_key_bind(key, "order")){
+	if(controls_selection_queried != CONTROLS_SELECTION_QUERIED_AREA && check_key_bind(key, "order")){
 		vec2f mouse = get_mouse_coords();
 		TRANSLATE_ORTHO_COORDS(mouse);
 
