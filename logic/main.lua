@@ -29,31 +29,6 @@ table.insert(game_object_arr, game_object:new({
 gravity = -0.03
 
 function _first_tick()
-	--[[local oc = octree:new(game_object_arr)
-	for i,cluster in pairs(oc.clusters) do
-		print("cluster", i)
-		if oc.children[i] ~= nil then
-			local children_str = "children: "
-			for i,v in ipairs(oc.children[i]) do
-				children_str = children_str .. tostring(v) .. " "
-			end
-			print(children_str)
-		end
-
-		print("min corner", oc.bboxes[i][1])
-		print("max corner", oc.bboxes[i][2])
-		for k in pairs(cluster) do
-			print("", k)
-			print("", vec3.tostring(k.bbox[1]), vec3.tostring(k.bbox[2]))
-		end
-	end
-	print(",,,,,,,,,,,,obj_cluster,,,,,,,,,,,,,,")
-	for obj,clusters in pairs(oc.obj_clusters) do
-		print("obj", obj)
-		for k in pairs(clusters) do
-			print("", k)
-		end
-	end]]--
 end
 
 function _tick()
@@ -66,6 +41,7 @@ function _tick()
 
 	for _,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel)
+		vec3:iadd(v.pos, v.path_vel)
 		v.pos.y = v.pos.y + gravity
 		v.rot = gmath.interp_quat(v.rot, v.rot_goal, 0.1)
 		v:update_hitbox()

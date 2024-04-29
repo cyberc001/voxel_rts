@@ -4,11 +4,12 @@ game_object = {}
 
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
-	o.vel = o.vel or vec3:new()
+
+	o.vel = vec3:new()
+	o.path_vel = vec3:new()
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)
 	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
-
 	o.path_forward = o.path_forward or vec3:new(1, 0, 0)
 
 	o.size = o.size or vec3:new(1, 1, 1)
@@ -58,8 +59,9 @@ function game_object:clear_goal(goal)
 end
 
 function game_object:path_tick()
+	self.path_vel = vec3:new(0, 0, 0)
+
 	if not self.moves_this_tick then
-		self.vel = vec3:new(0, 0, 0)
 		return
 	end
 
@@ -70,13 +72,11 @@ function game_object:path_tick()
 			local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
 
 			if(diff:ln() > 0) then
-				self.vel = diff:unit() * self.speed
-			else
-				self.vel = vec3:new(0, 0, 0)
+				self.path_vel = diff:unit() * self.speed
 			end
 
 			if(self.vel:ln() > diff:ln()) then -- set immedate destination
-				self.vel = diff
+				self.path_vel = diff
 				self.path_i = self.path_i + 1
 			else
 				if diff:ln() > 0 then
@@ -87,17 +87,15 @@ function game_object:path_tick()
 			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
-					self.vel = vec3:new(0, 0, 0)
+					self.path_vel = vec3:new(0, 0, 0)
 					self:clear_goal()
 					return
 				end
 			elseif(not self.path[self.path_i]) then
-				self.vel = vec3:new(0, 0, 0)
+				self.path_vel = vec3:new(0, 0, 0)
 				self:clear_goal()
 				return
 			end
-		else
-			self.vel = vec3:new(0, 0, 0)
 		end
 	end
 end
