@@ -2,6 +2,8 @@ require "./logic/math/vec"
 
 game_object = {}
 
+require "./logic/game_object/targeting"
+
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 
@@ -37,7 +39,7 @@ end
 
 -- pathfinding
 
-function game_object:set_goal(goal)
+function game_object:set_goal(goal, distance)
 	self.goal = goal
 
 	-- temporarily remove object from octree
@@ -45,7 +47,7 @@ function game_object:set_goal(goal)
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = nil
 	end
-	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal)
+	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal, distance)
 	-- restore object in octree
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = true
@@ -122,6 +124,8 @@ end
 -- callbacks for the engine
 
 function game_object:tick()
+	self:path_tick()
+	self:targeting_tick()
 end
 
 function game_object:render()

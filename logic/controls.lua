@@ -6,12 +6,20 @@ function controls_tick()
 	local selection_query = controls.get_selection_query()
 	if selection_query ~= 0 then
 		for _,v in ipairs(game_object_arr) do
-			if v.team == player_team and gmath.hexahedron_is_selected(v.hitbox) then
-				if not selected_something then
-					player_selected_objects = {}
+			if gmath.hexahedron_is_selected(v.hitbox) then
+				if v.team == player_team then
+					if not selected_something then
+						player_selected_objects = {}
+						selected_something = true
+					end
+					player_selected_objects[v] = true
+				elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
 					selected_something = true
+					for v2 in pairs(player_selected_objects) do
+						v2:set_target(v)
+					end
+					break
 				end
-				player_selected_objects[v] = true
 			end
 		end
 	end

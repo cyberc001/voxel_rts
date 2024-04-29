@@ -220,7 +220,8 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	tnode_dynarray_destroy(&node_buf);
 	printf("end\n");
 }
-path path_find(const hexahedron* h, vec3f pos, vec3f target)
+path path_find(const hexahedron* h, vec3f pos, vec3f target,
+		int pathing_type, ...)
 {
 	printf("POS: "); vec3f_print(pos);
 	// figure out the starting point
@@ -250,15 +251,43 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target)
 	tptr_set_insert(&closed, cur_node->tpiece, cur_node);
 	tnode_pqueue_push(&open, cur_node);
 
+	float goal_distance;
+	va_list args;
+	va_start(args, pathing_type);
+	switch(pathing_type){
+		case PATHING_TYPE_DISTANCE:
+			goal_distance = va_arg(args, double);
+			break;
+	}
+	va_end(args);
+
+	int reached_goal = 0;
 	while(!tnode_pqueue_is_empty(&open)){
 		cur_node = tnode_pqueue_pop(&open);
-		if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y))
-			break;
+		switch(pathing_type){
+			case PATHING_TYPE_EXACT:
+				if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y)){
+					reached_goal = 1;
+					goto astar_end;
+				}
+				break;
+			case PATHING_TYPE_DISTANCE: {
+				vec3f cur_pos = (vec3f){cur_node->pos.x, cur_node->y, cur_node->pos.y};
+				vec3f diff = vec3_sub(target, cur_pos);
+				printf("DIFF: %f\n", vec3_ln(diff));
+				if(vec3_ln(diff) <= goal_distance){
+					reached_goal = 1;
+					goto astar_end;
+				}
+				break;
+			}
+		}
 		push_successors(&open, &closed, cur_node, target_xz, target.y, h_bbox, pos);
 	}
+astar_end:
 
 	tnode* n = cur_node;
-	if(!vec2_eq(n->pos, target_xz) || DIFF_MORE(n->y, target.y)){ // haven't reached the goal
+	if(!reached_goal){
 		for(size_t i = 0; i < closed.size; ++i)
 			if(tptr_set_is_allocated(&closed, i))
 				free(closed.data[i]);

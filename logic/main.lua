@@ -1,8 +1,12 @@
+require "./logic/team"
+
 render_hitboxes = true
 
 game_object_arr = {}
 
-player_team = 1
+all_teams[1] = team:new()
+all_teams[2] = team:new()
+player_team = all_teams[1]
 
 require "./logic/game_object"
 require "./logic/render_object"
@@ -12,8 +16,9 @@ require "./logic/math/octree"
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 1.8, 4.5), 
+	pos = vec3:new(1.5, 1.8, 7.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
+	team = all_teams[1],
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
@@ -21,6 +26,7 @@ table.insert(game_object_arr, game_object:new({
 table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(1.5, 1.8, 0.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
+	team = all_teams[2],
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
@@ -78,7 +84,6 @@ function _tick()
 	end
 
 	for _,v in ipairs(game_object_arr) do
-		v:path_tick()
 		v:tick()
 	end
 end
