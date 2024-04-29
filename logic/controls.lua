@@ -15,8 +15,8 @@ function controls_tick()
 					player_selected_objects[v] = true
 				elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
 					selected_something = true
-					for v2 in pairs(player_selected_objects) do
-						v2:set_target(v)
+					for k in pairs(player_selected_objects) do
+						k:set_target(v)
 					end
 					break
 				end
@@ -27,6 +27,7 @@ function controls_tick()
 	local order_pos = controls.get_order_query() -- quering needs to be done on every tick regardless to reset query status
 	if selection_query ~= 1 and order_pos and not selected_something then
 		for k in pairs(player_selected_objects) do
+			k:clear_target()
 			k:set_goal(order_pos)
 			pointer_flash(vec3:new(order_pos.x, order_pos.y + 0.5, order_pos.z))
 		end

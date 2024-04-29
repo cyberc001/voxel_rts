@@ -274,7 +274,6 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target,
 			case PATHING_TYPE_DISTANCE: {
 				vec3f cur_pos = (vec3f){cur_node->pos.x, cur_node->y, cur_node->pos.y};
 				vec3f diff = vec3_sub(target, cur_pos);
-				printf("DIFF: %f\n", vec3_ln(diff));
 				if(vec3_ln(diff) <= goal_distance){
 					reached_goal = 1;
 					goto astar_end;

@@ -7,7 +7,6 @@ end
 function game_object:set_target(target)
 	self.target = target
 	self.target_path_timer = game_object_target_path_interval
-	print("DESIRED RANGE:", self:get_target_range())
 	self:set_goal(target.pos, self:get_target_range())
 end
 function game_object:clear_target()
