@@ -18,5 +18,5 @@ end
 function render_object:render(gobj)
 	local pos = gobj.pos + gmath.vec3_quat_rot(self.pos, gobj.rot)
 	local size = vec3:emul(self.size, gobj.size)
-	render.render_obj_draw(self.model, pos, self.rot * gobj.rot, size)
+	render.render_obj_draw(self.model, pos, gobj.rot * self.rot, size)
 end

@@ -118,7 +118,7 @@ function vec3:unit()
 	return vec3:new(self.x/ln, self.y/ln, self.z/ln)
 end
 
--- vec4
+-- vec4 (quaternion)
 vec4 = { x = 0, y = 0, z = 0 }
 
 function vec4:new(x, y, z, w)
@@ -140,7 +140,7 @@ vec4.__tostring = vec4.tostring
 function vec4.mul(v1, v2)
 	if type(v1) == "number" then return vec4:new(v2.x * v1, v2.y * v1, v2.z * v1, v2.w * v1)
 	elseif type(v2) == "number" then return vec4:new(v1.x * v2, v1.y * v2, v1.z * v2, v1.w * v2)
-	elseif type(v1) == "table" and type(v2) == "table" then
+	elseif type(v1) == "table" and type(v2) == "table" then -- the result is both quaternions applied in order
 		return vec4:new(v1.w * v2.x + v1.x * v2.w + v1.y * v2.z - v1.z * v2.y,
 				v1.w * v2.y + v1.y * v2.w + v1.z * v2.x - v1.x * v2.z,
 				v1.w * v2.z + v1.z * v2.w + v1.x * v2.y - v1.y * v2.x,
@@ -148,3 +148,17 @@ function vec4.mul(v1, v2)
 	end
 end
 vec4.__mul = vec4.mul
+
+function vec4:ln()
+	return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w)
+end
+
+function vec4:conj()
+	return vec4:new(-self.x, -self.y, -self.z, self.w)
+end
+function vec4:inv()
+	-- https://proofwiki.org/wiki/Multiplicative_Inverse_of_Quaternion
+	local lambda = 1 / (self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w)
+	lambda = vec4:new(0, 0, 0, 1) * lambda
+	return lambda * self:conj()
+end

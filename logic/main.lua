@@ -14,19 +14,21 @@ require "./logic/controls"
 require "./logic/pointer"
 require "./logic/math/octree"
 
+require "./logic/unit/grizzly_tank"
+
 --test
-table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 1.8, 7.5), 
+table.insert(game_object_arr, grizzly_tank:new({
+	pos = vec3:new(1.5, 2.8, 1.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
 	robj_arr = {
 		render_object:new({model = render.model_find("grizzly_tank_base"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.7, 0.7, 0.7)}),
 		render_object:new({model = render.model_find("grizzly_tank_turret"), pos = vec3:new(0, 0.2, 0), size = vec3:new(0.7, 0.7, 0.7)}),
-		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0.2, 0.2, 0), size = vec3:new(1, 1, 1)})
+		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
 }))
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(1.5, 1.8, 0.5),
+	pos = vec3:new(5.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
@@ -51,7 +53,7 @@ function _tick()
 		vec3:iadd(v.pos, v.vel)
 		vec3:iadd(v.pos, v.path_vel)
 		v.pos.y = v.pos.y + gravity
-		v.rot = gmath.interp_quat(v.rot, v.rot_goal, 0.1)
+		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
 		v:update_hitbox()
 
 		v.moves_this_tick = true

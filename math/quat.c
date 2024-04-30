@@ -66,6 +66,19 @@ vec3f rot_from_quat(vec4f q)
 			rad_to_ang(atan2(2*q.x*q.w - 2*q.y*q.z, 1 - 2*q.x*q.x - 2*q.z*q.z))};
 }
 
+vec4f quat_from_rot_between(vec3f v1, vec3f v2)
+{
+	v1 = vec3_norm(v1), v2 = vec3_norm(v2);
+	float ang = rad_to_ang(acos(vec3_dot(v1, v2)));
+	vec3f axis = vec3_norm(vec3_cross(v1, v2));
+	if(isnan(axis.x) || isnan(axis.y) || isnan(axis.z))
+		return (vec4f){0, 0, 0, 1};
+	else{
+		mat4f trmat = mat4f_identity(); // get 3 separate rotation angles from rotation matrix (https://nghiaho.com/?page_id=846)
+		mat4f_rotate(&trmat, ang, axis);
+		return quat_from_rot_mat(&trmat);
+	}
+}
 vec4f quat_slerp(vec4f start, vec4f end, float t)
 { // https://stackoverflow.com/questions/4099369/interpolate-between-rotation-matrices
 	vec3f rot_start = rot_from_quat(start);

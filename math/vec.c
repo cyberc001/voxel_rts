@@ -48,4 +48,4 @@ vec3f vec3f_get_rot_between(vec3f v1, vec3f v2)
 		mat4f_rotate(&trmat, ang, axis);
 		return mat4f_get_rotation_xyz(&trmat);
 	}
-}	
+}
