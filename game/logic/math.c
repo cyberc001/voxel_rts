@@ -2,10 +2,13 @@
 #include "controls/selection.h"
 #include "math/quat.h"
 
-static int lua_vec3_rot(lua_State* L)
+static int lua_vec3_quat_rot(lua_State* L)
 {
-	vec3f v = lua_get_vec3(L, 1), rot = lua_get_vec3(L, 2);
-	lua_push_vec3(L, vec3f_rot(v, rot));
+	vec3f v = lua_get_vec3(L, 1);
+	vec4f rot = lua_get_vec4(L, 2);
+	mat4f rot_mat = mat_from_quat(rot);
+	vec4f _out = vec4f_mul_mat4f(&rot_mat, (vec4f){v.x, v.y, v.z, 1});
+	lua_push_vec3(L, (vec3f){_out.x, _out.y, _out.z});
 	return 1;
 }
 
@@ -166,7 +169,7 @@ static int lua_hexahedron_is_selected(lua_State* L)
 }
 
 static const struct luaL_Reg cfuncs[] = {
-	{"vec3_rot", lua_vec3_rot},
+	{"vec3_quat_rot", lua_vec3_quat_rot},
 
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},

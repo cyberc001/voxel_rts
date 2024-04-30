@@ -20,7 +20,9 @@ table.insert(game_object_arr, game_object:new({
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
 	robj_arr = {
-		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
+		render_object:new({model = render.model_find("grizzly_tank_base"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.7, 0.7, 0.7)}),
+		render_object:new({model = render.model_find("grizzly_tank_turret"), pos = vec3:new(0, 0.2, 0), size = vec3:new(0.7, 0.7, 0.7)}),
+		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0.2, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
 }))
 table.insert(game_object_arr, game_object:new({

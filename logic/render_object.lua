@@ -16,8 +16,7 @@ function render_object:new(o)
 end
 
 function render_object:render(gobj)
-	vec3:iadd(self.pos, gobj.pos)
+	local pos = gobj.pos + gmath.vec3_quat_rot(self.pos, gobj.rot)
 	local size = vec3:emul(self.size, gobj.size)
-	render.render_obj_draw(self.model, self.pos, self.rot * gobj.rot, size)
-	vec3:isub(self.pos, gobj.pos)
+	render.render_obj_draw(self.model, pos, self.rot * gobj.rot, size)
 end
