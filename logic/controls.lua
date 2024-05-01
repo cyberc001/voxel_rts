@@ -19,6 +19,7 @@ function controls_tick()
 				print("selected", v)
 			elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
 				selected_something = true
+				pointer_flash(v, "attack")
 				for k in pairs(player_selected_objects) do
 					k:set_target(v)
 				end
@@ -32,7 +33,7 @@ function controls_tick()
 		for k in pairs(player_selected_objects) do
 			k:clear_target()
 			k:set_goal(order_pos)
-			pointer_flash(vec3:new(order_pos.x, order_pos.y + 0.5, order_pos.z))
+			pointer_flash(order_pos, "move")
 		end
 	elseif not selected_something then
 		player_selected_objects = {}
