@@ -103,11 +103,10 @@ function vec3:isub(v1, v2)
 	v1.z = v1.z - v2.z
 end
 function vec3:emul(v1, v2)
-	v = vec3:new()
-	v.x = v1.x * v2.x
-	v.y = v1.y * v2.y
-	v.z = v1.z * v2.z
-	return v
+	return vec3:new(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z)
+end
+function vec3:dot(v2)
+	return self.x*v2.x + self.y*v2.y + self.z*v2.z
 end
 
 function vec3:ln()
