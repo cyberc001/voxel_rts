@@ -252,11 +252,14 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target,
 	tnode_pqueue_push(&open, cur_node);
 
 	float goal_distance;
+	vec2f pitch_range;
+
 	va_list args;
 	va_start(args, pathing_type);
 	switch(pathing_type){
 		case PATHING_TYPE_DISTANCE:
 			goal_distance = va_arg(args, double);
+			pitch_range = va_arg(args, vec2f);
 			break;
 	}
 	va_end(args);
@@ -274,7 +277,27 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target,
 			case PATHING_TYPE_DISTANCE: {
 				vec3f cur_pos = (vec3f){cur_node->pos.x, cur_node->y, cur_node->pos.y};
 				vec3f diff = vec3_sub(target, cur_pos);
-				if(vec3_ln(diff) <= goal_distance){
+
+				terrain_piece* tpiece = cur_node->tpiece;
+				vec3f p1 = (vec3f){cur_node->pos.x, tpiece->z_ceil[0], cur_node->pos.y};
+				vec3f p2 = (vec3f){cur_node->pos.x + 1, tpiece->z_ceil[1], cur_node->pos.y};
+				vec3f p3 = (vec3f){cur_node->pos.x + 1, tpiece->z_ceil[2], cur_node->pos.y + 1};
+				vec3f e1 = vec3_sub(p1, p2), e2 = vec3_sub(p2, p3);
+				vec3f norm = vec3_norm(vec3_cross(e1, e2));
+				vec3f n = (vec3f){0, -1, 0};
+				float forward_ang = -vec3f_get_ang_between(n, norm);
+				vec3f forward_axis = vec3_norm(vec3_cross(n, norm));
+				mat4f forward_trmat = mat4f_identity();
+				if(!isnan(forward_axis.x))
+					mat4f_rotate(&forward_trmat, forward_ang, forward_axis);
+				vec3f forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, (vec3f){1, 0, 0}));
+				float pitch = -vec3f_get_ang_between(forward, diff);
+				if(isnan(pitch)) pitch = 0;
+				if(pitch > 90) pitch = 180 - pitch;
+				if(pitch < -90) pitch = -(180 + pitch);
+
+				if(vec3_ln(diff) <= goal_distance
+				&& in_range(pitch, pitch_range.x, pitch_range.y)){
 					reached_goal = 1;
 					goto astar_end;
 				}

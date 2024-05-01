@@ -10,7 +10,6 @@ function grizzly_tank:tick()
 	if self.target then
 		local diff_xz = vec3:new(self.target.pos.x, self.pos.y, self.target.pos.z) - self.pos
 		local diff = self.target.pos - self.pos
-		print("diff", diff)
 
 		local pitch = rad_to_ang(ang_between(vec3:new(1, 0, 0), vec3:new(1, self.target.pos.y - self.pos.y, 0)))
 		local pitch_range = self:get_targeting_pitch_range()

@@ -1,4 +1,4 @@
-function game_object:set_goal(goal, distance)
+function game_object:set_goal(goal, distance, pitch_range)
 	self.goal = goal
 
 	-- temporarily remove object from octree
@@ -6,7 +6,7 @@ function game_object:set_goal(goal, distance)
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = nil
 	end
-	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal, distance)
+	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal, distance, pitch_range)
 	-- restore object in octree
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = true
