@@ -79,7 +79,7 @@ vec3f hexahedron_get_center(const hexahedron* h1)
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
 bbox3f hexahedron_get_bbox(const hexahedron* h)
 {
-	vec3f _min = {INFINITY, INFINITY, INFINITY}, _max = {-INFINITY, -INFINITY, -INFINITY};
+	vec3f _min = {INFINITY, INFINITY, INFINITY}, _max = vec3_smul(_min, -1);
 	for(size_t _f = 0; _f < 6; ++_f)
 		for(size_t _p = 0; _p < 4; ++_p){
 			SET_MIN(_min.x, h->f[_f].p[_p].x);

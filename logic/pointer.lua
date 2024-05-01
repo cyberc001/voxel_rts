@@ -25,7 +25,7 @@ end
 function pointer_render()
 	local cur_pos = pointer_pos.x and pointer_pos or pointer_pos.pos -- if it's not a vector, it's a game object and it's position should be tracked
 	render.render_obj_draw(cur_pointer_model,
-				cur_pos + vec3:new(-0.1, 0.5, 0) + vec3:new(0, 0.4, 0) * (pointer_bob*pointer_bob),
+				cur_pos + vec3:new(0, 0.5, 0) + vec3:new(0, 0.4, 0) * (pointer_bob*pointer_bob),
 				gmath.quat_from_rot(pointer_rot),
 				vec3:new(1, 1, 1) * pointer_size)
 end

@@ -123,6 +123,8 @@ typedef struct {
 	}\
 }
 
+#define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
+#define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
 render_obj_list read_qb_vxl(FILE* fd)
 {
 	qb_hdr hdr;
@@ -188,6 +190,24 @@ render_obj_list read_qb_vxl(FILE* fd)
 					}
 				}
 				break;
+		}
+
+		vec3f _min = (vec3f){INFINITY, INFINITY, INFINITY};
+		vec3f _max = vec3_smul(_min, -1);
+		for(size_t i = 0; i < model_idx/3; ++i){
+			vec3f p = (vec3f){model_vert[i*3], model_vert[i*3+1], model_vert[i*3+2]};
+			SET_MIN(_min.x, p.x);
+			SET_MIN(_min.y, p.y);
+			SET_MIN(_min.z, p.z);
+			SET_MAX(_max.x, p.x);
+			SET_MAX(_max.y, p.y);
+			SET_MAX(_max.z, p.z);
+		}
+		vec3f center = vec3_add(_max, _min); center = vec3_smul(center, 0.5);
+		for(size_t i = 0; i < model_idx/3; ++i){
+			model_vert[i*3] -= center.x;
+			model_vert[i*3+1] -= center.y;
+			model_vert[i*3+2] -= center.z;
 		}
 
 		model_vert = realloc(model_vert, sizeof(GLfloat) * model_idx);

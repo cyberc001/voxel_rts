@@ -13,7 +13,7 @@ function game_object:set_goal(goal, distance, pitch_range)
 	end
 
 	local immgoal = self.path[1]
-	local diff = vec3:new(self.pos.x - immgoal.x, 0, self.pos.z - immgoal.y)
+	local diff = immgoal and vec3:new(self.pos.x - immgoal.x, 0, self.pos.z - immgoal.y) or math.huge
 	self.path_i = diff:ln() <= 1 and 2 or 1 -- skip first path point if the object is already on it (or less than a block away)
 end
 function game_object:clear_goal(goal)
