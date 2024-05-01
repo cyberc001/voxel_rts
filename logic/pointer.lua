@@ -4,6 +4,7 @@ local pointer_lifetime = 900
 local pointer_size = 0
 local pointer_size_delta = 0.01
 
+local pointer_rot = vec3:new(0, 0, 0)
 local pointer_bob = 0 -- parameter in range (-1; 1) for animation formula
 local pointer_bob_delta = 0.01
 local pointer_dir_up = true
@@ -23,7 +24,10 @@ end
 
 function pointer_render()
 	local cur_pos = pointer_pos.x and pointer_pos or pointer_pos.pos -- if it's not a vector, it's a game object and it's position should be tracked
-	render.render_obj_draw(cur_pointer_model, cur_pos + vec3:new(-0.1, 0.5, 0) + vec3:new(0, 0.4, 0) * (pointer_bob*pointer_bob), nil, vec3:new(1, 1, 1) * pointer_size)
+	render.render_obj_draw(cur_pointer_model,
+				cur_pos + vec3:new(-0.1, 0.5, 0) + vec3:new(0, 0.4, 0) * (pointer_bob*pointer_bob),
+				gmath.quat_from_rot(pointer_rot),
+				vec3:new(1, 1, 1) * pointer_size)
 end
 function pointer_tick()
 	if pointer_lifetime_left == 0 and pointer_size > 0 then
@@ -35,5 +39,7 @@ function pointer_tick()
 		if math.abs(pointer_bob) >= 1 then
 			pointer_dir_up = not pointer_dir_up
 		end
+		pointer_rot.x = pointer_rot.x + 1
+		if pointer_rot.x > 360 then pointer_rot.x = pointer_rot.x - 360 end
 	end
 end
