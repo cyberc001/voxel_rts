@@ -50,9 +50,8 @@ function _tick()
 	cur_octree = octree:new(game_object_arr)
 
 	for _,v in ipairs(game_object_arr) do
+		print(v.vel)
 		vec3:iadd(v.pos, v.vel)
-		vec3:iadd(v.pos, v.path_vel)
-
 		vec3:iadd(v.vel, gravity_accel)
 
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
@@ -84,7 +83,6 @@ function _tick()
 		if collided then
 			vec3:isub(v.pos, resolution)
 
-			resolution = vec3:new(resolution):unit()
 			local static_mass = 10000000
 			v.vel = v.vel + (v.vel * (v.mass - static_mass)) * (1 / (v.mass + static_mass))
 

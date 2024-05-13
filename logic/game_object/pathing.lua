@@ -22,12 +22,25 @@ function game_object:clear_goal(goal)
 	self.path_pieces = nil
 end
 
-function game_object:path_tick()
-	self.path_vel = vec3:new(0, 0, 0)
 
-	if not self.moves_this_tick then
+function game_object:get_movement_force()
+	return 0.01
+end
+function game_object:accel_to_path()
+	local diff = self.path_vel - self.vel
+	diff.y = 0
+	if diff:ln() == 0 then
 		return
 	end
+	local force = self:get_movement_force() * diff:unit()
+	print(force)
+	self:apply_force(force)
+end
+
+function game_object:path_tick()
+	if self.path then self:accel_to_path() end
+	self.path_vel = vec3:new(0, 0, 0)
+	if not self.moves_this_tick then return end
 
 	if self.path then
 		local center = gmath.hexahedron_get_center(self.hitbox)
@@ -82,4 +95,3 @@ function game_object.decide_who_moves(o1, o2)
 		o1.moves_this_tick = false
 	end
 end
-
