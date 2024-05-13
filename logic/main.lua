@@ -36,7 +36,7 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 
-gravity = -0.03
+gravity_accel = vec3:new(0, -0.03, 0)
 
 function _first_tick()
 end
@@ -52,7 +52,9 @@ function _tick()
 	for _,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel)
 		vec3:iadd(v.pos, v.path_vel)
-		v.pos.y = v.pos.y + gravity
+
+		vec3:iadd(v.vel, gravity_accel)
+
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
 		v:update_hitbox()
 
@@ -80,8 +82,12 @@ function _tick()
 	
 		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.path_forward)
 		if collided then
-			resolution.y = resolution.y + gravity
 			vec3:isub(v.pos, resolution)
+
+			resolution = vec3:new(resolution):unit()
+			local static_mass = 10000000
+			v.vel = v.vel + (v.vel * (v.mass - static_mass)) * (1 / (v.mass + static_mass))
+
 			v.rot_goal = new_rot
 			v:update_hitbox()
 		end

@@ -11,6 +11,7 @@ function game_object:create_tables(o)
 
 	o.vel = vec3:new()
 	o.path_vel = vec3:new()
+	o.mass = 1
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)
 	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
@@ -34,11 +35,16 @@ function game_object:new(o)
 	return o
 end
 
+
 function game_object:update_hitbox()
 	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
 	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
 	self.bbox = gmath.hexahedron_get_bbox(self.hitbox)
 	self.interaction_box = gmath.hexahedron_get_interaction_box(self.hitbox)
+end
+
+function game_object:apply_force(force)
+	self.vel = self.vel + force * (1/self.mass)
 end
 
 -- callbacks for the engine
