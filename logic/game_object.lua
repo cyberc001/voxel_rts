@@ -4,6 +4,7 @@ game_object = {}
 
 require "./logic/game_object/pathing"
 require "./logic/game_object/targeting"
+require "./logic/game_object/rotation"
 
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
@@ -18,6 +19,8 @@ function game_object:create_tables(o)
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.base_hitbox or gmath.hexahedron_from_cube(1)
 	o.robj_arr = o.robj_arr or {}
+
+	o.part_rot_speed = 0.04 -- (0; 1]
 end
 function game_object:new(o)
 	o = o or {}
