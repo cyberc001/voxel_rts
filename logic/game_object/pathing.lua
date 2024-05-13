@@ -24,16 +24,15 @@ end
 
 
 function game_object:get_movement_force()
-	return 0.01
+	return 0.03
 end
 function game_object:accel_to_path()
 	local diff = self.path_vel - self.vel
-	diff.y = 0
-	if diff:ln() == 0 then
-		return
-	end
-	local force = self:get_movement_force() * diff:unit()
-	print(force)
+	diff.y = 0	
+	local force = self:get_movement_force() * diff:safe_unit()
+	if math.abs(force.x / self.mass) > math.abs(diff.x) then force.x = diff.x end
+	if math.abs(force.y / self.mass) > math.abs(diff.y) then force.y = diff.y end
+	if math.abs(force.z / self.mass) > math.abs(diff.z) then force.z = diff.z end
 	self:apply_force(force)
 end
 

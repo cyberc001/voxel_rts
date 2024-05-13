@@ -27,16 +27,18 @@ table.insert(game_object_arr, grizzly_tank:new({
 		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
 }))
-table.insert(game_object_arr, game_object:new({
+--[[table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(5.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
-}))
+}))]]--
 
-gravity_accel = vec3:new(0, -0.03, 0)
+local gravity_accel = vec3:new(0, -0.03, 0)
+local global_decel = 0.1
+local elasticity = 0.3
 
 function _first_tick()
 end
@@ -50,9 +52,9 @@ function _tick()
 	cur_octree = octree:new(game_object_arr)
 
 	for _,v in ipairs(game_object_arr) do
-		print(v.vel)
 		vec3:iadd(v.pos, v.vel)
 		vec3:iadd(v.vel, gravity_accel)
+		v.vel = v.vel * (1 - global_decel)
 
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
 		v:update_hitbox()
@@ -81,10 +83,18 @@ function _tick()
 	
 		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.path_forward)
 		if collided then
+			resolution = vec3:new(resolution)
 			vec3:isub(v.pos, resolution)
 
-			local static_mass = 10000000
-			v.vel = v.vel + (v.vel * (v.mass - static_mass)) * (1 / (v.mass + static_mass))
+			if resolution.x == resolution.x then
+				-- https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
+				resolution = resolution:safe_unit()
+				local static_mass = 1000000
+				local vel_n = v.vel:dot(resolution)
+				vel_n = -elasticity * vel_n
+				local impulse = (-(1 + elasticity) * v.vel:dot(resolution)) / (resolution:dot(resolution*(1/v.mass + 1/static_mass)))
+				v.vel = v.vel + impulse / v.mass * resolution
+			end
 
 			v.rot_goal = new_rot
 			v:update_hitbox()

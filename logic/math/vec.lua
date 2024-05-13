@@ -116,6 +116,9 @@ function vec3:unit()
 	local ln = self:ln()
 	return vec3:new(self.x/ln, self.y/ln, self.z/ln)
 end
+function vec3:safe_unit()
+	return self:ln() > 0 and self:unit() or vec3:new(0, 0, 0)
+end
 
 -- vec4 (quaternion)
 vec4 = { x = 0, y = 0, z = 0 }
