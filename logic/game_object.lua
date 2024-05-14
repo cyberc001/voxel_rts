@@ -11,6 +11,7 @@ function game_object:create_tables(o)
 
 	o.vel = vec3:new()
 	o.mass = 1
+	o.force = vec3:new()
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)
 	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
@@ -20,12 +21,13 @@ function game_object:create_tables(o)
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.base_hitbox or gmath.hexahedron_from_cube(1)
 	o.robj_arr = o.robj_arr or {}
-
-	o.part_rot_speed = 0.04 -- (0; 1]
 end
 function game_object:new(o)
 	o = o or {}
-	o.speed = o.speed or 0.01
+
+	o.max_speed = o.speed or 0.02
+	o.part_rot_speed = 0.04 -- (0; 1]
+
 	o.team = o.team or 1
 
 	game_object:create_tables(o)
@@ -44,7 +46,7 @@ function game_object:update_hitbox()
 end
 
 function game_object:apply_force(force)
-	self.vel = self.vel + force * (1/self.mass)
+	self.force = self.force + force
 end
 
 -- callbacks for the engine

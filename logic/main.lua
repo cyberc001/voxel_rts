@@ -18,7 +18,7 @@ require "./logic/unit/grizzly_tank"
 
 --test
 table.insert(game_object_arr, grizzly_tank:new({
-	pos = vec3:new(1.5, 2.8, 1.5), 
+	pos = vec3:new(0.5, 2.8, 2.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
 	robj_arr = {
@@ -36,9 +36,10 @@ table.insert(game_object_arr, grizzly_tank:new({
 	}
 }))]]--
 
-local gravity_accel = vec3:new(0, -0.03, 0)
-local global_decel = 0.1
+local gravity_accel = vec3:new(0, -0.01, 0)
 local elasticity = 0.3
+local static_fric_coff = 0.005
+local kinetic_fric_coff = 0.005
 
 function _first_tick()
 end
@@ -54,8 +55,6 @@ function _tick()
 	for _,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel)
 		vec3:iadd(v.vel, gravity_accel)
-		v.vel = v.vel * (1 - global_decel)
-
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
 		v:update_hitbox()
 
@@ -85,20 +84,36 @@ function _tick()
 		if collided then
 			resolution = vec3:new(resolution)
 			vec3:isub(v.pos, resolution)
+			print("resolution", -resolution)
+			v.last_resolution = -resolution
 
 			if resolution.x == resolution.x then
+				-- Impulse-based collision response
 				-- https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
-				resolution = resolution:safe_unit()
 				local static_mass = 1000000
-				local vel_n = v.vel:dot(resolution)
-				vel_n = -elasticity * vel_n
-				local impulse = (-(1 + elasticity) * v.vel:dot(resolution)) / (resolution:dot(resolution*(1/v.mass + 1/static_mass)))
+				local resolution_unit = resolution:ln() > 0 and resolution:unit() or vec3:new(0, 1, 0)
+				local vel_n = -elasticity * v.vel:dot(resolution_unit)
+				local impulse = (-(1 + elasticity) * v.vel:dot(resolution_unit)) / (resolution_unit:dot(resolution_unit*(1/v.mass + 1/static_mass)))
+				if impulse ~= impulse then impulse = 0 end
 				v.vel = v.vel + impulse / v.mass * resolution
+
+				-- Deceleration and counterforce due to friction
+				local fric_n = gravity_accel:safe_unit():dot(resolution_unit)
+				local normal_force = fric_n * v.mass
+				local fric_static = normal_force * static_fric_coff
+
+				local coff = v.force:ln() < fric_static and static_fric_coff or kinetic_fric_coff
+				local decel = fric_n * gravity_accel:safe_unit():dot(resolution_unit) * coff
+				local ln = v.vel:ln() > decel and v.vel:ln() - decel or 0
+				v.vel = v.vel:safe_unit() * ln
 			end
 
 			v.rot_goal = new_rot
 			v:update_hitbox()
 		end
+		vec3:iadd(v.vel, v.force * (1/v.mass))
+		print("force", v.force, "vel", v.vel)
+		v.force = vec3:new()
 	end
 
 	for _,v in ipairs(game_object_arr) do

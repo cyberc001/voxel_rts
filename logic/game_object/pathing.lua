@@ -24,11 +24,12 @@ end
 
 
 function game_object:get_movement_force()
-	return 0.03
+	return 0.09
 end
 function game_object:accel_to_path()
-	local diff = self.path_vel - self.vel
-	diff.y = 0	
+	local diff = (self.path_vel - self.last_resolution) - self.vel
+	print("path_vel", self.path_vel, "target", self.path_vel - self.last_resolution)
+	diff.y = 0
 	local force = self:get_movement_force() * diff:safe_unit()
 	if math.abs(force.x / self.mass) > math.abs(diff.x) then force.x = diff.x end
 	if math.abs(force.y / self.mass) > math.abs(diff.y) then force.y = diff.y end
@@ -48,29 +49,19 @@ function game_object:path_tick()
 			local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
 
 			if(diff:ln() > 0) then
-				self.path_vel = diff:unit() * self.speed
+				self.path_vel = diff:unit() * self.max_speed
+			end
+			if diff:ln() > 0 then
+				self.path_forward = diff:unit()
 			end
 
-			if(self.vel:ln() > diff:ln()) then -- set immedate destination
-				self.path_vel = diff
-				self.path_i = self.path_i + 1
-			else
-				if diff:ln() > 0 then
-					self.path_forward = diff:unit()
-				end
-			end
-
-			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination
+			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination	
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self.path_vel = vec3:new(0, 0, 0)
 					self:clear_goal()
 					return
 				end
-			elseif(not self.path[self.path_i]) then
-				self.path_vel = vec3:new(0, 0, 0)
-				self:clear_goal()
-				return
 			end
 		end
 	end
