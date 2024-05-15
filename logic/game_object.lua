@@ -25,8 +25,8 @@ end
 function game_object:new(o)
 	o = o or {}
 
-	o.max_speed = o.speed or 0.02
-	o.part_rot_speed = 0.04 -- (0; 1]
+	o.max_speed = o.speed or 2
+	o.part_rot_speed = 10
 
 	o.team = o.team or 1
 

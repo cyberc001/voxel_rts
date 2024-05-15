@@ -32,9 +32,9 @@ void glfwPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zF
  	glFrustum( -fW, fW, -fH, fH, zNear, zFar );
 }
 
-static void render_display()
+static void render_display(float time_delta)
 {
-	game_logic_tick();
+	game_logic_tick(time_delta);
 	glViewport(0, 0, wnd_shape.x, wnd_shape.y);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -136,10 +136,24 @@ int render_init()
 
 	return 0;
 }
+
+static float time_from_ts_delta(struct timespec* prev_ts, struct timespec* cur_ts)
+{
+	size_t delta_ns = (cur_ts->tv_sec - prev_ts->tv_sec) * 1000000000 + (cur_ts->tv_nsec - prev_ts->tv_nsec);
+	return delta_ns / 1000000000.;
+}
 void render_loop()
 {
-	while(!glfwWindowShouldClose(main_wnd))
-		render_display();
+	struct timespec prev_ts;
+	clock_gettime(CLOCK_MONOTONIC, &prev_ts);
+
+	while(!glfwWindowShouldClose(main_wnd)){
+		struct timespec cur_ts;
+		clock_gettime(CLOCK_MONOTONIC, &cur_ts);
+
+		render_display(time_from_ts_delta(&prev_ts, &cur_ts));
+		prev_ts = cur_ts;
+	}
 }
 
 /* Render object */

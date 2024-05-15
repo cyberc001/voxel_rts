@@ -36,15 +36,15 @@ table.insert(game_object_arr, grizzly_tank:new({
 	}
 }))]]--
 
-local gravity_accel = vec3:new(0, -0.01, 0)
+local gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
-local static_fric_coff = 0.005
-local kinetic_fric_coff = 0.005
+local static_fric_coff = 0.1
+local kinetic_fric_coff = 0.1
 
 function _first_tick()
 end
 
-function _tick()
+function _tick(time_delta)
 	controls_tick()
 	pointer_tick()
 
@@ -53,9 +53,9 @@ function _tick()
 	cur_octree = octree:new(game_object_arr)
 
 	for _,v in ipairs(game_object_arr) do
-		vec3:iadd(v.pos, v.vel)
-		vec3:iadd(v.vel, gravity_accel)
-		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 0.1))
+		vec3:iadd(v.pos, v.vel*time_delta)
+		vec3:iadd(v.vel, gravity_accel*time_delta)
+		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 10*time_delta))
 		v:update_hitbox()
 
 		v.moves_this_tick = true
@@ -84,8 +84,7 @@ function _tick()
 		if collided then
 			resolution = vec3:new(resolution)
 			vec3:isub(v.pos, resolution)
-			print("resolution", -resolution)
-			v.last_resolution = -resolution
+			v.last_resolution = -resolution * (1/time_delta)
 
 			if resolution.x == resolution.x then
 				-- Impulse-based collision response

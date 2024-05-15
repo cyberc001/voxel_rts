@@ -25,7 +25,7 @@ void game_logic_init()
 }
 
 static int first_tick = 1;
-void game_logic_tick()
+void game_logic_tick(float time_delta)
 {
 	if(first_tick){
 		first_tick = 0;
@@ -36,7 +36,8 @@ void game_logic_tick()
 		}
 	}
 	lua_getglobal(global_lua_state, "_tick");
-	if(lua_pcall(global_lua_state, 0, 0, 0)){
+	lua_pushnumber(global_lua_state, time_delta);
+	if(lua_pcall(global_lua_state, 1, 0, 0)){
 		LOG_ERROR("global function _tick() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
 		lua_pop(global_lua_state, 1);
 	}
