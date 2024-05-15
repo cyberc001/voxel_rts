@@ -10,9 +10,8 @@
 #include "resources.h"
 
 #include "game/logic.h"
+#include "render/list.h"
 
-//TEST
-#include "controls.h"
 
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
@@ -32,9 +31,8 @@ void glfwPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zF
  	glFrustum( -fW, fW, -fH, fH, zNear, zFar );
 }
 
-static void render_display(float time_delta)
+static void render_display()
 {
-	game_logic_tick(time_delta);
 	glViewport(0, 0, wnd_shape.x, wnd_shape.y);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -59,8 +57,26 @@ static void render_display(float time_delta)
 	last_mview_mat = mat4f_from_gl(modelview_mat);
 	last_proj_mat = mat4f_from_gl(projection_mat);
 	
-	game_logic_render();
 	render_terrain();
+	render_list_swap_front_and_mid();
+	printf("back: %lu mid: %lu front: %lu\n", render_list_back->ln, render_list_mid->ln, render_list_front->ln);
+	for(size_t i = 0; i < render_list_front->ln; ++i){
+		render_info inf = render_list_front->data[i];
+
+		glPushMatrix();
+		glTranslatef(inf.tr.x, inf.tr.y, inf.tr.z);
+		mat4f rot_mat = mat_from_quat(inf.rot);
+		GLfloat trmatf[] = { rot_mat.e[0][0], rot_mat.e[0][1], rot_mat.e[0][2], rot_mat.e[0][3],
+			rot_mat.e[1][0], rot_mat.e[1][1], rot_mat.e[1][2], rot_mat.e[1][3],
+			rot_mat.e[2][0], rot_mat.e[2][1], rot_mat.e[2][2], rot_mat.e[2][3],
+			rot_mat.e[3][0], rot_mat.e[3][1], rot_mat.e[3][2], rot_mat.e[3][3],
+		};
+		glScalef(inf.sc.x, inf.sc.y, inf.sc.z);
+		glMultMatrixf(trmatf);
+
+		render_obj_draw(inf.robj);
+		glPopMatrix();
+	}
 
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);
@@ -134,6 +150,7 @@ int render_init()
 	glBindTexture(GL_TEXTURE_2D, __dummy_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 1, 1, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 
+	render_list_init();
 	return 0;
 }
 
@@ -144,16 +161,8 @@ static float time_from_ts_delta(struct timespec* prev_ts, struct timespec* cur_t
 }
 void render_loop()
 {
-	struct timespec prev_ts;
-	clock_gettime(CLOCK_MONOTONIC, &prev_ts);
-
-	while(!glfwWindowShouldClose(main_wnd)){
-		struct timespec cur_ts;
-		clock_gettime(CLOCK_MONOTONIC, &cur_ts);
-
-		render_display(time_from_ts_delta(&prev_ts, &cur_ts));
-		prev_ts = cur_ts;
-	}
+	while(!glfwWindowShouldClose(main_wnd))
+		render_display();
 }
 
 /* Render object */

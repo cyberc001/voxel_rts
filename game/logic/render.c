@@ -1,8 +1,8 @@
 #include "game/logic/render.h"
 #include "game/logic/math.h"
 #include "resources.h"
+#include "render/list.h"
 #include "render/primitive.h"
-#include "math/quat.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -36,19 +36,13 @@ static int lua_render_obj_draw(lua_State* L)
 	if(lua_type(L, 4) == LUA_TTABLE)
 		sc = lua_get_vec3(L, 4);
 
-	glPushMatrix();
-	glTranslatef(tr.x, tr.y, tr.z);
-	mat4f rot_mat = mat_from_quat(rot);
-	GLfloat trmatf[] = { rot_mat.e[0][0], rot_mat.e[0][1], rot_mat.e[0][2], rot_mat.e[0][3],
-		rot_mat.e[1][0], rot_mat.e[1][1], rot_mat.e[1][2], rot_mat.e[1][3],
-		rot_mat.e[2][0], rot_mat.e[2][1], rot_mat.e[2][2], rot_mat.e[2][3],
-		rot_mat.e[3][0], rot_mat.e[3][1], rot_mat.e[3][2], rot_mat.e[3][3],
-	};
-	glScalef(sc.x, sc.y, sc.z);
-	glMultMatrixf(trmatf);
-
-	render_obj_draw(robj);
-	glPopMatrix();
+	render_info inf = { robj, tr, rot, sc };
+	render_list_add(&inf);
+	return 0;
+}
+static int lua_swap_buffers(lua_State* L)
+{
+	render_list_swap_back_and_mid();
 	return 0;
 }
 
@@ -79,6 +73,7 @@ static int lua_model_find(lua_State* L)
 
 static const struct luaL_Reg cfuncs[] = {
 	{"render_obj_draw", lua_render_obj_draw},
+	{"swap_buffers", lua_swap_buffers},
 	{"render_hexahedron", lua_render_hexahedron},
 
 	{"model_find", lua_model_find},

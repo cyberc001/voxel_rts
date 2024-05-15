@@ -38,8 +38,8 @@ table.insert(game_object_arr, grizzly_tank:new({
 
 local gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
-local static_fric_coff = 0.1
-local kinetic_fric_coff = 0.1
+local static_fric_coff = 0.2
+local kinetic_fric_coff = 0.2
 
 function _first_tick()
 end
@@ -118,10 +118,11 @@ function _tick(time_delta)
 	for _,v in ipairs(game_object_arr) do
 		v:tick()
 	end
-end
-function _render()
+
+	-- prepare render objects; actual rendering is done on a separate thread
 	for _,v in ipairs(game_object_arr) do
 		v:render()
 	end
 	pointer_render()
+	render.swap_buffers()
 end

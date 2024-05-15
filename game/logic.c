@@ -2,10 +2,12 @@
 #include "log.h"
 #include "game/logic/render.h"
 #include "game/logic/math.h"
+#include "ticker.h"
 
 lua_State* global_lua_state;
 static const char* base_fname = "logic/main.lua";
 
+static ticker* logic_ticker;
 void game_logic_init()
 {
 	// create Lua state
@@ -22,11 +24,15 @@ void game_logic_init()
 		lua_pop(global_lua_state, 1);
 		return;
 	}
+
+	logic_ticker = ticker_create(16, game_logic_tick);
 }
 
 static int first_tick = 1;
-void game_logic_tick(float time_delta)
+void game_logic_tick(unsigned ms)
 {
+	float time_delta = ms / 1000.;
+
 	if(first_tick){
 		first_tick = 0;
 		lua_getglobal(global_lua_state, "_first_tick");
@@ -35,6 +41,7 @@ void game_logic_tick(float time_delta)
 			lua_pop(global_lua_state, 1);
 		}
 	}
+
 	lua_getglobal(global_lua_state, "_tick");
 	lua_pushnumber(global_lua_state, time_delta);
 	if(lua_pcall(global_lua_state, 1, 0, 0)){

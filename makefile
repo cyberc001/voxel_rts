@@ -13,7 +13,7 @@ clean:
 	-rm */*.o
 	-rm libvoxel_rts.a
 
-libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o 
+libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o render/list.o
 libvoxel_rts.a: formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o
 libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o
 libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o ui/elements/selection.o
@@ -33,7 +33,9 @@ render/font.o: render/font.c render/font.h formats/font.h
 	$(CCO) $< -o $@
 render/texture.o: render/texture.c render/texture.h
 	$(CCO) $< -o $@
-render/primitive.o: render/primitive.c render/primitive.h math/collision.h
+render/primitive.o: render/primitive.c render/primitive.h math/hexahedron.h
+	$(CCO) $< -o $@
+render/list.o: render/list.c render/list.h render/base.h
 	$(CCO) $< -o $@
 
 formats/qb_vxl.o: formats/qb_vxl.c formats/qb_vxl.h
