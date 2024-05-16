@@ -12,7 +12,6 @@
 #include "game/logic.h"
 #include "render/list.h"
 
-
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
@@ -59,24 +58,34 @@ static void render_display()
 	
 	render_terrain();
 	render_list_swap_front_and_mid();
-	printf("back: %lu mid: %lu front: %lu\n", render_list_back->ln, render_list_mid->ln, render_list_front->ln);
-	for(size_t i = 0; i < render_list_front->ln; ++i){
-		render_info inf = render_list_front->data[i];
+	for(size_t i = 0; i < render_list_front->draw.busy; ++i){
+		render_info_draw inf = render_list_front->draw.data[i];
 
-		glPushMatrix();
+		if(inf.robj->flags & RENDER_OBJ_FLAG_NOTINIT)
+			render_obj_load(inf.robj);
+
+		glGetFloatv(GL_MODELVIEW_MATRIX, modelview_mat); // idk why glPushMatrix / glPopMatrix don't work
 		glTranslatef(inf.tr.x, inf.tr.y, inf.tr.z);
 		mat4f rot_mat = mat_from_quat(inf.rot);
 		GLfloat trmatf[] = { rot_mat.e[0][0], rot_mat.e[0][1], rot_mat.e[0][2], rot_mat.e[0][3],
-			rot_mat.e[1][0], rot_mat.e[1][1], rot_mat.e[1][2], rot_mat.e[1][3],
-			rot_mat.e[2][0], rot_mat.e[2][1], rot_mat.e[2][2], rot_mat.e[2][3],
-			rot_mat.e[3][0], rot_mat.e[3][1], rot_mat.e[3][2], rot_mat.e[3][3],
+				rot_mat.e[1][0], rot_mat.e[1][1], rot_mat.e[1][2], rot_mat.e[1][3],
+				rot_mat.e[2][0], rot_mat.e[2][1], rot_mat.e[2][2], rot_mat.e[2][3],
+				rot_mat.e[3][0], rot_mat.e[3][1], rot_mat.e[3][2], rot_mat.e[3][3],
 		};
 		glScalef(inf.sc.x, inf.sc.y, inf.sc.z);
 		glMultMatrixf(trmatf);
 
 		render_obj_draw(inf.robj);
-		glPopMatrix();
+		glLoadMatrixf(modelview_mat);
 	}
+	for(size_t i = 0; i < render_list_front->free.busy; ++i){
+		render_info_free inf = render_list_front->free.data[i];
+		glDeleteBuffers(1, &inf.buf);
+		for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
+			if(inf.attr_data[i])
+				free(inf.attr_data[i]);
+	}
+	render_list_front->free.busy = 0;
 
 	// UI rendering
 	glMatrixMode(GL_PROJECTION);
@@ -154,11 +163,6 @@ int render_init()
 	return 0;
 }
 
-static float time_from_ts_delta(struct timespec* prev_ts, struct timespec* cur_ts)
-{
-	size_t delta_ns = (cur_ts->tv_sec - prev_ts->tv_sec) * 1000000000 + (cur_ts->tv_nsec - prev_ts->tv_nsec);
-	return delta_ns / 1000000000.;
-}
 void render_loop()
 {
 	while(!glfwWindowShouldClose(main_wnd))
@@ -166,8 +170,15 @@ void render_loop()
 }
 
 /* Render object */
+#define __RENDER_OBJ_GENERATE()\
+	render_obj o = {.render_type = render_type, .flags = flags | RENDER_OBJ_FLAG_NOTINIT, .colorize = (vec3f){-1, -1, -1}};\
+	memset(o.buf_sizes, 0, sizeof(o.buf_sizes));\
+	va_list args;\
+	va_start(args, verts_ln);\
+	memset(o.attr_data, 0, sizeof(o.attr_data));\
+	o.attr_data[RENDER_OBJ_VERTS] = verts; o.buf_sizes[RENDER_OBJ_VERTS] = verts_ln;\
 
-#define __RENDER_OBJ_PARSE_ATTRIBUTES(__attr_data)\
+#define __RENDER_OBJ_PARSE_ATTRIBUTES()\
 	for(;;){\
 		int type = va_arg(args, int);\
 		if(type >= RENDER_OBJ_ATTRIBUTES_COUNT){\
@@ -182,67 +193,46 @@ void render_loop()
 			else\
 				break;\
 		}\
-		(__attr_data)[type] = va_arg(args, void*);\
+		o.attr_data[type] = va_arg(args, void*);\
 		o.buf_sizes[type] = va_arg(args, size_t);\
 	}
 
-
 render_obj render_obj_create(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...)
 {
-	render_obj o = {.render_type = render_type, .flags = flags, .colorize = (vec3f){-1, -1, -1}};
-	memset(o.buf_sizes, 0, sizeof(o.buf_sizes));
-
-	void* attr_data[RENDER_OBJ_ATTRIBUTES_COUNT];
-	va_list args;
-	va_start(args, verts_ln);
-
-	attr_data[RENDER_OBJ_VERTS] = verts; o.buf_sizes[RENDER_OBJ_VERTS] = verts_ln;
-
-	__RENDER_OBJ_PARSE_ATTRIBUTES(attr_data)
-
+	__RENDER_OBJ_GENERATE()
+	__RENDER_OBJ_PARSE_ATTRIBUTES()
+	render_obj_load(&o);
+	return o;
+}
+render_obj render_obj_generate(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...)
+{
+	__RENDER_OBJ_GENERATE()
+	__RENDER_OBJ_PARSE_ATTRIBUTES()
+	return o;
+}
+void render_obj_load(render_obj* obj)
+{
 	size_t buf_sz = 0;
 	for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
-		buf_sz += o.buf_sizes[i];
-	glGenBuffers(1, &o.buf);
-	glBindBuffer(GL_ARRAY_BUFFER, o.buf);
+		buf_sz += obj->buf_sizes[i];
+	glGenBuffers(1, &obj->buf);
+	glBindBuffer(GL_ARRAY_BUFFER, obj->buf);
 	glBufferData(GL_ARRAY_BUFFER, buf_sz, 0, GL_STATIC_READ);
 
 	size_t buf_off = 0;
 	for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i){
-		glBufferSubData(GL_ARRAY_BUFFER, buf_off, o.buf_sizes[i], attr_data[i]);
-		buf_off += o.buf_sizes[i];
+		glBufferSubData(GL_ARRAY_BUFFER, buf_off, obj->buf_sizes[i], obj->attr_data[i]);
+		buf_off += obj->buf_sizes[i];
 	}
-
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	return o;
-}
-render_obj_dynamic render_obj_create_dynamic(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...) // shameless copy-paste of render_obj_create, but code for render object creation was finalized at this point
-{
-	render_obj_dynamic o = {.render_type = render_type, .flags = flags, .colorize = (vec3f){-1, -1, -1}};
-	memset(o.buf_sizes, 0, sizeof(o.buf_sizes));
-
-	va_list args;
-	va_start(args, verts_ln);
-
-	o.attr_data[RENDER_OBJ_VERTS] = verts; o.buf_sizes[RENDER_OBJ_VERTS] = verts_ln;
-
-	__RENDER_OBJ_PARSE_ATTRIBUTES(o.attr_data)
-
-	size_t buf_sz = 0;
-	for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
-		buf_sz += o.buf_sizes[i];
-	glGenBuffers(1, &o.buf);
-	glBindBuffer(GL_ARRAY_BUFFER, o.buf);
-	glBufferData(GL_ARRAY_BUFFER, buf_sz, 0, GL_DYNAMIC_DRAW);
-
-	size_t buf_off = 0;
-	for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i){
-		glBufferSubData(GL_ARRAY_BUFFER, buf_off, o.buf_sizes[i], o.attr_data[i]);
-		buf_off += o.buf_sizes[i];
+	obj->flags &= ~RENDER_OBJ_FLAG_NOTINIT;
+	if(obj->flags & RENDER_OBJ_FLAG_ALLOCED){
+		for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
+			if(obj->attr_data[i])
+				free(obj->attr_data[i]);
+		obj->flags &= ~RENDER_OBJ_FLAG_ALLOCED;
 	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	return o;
+	fprintf(stderr, "LOAD %p %d\n", obj, obj->buf);
 }
 
 void render_obj_draw(const render_obj* obj)

@@ -45,7 +45,10 @@ void render_pop_bbox();
 #define RENDER_OBJ_COLORIZE		101
 
 // Render object flags
-#define RENDER_OBJ_FLAG_WIREFRAME	0x1
+#define RENDER_OBJ_FLAG_NOTINIT		0x1	// should be initialized in OpenGL context beforehand
+#define RENDER_OBJ_FLAG_WIREFRAME	0x2
+
+#define RENDER_OBJ_FLAG_ALLOCED		0x4	// all attr_data is allocated on the heap and all non-NULL attr_data should be free()ed in render_obj_load(). Should be cleared if data has been freed (past rendeer_obj_load() and before render_obj_free())
 
 typedef struct render_obj render_obj;
 struct render_obj {
@@ -57,14 +60,9 @@ struct render_obj {
 	GLuint buf;
 	GLuint main_tex;
 	size_t buf_sizes[RENDER_OBJ_ATTRIBUTES_COUNT];
+	void* attr_data[RENDER_OBJ_ATTRIBUTES_COUNT]; // only used for objects after render_obj_generate but before render_obj_load
 };
 #define RENDER_OBJ_EMPTY ((render_obj){.buf = 0})
-
-typedef struct render_obj_dynamic render_obj_dynamic;
-struct render_obj_dynamic {
-	struct render_obj;
-	void* attr_data[RENDER_OBJ_ATTRIBUTES_COUNT];
-};
 
 /* Other types of attributes are supplied through varargs in following fashion:
  * [int] attribute type (RENDER_OBJ_COLOR, ...),
@@ -72,8 +70,10 @@ struct render_obj_dynamic {
  * [size_t] attribute length
  * !!! The end of attribute list is marked with RENDER_OBJ_ATTRIBUTES_END !!!
  */
-render_obj render_obj_create(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...);
-render_obj_dynamic render_obj_create_dynamic(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...);
+
+render_obj render_obj_create(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...); // unifies render_obj_generate and render_obj_load
+render_obj render_obj_generate(int render_type, int flags, GLfloat* verts, size_t verts_ln, ...);
+void render_obj_load(render_obj* obj);
 
 void render_obj_draw(const render_obj* obj);
 void render_obj_free(render_obj* obj);

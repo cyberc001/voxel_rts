@@ -40,7 +40,7 @@ end
 
 function game_object:update_hitbox()
 	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
-	--self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
+	self.robj_hitbox = render.render_hexahedron(self.hitbox, player_selected_objects[self] == true and vec3:new(1, 0, 0) or nil)
 	self.bbox = gmath.hexahedron_get_bbox(self.hitbox)
 	self.interaction_box = gmath.hexahedron_get_interaction_box(self.hitbox)
 end
@@ -58,7 +58,7 @@ end
 
 function game_object:render()
 	if render_hitboxes then
-		--render.render_obj_draw(self.robj_hitbox)
+		render.render_obj_draw(self.robj_hitbox)
 	end
 
 	for _,v in ipairs(self.robj_arr) do

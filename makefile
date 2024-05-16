@@ -11,6 +11,7 @@ all: libvoxel_rts.a test
 clean:
 	-rm *.o
 	-rm */*.o
+	-rm */*/*.o
 	-rm libvoxel_rts.a
 
 libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o render/list.o
