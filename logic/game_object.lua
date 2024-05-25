@@ -51,9 +51,9 @@ end
 
 -- callbacks for the engine
 
-function game_object:tick()
+function game_object:tick(time_delta)
 	self:path_tick()
-	self:targeting_tick()
+	self:targeting_tick(time_delta)
 end
 
 function game_object:render()

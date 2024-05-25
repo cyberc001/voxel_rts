@@ -232,7 +232,6 @@ void render_obj_load(render_obj* obj)
 				free(obj->attr_data[i]);
 		obj->flags &= ~RENDER_OBJ_FLAG_ALLOCED;
 	}
-	fprintf(stderr, "LOAD %p %d\n", obj, obj->buf);
 }
 
 void render_obj_draw(const render_obj* obj)

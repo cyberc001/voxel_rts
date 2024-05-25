@@ -12,7 +12,6 @@
 static int lua_render_obj_free(lua_State* L)
 {
 	render_obj* robj = lua_touserdata(L, 1);
-	printf("LUA FREE %p %d %d\n", robj, robj->buf, robj->flags);
 	render_info_free inf;
 	inf.buf = robj->buf;
 	if(robj->flags & RENDER_OBJ_FLAG_ALLOCED)
@@ -57,7 +56,6 @@ static int lua_render_hexahedron(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
 	render_obj* robj_ptr = lua_newuserdata(L, sizeof(render_obj));
-	fprintf(stderr, "HEXA %p\n", robj_ptr);
 	*robj_ptr = render_hexahedron(h);
 	if(!lua_isnoneornil(L, 2)){
 		luaL_checktype(L, 2, LUA_TTABLE);

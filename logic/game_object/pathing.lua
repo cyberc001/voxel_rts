@@ -29,7 +29,6 @@ end
 function game_object:accel_to_path()
 	if not self.last_resolution then self.last_resolution = vec3:new() end
 	local diff = (self.path_vel - self.last_resolution) - self.vel
-	print("path_vel", self.path_vel, "target", self.path_vel - self.last_resolution)
 	diff.y = 0
 	local force = self:get_movement_force() * diff:safe_unit()
 	if math.abs(force.x / self.mass) > math.abs(diff.x) then force.x = diff.x end

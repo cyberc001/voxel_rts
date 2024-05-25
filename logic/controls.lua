@@ -16,7 +16,6 @@ function controls_tick()
 					selected_something = true
 				end
 				player_selected_objects[v] = true
-				print("selected", v)
 			elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
 				selected_something = true
 				pointer_flash(v, "attack")

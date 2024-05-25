@@ -1,6 +1,6 @@
 local pointer_pos = vec3:new(0, 0, 0)
 local pointer_lifetime_left = 0
-local pointer_lifetime = 900
+local pointer_lifetime = 7
 local pointer_size = 0
 local pointer_size_delta = 0.01
 
@@ -29,12 +29,12 @@ function pointer_render()
 				gmath.quat_from_rot(pointer_rot),
 				vec3:new(1, 1, 1) * pointer_size)
 end
-function pointer_tick()
-	if pointer_lifetime_left == 0 and pointer_size > 0 then
+function pointer_tick(time_delta)
+	if pointer_lifetime_left <= 0 and pointer_size > 0 then
 		pointer_size = pointer_size - pointer_size_delta
 	end
 	if pointer_lifetime_left > 0 then
-		pointer_lifetime_left = pointer_lifetime_left - 1
+		pointer_lifetime_left = pointer_lifetime_left - time_delta
 		pointer_bob = pointer_bob + pointer_bob_delta * (pointer_dir_up and 1 or -1)
 		if math.abs(pointer_bob) >= 1 then
 			pointer_dir_up = not pointer_dir_up

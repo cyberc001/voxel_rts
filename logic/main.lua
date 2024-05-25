@@ -27,14 +27,14 @@ table.insert(game_object_arr, grizzly_tank:new({
 		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
 }))
---[[table.insert(game_object_arr, game_object:new({
+table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(5.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
-}))]]--
+}))
 
 local gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
@@ -46,7 +46,7 @@ end
 
 function _tick(time_delta)
 	controls_tick()
-	pointer_tick()
+	pointer_tick(time_delta)
 
 	-- handle velocity and collision
 	
@@ -111,12 +111,11 @@ function _tick(time_delta)
 			v:update_hitbox()
 		end
 		vec3:iadd(v.vel, v.force * (1/v.mass))
-		print("force", v.force, "vel", v.vel)
 		v.force = vec3:new()
 	end
 
 	for _,v in ipairs(game_object_arr) do
-		v:tick()
+		v:tick(time_delta)
 	end
 
 	-- prepare render objects; actual rendering is done on a separate thread
