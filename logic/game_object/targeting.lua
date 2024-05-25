@@ -1,7 +1,7 @@
 local game_object_target_path_interval = 1
 
 function game_object:get_targeting_range()
-	return 4
+	return 10
 end
 function game_object:get_targeting_pitch_range()
 	return vec2:new(-45, 45)
@@ -11,10 +11,12 @@ function game_object:set_target(target)
 	self.target = target
 	self.target_path_timer = game_object_target_path_interval
 	self:set_goal(target.pos, self:get_targeting_range(), self:get_targeting_pitch_range())
+	self:rotate_parts(self.target.pos)
 end
 function game_object:clear_target()
 	self.target = nil
 	self:clear_goal()
+	self:reset_parts_rotation()
 end
 
 function game_object:targeting_tick(time_delta)
@@ -22,6 +24,7 @@ function game_object:targeting_tick(time_delta)
 		return
 	end
 
+	self:rotate_parts(self.target.pos)
 	if self.target_path_timer == nil then
 		self.target_path_timer = game_object_target_path_interval
 	end

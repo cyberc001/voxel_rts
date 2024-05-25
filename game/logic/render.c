@@ -11,13 +11,8 @@
 // metafunctions
 static int lua_render_obj_free(lua_State* L)
 {
-	render_obj* robj = lua_touserdata(L, 1);
-	render_info_free inf;
-	inf.buf = robj->buf;
-	if(robj->flags & RENDER_OBJ_FLAG_ALLOCED)
-		memcpy(inf.attr_data, robj->attr_data, sizeof(void*) * RENDER_OBJ_ATTRIBUTES_COUNT);
-	else
-		memset(inf.attr_data, 0, sizeof(void*) * RENDER_OBJ_ATTRIBUTES_COUNT);
+	render_obj** robj_ptr = lua_touserdata(L, 1);
+	render_info_free inf = {*robj_ptr};
 	render_list_add_free(&inf);
 	return 0;
 }
@@ -30,6 +25,8 @@ static int lua_render_obj_draw(lua_State* L)
 	else
 		luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
 	render_obj* robj = lua_touserdata(L, 1);
+	if(lua_type(L, 1) == LUA_TUSERDATA) // "unpack" userdata that stores pointer to render_obj
+		robj = *((render_obj**)robj);
 
 	vec3f tr = {0, 0, 0};
 	vec4f rot = {0, 0, 0, 1};
@@ -55,13 +52,16 @@ static int lua_swap_buffers(lua_State* L)
 static int lua_render_hexahedron(lua_State* L)
 {
 	hexahedron h = lua_get_hexahedron(L, 1);
-	render_obj* robj_ptr = lua_newuserdata(L, sizeof(render_obj));
-	*robj_ptr = render_hexahedron(h);
+	render_obj** udata_ptr = lua_newuserdata(L, sizeof(render_obj*));
+
+	render_obj* robj = malloc(sizeof(render_obj));
+	*robj = render_hexahedron(h);
 	if(!lua_isnoneornil(L, 2)){
 		luaL_checktype(L, 2, LUA_TTABLE);
 		vec3f clr = lua_get_vec3(L, 2);
-		robj_ptr->colorize = clr;
+		robj->colorize = clr;
 	}
+	*udata_ptr = robj;
 	luaL_setmetatable(L, "render_obj");
 	return 1;
 }

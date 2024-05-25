@@ -16,8 +16,7 @@ typedef struct {
 	vec3f sc;
 } render_info_draw;
 typedef struct {
-	GLuint buf;
-	void* attr_data[RENDER_OBJ_ATTRIBUTES_COUNT];
+	render_obj* robj;
 } render_info_free;
 
 DEF_DYN_ARRAY(render_info_draw_dynarray, render_info_draw)

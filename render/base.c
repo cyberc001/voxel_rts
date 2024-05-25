@@ -80,10 +80,8 @@ static void render_display()
 	}
 	for(size_t i = 0; i < render_list_front->free.busy; ++i){
 		render_info_free inf = render_list_front->free.data[i];
-		glDeleteBuffers(1, &inf.buf);
-		for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
-			if(inf.attr_data[i])
-				free(inf.attr_data[i]);
+		render_obj_free(inf.robj);
+		free(inf.robj);
 	}
 	render_list_front->free.busy = 0;
 
@@ -289,6 +287,11 @@ void render_obj_draw(const render_obj* obj)
 void render_obj_free(render_obj* obj)
 {
 	glDeleteBuffers(1, &obj->buf);
+	if(obj->flags & RENDER_OBJ_FLAG_ALLOCED){
+		for(size_t i = 0; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i)
+			if(obj->attr_data[i])
+				free(obj->attr_data[i]);
+	}
 }
 
 /* Render object list */

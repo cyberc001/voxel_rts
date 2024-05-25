@@ -14,10 +14,8 @@ require "./logic/controls"
 require "./logic/pointer"
 require "./logic/math/octree"
 
-require "./logic/unit/grizzly_tank"
-
 --test
-table.insert(game_object_arr, grizzly_tank:new({
+table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(0.5, 2.8, 2.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
@@ -27,6 +25,9 @@ table.insert(game_object_arr, grizzly_tank:new({
 		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
 }))
+game_object_arr[1]:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
+game_object_arr[1]:add_part(part:new({rot_axis = part_rot_axis.vertical, parent = game_object_arr[1].parts[1]}), 3)
+
 table.insert(game_object_arr, game_object:new({
 	pos = vec3:new(5.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),

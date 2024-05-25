@@ -5,6 +5,7 @@ game_object = {}
 require "./logic/game_object/pathing"
 require "./logic/game_object/targeting"
 require "./logic/game_object/rotation"
+require "./logic/part"
 
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
@@ -20,13 +21,14 @@ function game_object:create_tables(o)
 
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.base_hitbox or gmath.hexahedron_from_cube(1)
+
+	o.parts = o.parts or {}
 	o.robj_arr = o.robj_arr or {}
 end
 function game_object:new(o)
 	o = o or {}
 
 	o.max_speed = o.speed or 2
-	o.part_rot_speed = 10
 
 	o.team = o.team or 1
 
@@ -54,6 +56,7 @@ end
 function game_object:tick(time_delta)
 	self:path_tick()
 	self:targeting_tick(time_delta)
+	self:tick_parts(time_delta)
 end
 
 function game_object:render()
