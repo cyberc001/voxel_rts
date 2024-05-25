@@ -10,6 +10,7 @@ function octree:new(objects)
 	o.obj_clusters = {} -- maps object to a set of clusters
 	o.clusters = {{}} -- maps cluster to a set of objects
 	o.children = {}
+	o.depth = {}
 
 	local mincr = vec3:new(math.huge, math.huge, math.huge)
 	local maxcr = -mincr
@@ -21,7 +22,7 @@ function octree:new(objects)
 		if v.interaction_box[2].y > maxcr.y then maxcr.y = v.interaction_box[2].y end
 		if v.interaction_box[2].z > maxcr.z then maxcr.z = v.interaction_box[2].z end
 
-		o:add_object_to_cluster(v, 1)
+		o:add_object_to_cluster(v, 1, nil, 1)
 	end
 
 	o.bboxes = {bbox:new(mincr, maxcr)}
@@ -30,7 +31,7 @@ function octree:new(objects)
 	return o
 end
 
-function octree:add_object_to_cluster(obj, cluster_i, old_cluster_i)
+function octree:add_object_to_cluster(obj, cluster_i, old_cluster_i, depth)
 	self.clusters[cluster_i][obj] = true
 	if self.obj_clusters[obj] == nil then
 		self.obj_clusters[obj] = {} -- create a set of clusters
@@ -39,14 +40,15 @@ function octree:add_object_to_cluster(obj, cluster_i, old_cluster_i)
 	if old_cluster_i ~= nil then -- remove old cluster, it's not a leaf
 		self.obj_clusters[obj][old_cluster_i] = nil
 	end
+	self.depth[cluster_i] = depth
 end
 
 function octree:divide(cluster_i)
 	local mincr, maxcr = self.bboxes[cluster_i][1], self.bboxes[cluster_i][2] 
 	local center = (mincr + maxcr) * 0.5
 
-	if (maxcr - mincr):ln() < 2 then
-		return false -- cluster is too small diagonally, terminate
+	if (maxcr - mincr):ln() < 2 or self.depth[cluster_i] > 4 then
+		return false -- cluster is too small diagonally or it's too deep, terminate
 	end
 
 	self.children[cluster_i] = {} -- create a set of cluster's children
@@ -70,7 +72,7 @@ function octree:divide(cluster_i)
 
 		for k in pairs(self.clusters[cluster_i]) do
 			if gmath.bbox_check_collision(self.bboxes[new_cluster_i], k.interaction_box) then
-				self:add_object_to_cluster(k, new_cluster_i, cluster_i)
+				self:add_object_to_cluster(k, new_cluster_i, cluster_i, self.depth[cluster_i] + 1)
 			end
 		end
 
