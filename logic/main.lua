@@ -13,6 +13,7 @@ require "./logic/render_object"
 require "./logic/controls"
 require "./logic/pointer"
 require "./logic/math/octree"
+require "./logic/weapons/cannon"
 
 --test
 table.insert(game_object_arr, game_object:new({
@@ -26,9 +27,10 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 game_object_arr[1]:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
-game_object_arr[1]:add_part(part:new({rot_axis = part_rot_axis.vertical, parent = game_object_arr[1].parts[1]}), 3)
+game_object_arr[1]:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = game_object_arr[1].parts[1]}), 3)
 
 table.insert(game_object_arr, game_object:new({
+	--pos = vec3:new(0.5, 2.8, 4.5),
 	pos = vec3:new(5.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],

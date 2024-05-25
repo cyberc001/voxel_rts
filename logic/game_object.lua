@@ -10,7 +10,7 @@ require "./logic/part"
 function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 
-	o.vel = vec3:new()
+	o.vel = o.vel or vec3:new()
 	o.mass = 1
 	o.force = vec3:new()
 

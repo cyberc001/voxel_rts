@@ -23,6 +23,12 @@ static int lua_quat_from_rot(lua_State* L)
 	lua_push_vec4(L, quat_from_rot(rot));
 	return 1;
 }
+static int lua_rot_from_quat(lua_State* L)
+{
+	vec4f quat = lua_get_vec4(L, 1);
+	lua_push_vec3(L, rot_from_quat(quat));
+	return 1;
+}
 
 static int lua_hexahedron_from_cuboid(lua_State* L)
 {
@@ -184,6 +190,7 @@ static const struct luaL_Reg cfuncs[] = {
 	{"vec3_quat_rot", lua_vec3_quat_rot},
 	{"quat_rot_from_vec3", lua_quat_rot_from_vec3},
 	{"quat_from_rot", lua_quat_from_rot},
+	{"rot_from_quat", lua_rot_from_quat},
 
 	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
 	{"hexahedron_from_cube", lua_hexahedron_from_cube},
