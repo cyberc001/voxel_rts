@@ -134,6 +134,7 @@ static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
 	}
 	return (vec2f){min, max};
 }
+
 static int do_proj_overlap(vec2f proj1, vec2f proj2)
 {
 	return proj1.x <= proj2.y && proj1.y >= proj2.x;
@@ -142,6 +143,11 @@ static float get_proj_overlap(vec2f proj1, vec2f proj2)
 {
 	return min(proj1.y, proj2.y) - max(proj1.x, proj2.x);
 }
+static int does_proj_contain(vec2f proj, vec2f tocheck)
+{ // assumes that proj and tocheck overlap
+	return tocheck.x >= proj.x && tocheck.y <= proj.y;
+}
+
 static size_t hexahedron_get_separating_axes(const hexahedron* h1, const hexahedron* h2, vec3f* axis_arr)
 {
 	size_t arr_i = 0;
@@ -209,6 +215,16 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		      proj2 = hexahedron_project_on_axis(h2, axis);
 		if(do_proj_overlap(proj1, proj2)){
 			float o = get_proj_overlap(proj1, proj2);
+			
+			// check for containment
+			if(does_proj_contain(proj1, proj2) || does_proj_contain(proj2, proj1)){
+				float mins = fabs(proj1.x - proj2.x);
+				float maxs = fabs(proj1.y - proj2.y);
+				//printf("CONTAINS\n");
+				o += min(mins, maxs);
+			}
+
+			// get the minimally overlapping axis
 			if(o < overlap){
 				overlap = o;
 				resolution = axis;

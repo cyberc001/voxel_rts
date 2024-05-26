@@ -11,7 +11,7 @@ function game_object:create_tables(o)
 	o.pos = o.pos or vec3:new()
 
 	o.vel = o.vel or vec3:new()
-	o.mass = 1
+	o.mass = o.mass or 1
 	o.force = vec3:new()
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)

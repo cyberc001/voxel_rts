@@ -55,7 +55,7 @@ function _tick(time_delta)
 	
 	cur_octree = octree:new(game_object_arr)
 
-	for _,v in ipairs(game_object_arr) do
+	for i,v in ipairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel*time_delta)
 		vec3:iadd(v.vel, gravity_accel*time_delta)
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 10*time_delta))
@@ -97,6 +97,9 @@ function _tick(time_delta)
 				local vel_n = -elasticity * v.vel:dot(resolution_unit)
 				local impulse = (-(1 + elasticity) * v.vel:dot(resolution_unit)) / (resolution_unit:dot(resolution_unit*(1/v.mass + 1/static_mass)))
 				if impulse ~= impulse then impulse = 0 end
+				if i > 3 then
+					print(v, "pos", v.pos, "vel", v.vel, "correction", impulse / v.mass * resolution, impulse, v.mass, resolution)
+				end
 				v.vel = v.vel + impulse / v.mass * resolution
 
 				-- Deceleration and counterforce due to friction

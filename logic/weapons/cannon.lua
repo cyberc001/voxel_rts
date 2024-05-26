@@ -24,6 +24,7 @@ function cannon:fire(target)
 		rot = self.gobj.rot,
 		vel = self:get_proj_vel() * dir,
 
+		mass = 0.01,
 		base_hitbox = gmath.hexahedron_from_cuboid_centered(0.1, 0.1, 0.1),
 		team = self.gobj.team,
 		robj_arr = {
