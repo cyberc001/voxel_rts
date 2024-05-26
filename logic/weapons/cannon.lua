@@ -6,9 +6,17 @@ function cannon:get_proj_offset()
 	return 2
 end
 function cannon:get_proj_vel()
-	return 20
+	return 10
 end
 
+function cannon:rotate_to(target)
+	-- correct for gravity
+	local diff = self.gobj.pos - target
+	local travel_time = diff:ln() / self:get_proj_vel()
+	local gravity_off = gravity_accel * travel_time*travel_time / 2
+
+	weapon.rotate_to(self, target - gravity_off)
+end
 function cannon:fire(target)
 	local dir = vec3:new(gmath.vec3_quat_rot(vec3:new(1, 0, 0), self:get_rot()))
 	table.insert(game_object_arr, game_object:new({

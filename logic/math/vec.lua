@@ -91,6 +91,10 @@ function vec3.unm(v1)
 	return v1 * -1
 end
 vec3.__unm = vec3.unm
+function vec3.div(v1, v2)
+	return vec3.mul(v1, 1 / (v2))
+end
+vec3.__div = vec3.div
 
 function vec3:iadd(v1, v2)
 	v1.x = v1.x + v2.x

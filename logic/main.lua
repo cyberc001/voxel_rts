@@ -39,7 +39,7 @@ table.insert(game_object_arr, game_object:new({
 	}
 }))
 
-local gravity_accel = vec3:new(0, -20, 0)
+gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
 local static_fric_coff = 0.2
 local kinetic_fric_coff = 0.2
