@@ -2,6 +2,7 @@
 #include "htable_oa.h"
 #include "pqueue.h"
 #include "game/logic/path.h"
+#include "math/quat.h"
 
 static float heuristic(vec3f v1, vec3f v2)
 {
@@ -278,20 +279,8 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target,
 				vec3f cur_pos = (vec3f){cur_node->pos.x, cur_node->y, cur_node->pos.y};
 				vec3f diff = vec3_sub(target, cur_pos);
 
-				terrain_piece* tpiece = cur_node->tpiece;
-				vec3f p1 = (vec3f){cur_node->pos.x, tpiece->z_ceil[0], cur_node->pos.y};
-				vec3f p2 = (vec3f){cur_node->pos.x + 1, tpiece->z_ceil[1], cur_node->pos.y};
-				vec3f p3 = (vec3f){cur_node->pos.x + 1, tpiece->z_ceil[2], cur_node->pos.y + 1};
-				vec3f e1 = vec3_sub(p1, p2), e2 = vec3_sub(p2, p3);
-				vec3f norm = vec3_norm(vec3_cross(e1, e2));
-				vec3f n = (vec3f){0, -1, 0};
-				float forward_ang = -vec3f_get_ang_between(n, norm);
-				vec3f forward_axis = vec3_norm(vec3_cross(n, norm));
-				mat4f forward_trmat = mat4f_identity();
-				if(!isnan(forward_axis.x))
-					mat4f_rotate(&forward_trmat, forward_ang, forward_axis);
-				vec3f forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, (vec3f){1, 0, 0}));
-				float pitch = -vec3f_get_ang_between(forward, diff);
+				vec3f rot = rot_from_quat(quat_from_rot_between(diff, (vec3f){1, 0, 0}));
+				float pitch = rot.y;
 				if(isnan(pitch)) pitch = 0;
 				if(pitch > 90) pitch = 180 - pitch;
 				if(pitch < -90) pitch = -(180 + pitch);
