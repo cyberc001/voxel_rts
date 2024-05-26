@@ -220,7 +220,6 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 			if(does_proj_contain(proj1, proj2) || does_proj_contain(proj2, proj1)){
 				float mins = fabs(proj1.x - proj2.x);
 				float maxs = fabs(proj1.y - proj2.y);
-				//printf("CONTAINS\n");
 				o += min(mins, maxs);
 			}
 
@@ -233,7 +232,6 @@ int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f
 		else
 			return 0;
 	}
-
 	resolution = vec3_smul(resolution, overlap);
 	vec3f p1 = hexahedron_get_center(h1), p2 = hexahedron_get_center(h2);
 	vec3f vd = vec3_sub(p1, p2);

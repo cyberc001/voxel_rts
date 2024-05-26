@@ -17,7 +17,7 @@ require "./logic/weapons/cannon"
 
 --test
 table.insert(game_object_arr, game_object:new({
-	pos = vec3:new(0.5, 2.8, 2.5), 
+	pos = vec3:new(2.5, 3.8, 0.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
 	robj_arr = {
@@ -31,7 +31,7 @@ game_object_arr[1]:add_part(cannon:new({rot_axis = part_rot_axis.vertical, paren
 
 table.insert(game_object_arr, game_object:new({
 	--pos = vec3:new(0.5, 2.8, 4.5),
-	pos = vec3:new(5.5, 3.8, 2.5),
+	pos = vec3:new(6.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
@@ -97,10 +97,8 @@ function _tick(time_delta)
 				local vel_n = -elasticity * v.vel:dot(resolution_unit)
 				local impulse = (-(1 + elasticity) * v.vel:dot(resolution_unit)) / (resolution_unit:dot(resolution_unit*(1/v.mass + 1/static_mass)))
 				if impulse ~= impulse then impulse = 0 end
-				if i > 3 then
-					print(v, "pos", v.pos, "vel", v.vel, "correction", impulse / v.mass * resolution, impulse, v.mass, resolution)
-				end
-				v.vel = v.vel + impulse / v.mass * resolution
+				print(v, "correction", impulse / v.mass * resolution_unit, "vel", v.vel, "params", impulse, v.mass, resolution_unit)
+				v.vel = v.vel + impulse / v.mass * resolution_unit
 
 				-- Deceleration and counterforce due to friction
 				local fric_n = gravity_accel:safe_unit():dot(resolution_unit)
