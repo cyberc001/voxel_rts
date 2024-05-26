@@ -11,7 +11,9 @@ end
 
 function cannon:rotate_to(target)
 	-- correct for gravity
-	local diff = self.gobj.pos - target
+	local dir = vec3:new(gmath.vec3_quat_rot(vec3:new(1, 0, 0), self:get_rot()))
+	local diff = (self.gobj.pos + self:get_proj_offset() * dir) - target
+
 	local travel_time = diff:ln() / self:get_proj_vel()
 	local gravity_off = gravity_accel * travel_time*travel_time / 2
 

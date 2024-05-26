@@ -97,7 +97,6 @@ function _tick(time_delta)
 				local vel_n = -elasticity * v.vel:dot(resolution_unit)
 				local impulse = (-(1 + elasticity) * v.vel:dot(resolution_unit)) / (resolution_unit:dot(resolution_unit*(1/v.mass + 1/static_mass)))
 				if impulse ~= impulse then impulse = 0 end
-				print(v, "correction", impulse / v.mass * resolution_unit, "vel", v.vel, "params", impulse, v.mass, resolution_unit)
 				v.vel = v.vel + impulse / v.mass * resolution_unit
 
 				-- Deceleration and counterforce due to friction
