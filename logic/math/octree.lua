@@ -14,7 +14,7 @@ function octree:new(objects)
 
 	local mincr = vec3:new(math.huge, math.huge, math.huge)
 	local maxcr = -mincr
-	for _,v in ipairs(objects) do
+	for v,_ in pairs(objects) do
 		if v.interaction_box[1].x < mincr.x then mincr.x = v.interaction_box[1].x end
 		if v.interaction_box[1].y < mincr.y then mincr.y = v.interaction_box[1].y end
 		if v.interaction_box[1].z < mincr.z then mincr.z = v.interaction_box[1].z end

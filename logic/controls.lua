@@ -8,7 +8,7 @@ function controls_tick()
 	end
 
 	local selected_something = false
-	for _,v in ipairs(game_object_arr) do
+	for v,_ in pairs(game_object_arr) do
 		if gmath.hexahedron_is_selected(v.hitbox) then
 			if v.team == player_team then
 				if not selected_something then

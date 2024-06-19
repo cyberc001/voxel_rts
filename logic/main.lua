@@ -15,8 +15,7 @@ require "./logic/pointer"
 require "./logic/math/octree"
 require "./logic/weapons/cannon"
 
---test
-table.insert(game_object_arr, game_object:new({
+local _o1 = shootable:new({
 	pos = vec3:new(2.5, 3.8, 0.5), 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
@@ -25,19 +24,29 @@ table.insert(game_object_arr, game_object:new({
 		render_object:new({model = render.model_find("grizzly_tank_turret"), pos = vec3:new(0, 0.2, 0), size = vec3:new(0.7, 0.7, 0.7)}),
 		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
 	}
-}))
-game_object_arr[1]:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
-game_object_arr[1]:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = game_object_arr[1].parts[1]}), 3)
+})
+_o1:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
+_o1:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = _o1.parts[1],
+			proj = projectile:new({
+				mass = 0.01,
+				base_hitbox = gmath.hexahedron_from_cuboid_centered(0.1, 0.1, 0.1),
+				robj_arr = {
+					render_object:new({model = render.model_find("test_projectile")})
+				}
+			})
+		}), 3)
 
-table.insert(game_object_arr, game_object:new({
-	--pos = vec3:new(0.5, 2.8, 4.5),
+local _o2 = shootable:new({
 	pos = vec3:new(6.5, 3.8, 2.5),
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
-}))
+})
+
+game_object_arr[_o1] = true
+game_object_arr[_o2] = true
 
 gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
@@ -55,7 +64,7 @@ function _tick(time_delta)
 	
 	cur_octree = octree:new(game_object_arr)
 
-	for i,v in ipairs(game_object_arr) do
+	for v,_ in pairs(game_object_arr) do
 		vec3:iadd(v.pos, v.vel*time_delta)
 		vec3:iadd(v.vel, gravity_accel*time_delta)
 		v.rot = vec4:new(gmath.interp_quat(v.rot, v.rot_goal, 10*time_delta))
@@ -73,6 +82,7 @@ function _tick(time_delta)
 					if collided then
 						vec3:isub(v.pos, resolution)
 						v:update_hitbox()
+						v:on_object_collision(v2, resolution)
 					end
 		
 					collided = gmath.bbox_check_collision(v.interaction_box, v2.interaction_box)
@@ -117,12 +127,12 @@ function _tick(time_delta)
 		v.force = vec3:new()
 	end
 
-	for _,v in ipairs(game_object_arr) do
+	for v,_ in pairs(game_object_arr) do
 		v:tick(time_delta)
 	end
 
 	-- prepare render objects; actual rendering is done on a separate thread
-	for _,v in ipairs(game_object_arr) do
+	for v,_ in pairs(game_object_arr) do
 		v:render()
 	end
 	pointer_render()

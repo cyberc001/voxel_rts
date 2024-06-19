@@ -16,3 +16,6 @@ function team:add_ally(ally)
 	self.allies[ally] = true
 	ally.allies[self] = true
 end
+function team:is_hostile_to(other)
+	return not self.allies[other]
+end

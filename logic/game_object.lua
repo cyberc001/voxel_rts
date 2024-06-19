@@ -39,6 +39,9 @@ function game_object:new(o)
 	return o
 end
 
+function game_object:destroy()
+	game_object_arr[self] = nil
+end
 
 function game_object:update_hitbox()
 	self.hitbox = gmath.hexahedron_transform(self.base_hitbox, self.pos, self.rot, self.size)
@@ -47,11 +50,12 @@ function game_object:update_hitbox()
 	self.interaction_box = gmath.hexahedron_get_interaction_box(self.hitbox)
 end
 
+
 function game_object:apply_force(force)
 	self.force = self.force + force
 end
 
--- callbacks for the engine
+-- event callbacks
 
 function game_object:tick(time_delta)
 	self:path_tick()
@@ -67,4 +71,8 @@ function game_object:render()
 	for _,v in ipairs(self.robj_arr) do
 		v:render(self)
 	end
+end
+
+
+function game_object:on_object_collision(other, resolution)
 end
