@@ -8,11 +8,11 @@ require "./logic/game_object/rotation"
 require "./logic/part"
 
 function game_object:create_tables(o)
-	o.pos = o.pos or vec3:new()
-
-	o.vel = o.vel or vec3:new()
 	o.mass = o.mass or 1
 	o.force = vec3:new()
+
+	o.pos = o.pos or vec3:new()
+	o.vel = o.vel or vec3:new()
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)
 	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
@@ -41,6 +41,9 @@ end
 
 function game_object:destroy()
 	game_object_arr[self] = nil
+end
+function game_object:exists()
+	return game_object_arr[self] ~= nil
 end
 
 function game_object:update_hitbox()

@@ -23,7 +23,16 @@ function pointer_flash(pos, model)
 end
 
 function pointer_render()
-	local cur_pos = pointer_pos.x and pointer_pos or pointer_pos.pos -- if it's not a vector, it's a game object and it's position should be tracked
+	local cur_pos
+	if pointer_pos.x then cur_pos = pointer_pos -- a vector
+	else -- a game object that should be tracked
+		if not pointer_pos:exists() then
+			pointer_clear()
+			cur_pos = vec3:new()
+		else
+			cur_pos = pointer_pos.pos
+		end
+	end
 	render.render_obj_draw(cur_pointer_model,
 				cur_pos + vec3:new(0, 0.5, 0) + vec3:new(0, 0.4, 0) * (pointer_bob*pointer_bob),
 				gmath.quat_from_rot(pointer_rot),
@@ -42,4 +51,9 @@ function pointer_tick(time_delta)
 		pointer_rot.x = pointer_rot.x + 1
 		if pointer_rot.x > 360 then pointer_rot.x = pointer_rot.x - 360 end
 	end
+end
+function pointer_clear()
+	pointer_pos = vec3:new()
+	pointer_size = 0
+	pointer_lifetime_left = 0
 end

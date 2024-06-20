@@ -18,11 +18,12 @@ end
 function weapon:tick(time_delta)
 	part.tick(self, time_delta)
 
+	local target = self.gobj.target
 	if self.attack_timer < self:get_attack_interval() then
 		self.attack_timer = self.attack_timer + time_delta
-	elseif self.gobj.target then
+	elseif target then
 		self.attack_timer = 0
-		self:fire(self.gobj.target)
+		self:fire(target)
 	end
 end
 function weapon:fire(target)

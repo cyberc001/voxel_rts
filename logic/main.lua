@@ -1,4 +1,4 @@
-require "./logic/team"
+require "./logic/combat/team"
 
 render_hitboxes = true
 
@@ -13,7 +13,7 @@ require "./logic/render_object"
 require "./logic/controls"
 require "./logic/pointer"
 require "./logic/math/octree"
-require "./logic/weapons/cannon"
+require "./logic/combat/weapons/cannon"
 
 local _o1 = shootable:new({
 	pos = vec3:new(2.5, 3.8, 0.5), 

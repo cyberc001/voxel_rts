@@ -1,4 +1,4 @@
-require "./logic/shootable"
+require "./logic/combat/shootable"
 
 projectile = shootable:new({})
 projectile.class = projectile

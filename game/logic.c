@@ -4,6 +4,8 @@
 #include "game/logic/math.h"
 #include "ticker.h"
 
+/* Initialization and state */
+
 lua_State* global_lua_state;
 static const char* base_fname = "logic/main.lua";
 
@@ -28,6 +30,30 @@ void game_logic_init()
 	logic_ticker = ticker_create(16, game_logic_tick);
 }
 
+/* Error handling */
+
+static int game_logic_error(lua_State* L)
+{
+	const char* msg = luaL_checkstring(L, 1);
+	LOG_ERROR("%s", msg);
+
+	LOG_NOPREFIX("*** Stack trace: ***");
+	int lvl = 0;
+	lua_Debug ar;
+	while(lua_getstack(L, ++lvl, &ar)){
+		lua_getinfo(L, "Snl", &ar);
+		if(ar.name)
+			LOG_NOPREFIX("%d. %s()", lvl, ar.name);
+		else
+			LOG_NOPREFIX("%d. in-line", lvl);
+		LOG_NOPREFIX("\t%s:%d", ar.short_src, ar.currentline);
+	}
+	LOG_NOPREFIX("");
+	return 0;
+}
+
+/* Tick functions */
+
 static int first_tick = 1;
 void game_logic_tick(unsigned ms)
 {
@@ -35,25 +61,18 @@ void game_logic_tick(unsigned ms)
 
 	if(first_tick){
 		first_tick = 0;
+		lua_pushcfunction(global_lua_state, game_logic_error);
 		lua_getglobal(global_lua_state, "_first_tick");
-		if(lua_pcall(global_lua_state, 0, 0, 0)){
-			LOG_ERROR("global function _first_tick() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
-			lua_pop(global_lua_state, 1);
-		}
+		lua_pcall(global_lua_state, 0, 0, -2);
 	}
 
+	lua_pushcfunction(global_lua_state, game_logic_error);
 	lua_getglobal(global_lua_state, "_tick");
 	lua_pushnumber(global_lua_state, time_delta);
-	if(lua_pcall(global_lua_state, 1, 0, 0)){
-		LOG_ERROR("global function _tick() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
-		lua_pop(global_lua_state, 1);
-	}
+	lua_pcall(global_lua_state, 1, 0, -3);
 }
 void game_logic_render()
 {
 	lua_getglobal(global_lua_state, "_render");
-	if(lua_pcall(global_lua_state, 0, 0, 0)){
-		LOG_ERROR("global function _render() returned an error:\n%s\n", lua_tostring(global_lua_state, -1));
-		lua_pop(global_lua_state, 1);
-	}
+	lua_pcall(global_lua_state, 0, 0, 0);
 }

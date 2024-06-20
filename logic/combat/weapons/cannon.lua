@@ -1,5 +1,5 @@
-require "./logic/weapon"
-require "./logic/weapons/projectile"
+require "./logic/combat/weapon"
+require "./logic/combat/projectile"
 
 cannon = weapon:new({})
 
