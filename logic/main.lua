@@ -14,6 +14,7 @@ require "./logic/controls"
 require "./logic/pointer"
 require "./logic/math/octree"
 require "./logic/combat/weapons/cannon"
+require "/.logic/physics"
 
 local _o1 = shootable:new({
 	pos = vec3:new(2.5, 3.8, 0.5), 
@@ -27,14 +28,17 @@ local _o1 = shootable:new({
 })
 _o1:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
 _o1:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = _o1.parts[1],
-			proj = projectile:new({
-				mass = 0.01,
-				base_hitbox = gmath.hexahedron_from_cuboid_centered(0.1, 0.1, 0.1),
-				robj_arr = {
-					render_object:new({model = render.model_find("test_projectile")})
-				}
-			})
+			proj_factory = function()
+				return projectile:new({
+					mass = 0.01,
+					base_hitbox = gmath.hexahedron_from_cuboid_centered(0.1, 0.1, 0.1),
+					robj_arr = {
+						render_object:new({model = render.model_find("test_projectile")})
+					}
+				})
+			end
 		}), 3)
+game_object_arr[_o1] = true
 
 local _o2 = shootable:new({
 	pos = vec3:new(6.5, 3.8, 2.5),
@@ -44,11 +48,8 @@ local _o2 = shootable:new({
 		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
 	}
 })
-
-game_object_arr[_o1] = true
 game_object_arr[_o2] = true
 
-gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
 local static_fric_coff = 0.2
 local kinetic_fric_coff = 0.2
@@ -82,6 +83,11 @@ function _tick(time_delta)
 					if collided then
 						vec3:isub(v.pos, resolution)
 						v:update_hitbox()
+						if resolution.x == resolution.x then
+							resolution = vec3:new(resolution)
+							collision_response(resolution, v, v2)
+						end
+
 						v:on_object_collision(v2, resolution)
 					end
 		
@@ -100,24 +106,8 @@ function _tick(time_delta)
 			v.last_resolution = -resolution * (1/time_delta)
 
 			if resolution.x == resolution.x then
-				-- Impulse-based collision response
-				-- https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
-				local static_mass = 1000000
-				local resolution_unit = resolution:ln() > 0 and resolution:unit() or vec3:new(0, 1, 0)
-				local vel_n = -elasticity * v.vel:dot(resolution_unit)
-				local impulse = (-(1 + elasticity) * v.vel:dot(resolution_unit)) / (resolution_unit:dot(resolution_unit*(1/v.mass + 1/static_mass)))
-				if impulse ~= impulse then impulse = 0 end
-				v.vel = v.vel + impulse / v.mass * resolution_unit
-
-				-- Deceleration and counterforce due to friction
-				local fric_n = gravity_accel:safe_unit():dot(resolution_unit)
-				local normal_force = fric_n * v.mass
-				local fric_static = normal_force * static_fric_coff
-
-				local coff = v.force:ln() < fric_static and static_fric_coff or kinetic_fric_coff
-				local decel = fric_n * gravity_accel:safe_unit():dot(resolution_unit) * coff
-				local ln = v.vel:ln() > decel and v.vel:ln() - decel or 0
-				v.vel = v.vel:safe_unit() * ln
+				static_collision_response(resolution, v)
+				friction_deceleration(resolution, v)
 			end
 
 			v.rot_goal = new_rot
