@@ -1,7 +1,7 @@
 gravity_accel = vec3:new(0, -20, 0)
 local elasticity = 0.3
-local static_fric_coff = 0.2
-local kinetic_fric_coff = 0.2
+local static_fric_coff = 0.4
+local kinetic_fric_coff = 0.4
 
 local static_mass = 1000000
 

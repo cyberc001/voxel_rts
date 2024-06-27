@@ -117,8 +117,7 @@ function vec3:ln()
 	return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
 end
 function vec3:unit()
-	local ln = self:ln()
-	return vec3:new(self.x/ln, self.y/ln, self.z/ln)
+	return self * (1/self:ln())
 end
 function vec3:safe_unit()
 	return self:ln() > 0 and self:unit() or vec3:new(0, 0, 0)
@@ -143,6 +142,16 @@ function vec4.tostring(v1)
 	return "{" .. tostring(v1.x) .. ", " .. tostring(v1.y) .. ", " .. tostring(v1.z) .. ", " .. tostring(v1.w) .. "}"
 end
 vec4.__tostring = vec4.tostring
+
+function vec4.add(v1, v2)
+	return vec4:new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w)
+end
+vec4.__add = vec4.add
+function vec4.sub(v1, v2)
+	return vec4:new(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w)
+end
+vec4.__sub = vec4.sub
+
 function vec4.mul(v1, v2)
 	if type(v1) == "number" then return vec4:new(v2.x * v1, v2.y * v1, v2.z * v1, v2.w * v1)
 	elseif type(v2) == "number" then return vec4:new(v1.x * v2, v1.y * v2, v1.z * v2, v1.w * v2)
@@ -158,6 +167,9 @@ vec4.__mul = vec4.mul
 function vec4:ln()
 	return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w)
 end
+function vec4:unit()
+	return self * (1/self:ln())
+end
 
 function vec4:conj()
 	return vec4:new(-self.x, -self.y, -self.z, self.w)
@@ -167,4 +179,21 @@ function vec4:inv()
 	local lambda = 1 / (self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w)
 	lambda = vec4:new(0, 0, 0, 1) * lambda
 	return lambda * self:conj()
+end
+
+function vec4:ang()
+	return 2 * math.acos(self.w)
+end
+
+function vec4:exp()
+	local ea = math.exp(self.w)
+	local v = vec3:new(self.x, self.y, self.z)
+	local v_ln = v:ln()
+	v = v:unit() * math.sin(v_ln)
+	return vec4:new(v.x, v.y, v.z, ea * math.cos(v_ln))
+end
+function vec4:log() -- natural logarithm
+	local ln = self:ln()
+	local v = vec3:new(self.x, self.y, self.z):unit() * math.acos(self.w / ln)
+	return vec4:new(v.x, v.y, v.z, math.log(ln))
 end

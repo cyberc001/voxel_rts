@@ -27,6 +27,7 @@ function game_object:get_movement_force()
 	return 30
 end
 function game_object:accel_to_path()
+	-- linear aceleration
 	if not self.last_resolution then self.last_resolution = vec3:new() end
 	local diff = (self.path_vel - self.last_resolution) - self.vel
 	diff.y = 0

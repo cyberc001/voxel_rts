@@ -47,6 +47,7 @@ mat4f mat_from_quat(vec4f q)
 		{0, 0, 0, 1}
 	}};
 }
+
 vec4f quat_from_rot(vec3f rot)
 {
 	rot.x = ang_to_rad(rot.x), rot.y = ang_to_rad(rot.y), rot.z = ang_to_rad(rot.z);
@@ -64,6 +65,30 @@ vec3f rot_from_quat(vec4f q)
 	return (vec3f){rad_to_ang(atan2(2*q.y*q.w - 2*q.x*q.z, 1 - 2*q.y*q.y - 2*q.z*q.z)),
 			rad_to_ang(asin(2*q.x*q.y + 2*q.z*q.w)),
 			rad_to_ang(atan2(2*q.x*q.w - 2*q.y*q.z, 1 - 2*q.x*q.x - 2*q.z*q.z))};
+}
+
+vec3f axis_from_quat(vec4f q)
+{
+	if(q.w < 0)
+		q = vec4_smul(q, -1);
+	if(q.w > 1)
+		q = vec4_norm(q);
+	float a = 2 * acos(q.w);
+	float s = sqrt(1 - q.w*q.w);
+	vec3f axis;
+	if(s < 0.001)
+		axis = (vec3f){1, 0, 0};
+	else
+		axis = (vec3f){q.x / s, q.y / s, q.z / s};
+	return vec3_smul(axis, a); // now multiply normalized axis by angle
+}
+vec4f quat_from_axis(vec3f axis)
+{
+	float a = vec3_ln(axis);
+	axis = a > 0.001 ? vec3_norm(axis) : (vec3f){1, 0, 0};
+
+	float s = sin(a / 2);
+	return (vec4f){axis.x * s, axis.y * s, axis.z * s, cos(a / 2)};
 }
 
 vec4f quat_from_rot_between(vec3f v1, vec3f v2)

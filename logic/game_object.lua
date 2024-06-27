@@ -12,12 +12,14 @@ function game_object:create_tables(o)
 	o.force = vec3:new()
 
 	o.pos = o.pos or vec3:new()
-	o.vel = o.vel or vec3:new()
+	o.vel = vec3:new()
 
 	o.rot = o.rot or vec4:new(0, 0, 0, 1)
-	o.rot_goal = o.rot or vec4:new(0, 0, 0, 1)
+	o.rot_vel = vec3:new() -- in axis angle
+
 	o.path_vel = vec3:new()
 	o.path_forward = vec3:new(1, 0, 0)
+	o.resolution_rot_vel = vec3:new()
 
 	o.size = o.size or vec3:new(1, 1, 1)
 	o.base_hitbox = o.base_hitbox or gmath.hexahedron_from_cube(1)
