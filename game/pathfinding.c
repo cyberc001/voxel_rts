@@ -121,13 +121,13 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				*new_node_ptr = res_node;\
 				tptr_set_insert(closed, res_tpiece, new_node_ptr);\
 				tnode_pqueue_push(open, new_node_ptr);\
-				printf("pushed %d %d %f\n", res_node.pos.x, res_node.pos.y, max_ceil);\
+				printf("pushed %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, max_ceil, res_node.cost, res_node.heuristic);\
 			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
-				(*old_node)->cost = cur_node->cost + max(dx, dy);\
+				(*old_node)->cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
 				tnode_calc_heuristic(**old_node, goal, goal_y);\
 				(*old_node)->parent = cur_node;\
 				tnode_pqueue_heapify(open);\
-				printf("updated %d %d\n", res_node.pos.x, res_node.pos.y);\
+				printf("updated %d %d (%f %f)\n", res_node.pos.x, res_node.pos.y, cur_node->cost, cur_node->heuristic);\
 			} else (*old_node)->parent ? printf("already in queue with parent %d %d\n", (*old_node)->parent->pos.x, (*old_node)->parent->pos.y) : printf("already in queue with no parent\n");\
 		}\
 	}\

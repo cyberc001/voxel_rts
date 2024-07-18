@@ -39,6 +39,7 @@ function game_object:accel_to_path()
 end
 
 function game_object:path_tick()
+	self.path_forward = gmath.vec3_quat_rot(vec3:new(1, 0, 0), self.rot)
 	if self.path then self:accel_to_path() end
 	self.path_vel = vec3:new(0, 0, 0)
 	if not self.moves_this_tick then return end
@@ -46,9 +47,8 @@ function game_object:path_tick()
 	if self.path then
 		local center = gmath.hexahedron_get_center(self.hitbox)
 		local immgoal = self.path[self.path_i] -- immediate goal
-		if self.path and immgoal then
+		if immgoal then
 			local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
-
 			if(diff:ln() > 0) then
 				self.path_vel = diff:unit() * self.max_speed
 			end
@@ -59,11 +59,12 @@ function game_object:path_tick()
 			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination	
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
-					self.path_vel = vec3:new(0, 0, 0)
 					self:clear_goal()
 					return
 				end
 			end
+		else
+			self:clear_goal()
 		end
 	end
 end
