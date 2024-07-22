@@ -39,12 +39,10 @@ function game_object:accel_to_path()
 end
 
 function game_object:path_tick()
-	self.path_forward = gmath.vec3_quat_rot(vec3:new(1, 0, 0), self.rot)
-	if self.path then self:accel_to_path() end
-	self.path_vel = vec3:new(0, 0, 0)
 	if not self.moves_this_tick then return end
 
 	if self.path then
+		self:accel_to_path()
 		local center = gmath.hexahedron_get_center(self.hitbox)
 		local immgoal = self.path[self.path_i] -- immediate goal
 		if immgoal then

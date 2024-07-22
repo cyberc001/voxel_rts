@@ -38,6 +38,12 @@ function friction_deceleration(resolution, gobj)
 
 	local coff = gobj.force:ln() < fric_static and static_fric_coff or kinetic_fric_coff
 	local decel = fric_n * gravity_accel:safe_unit():dot(resolution_unit) * coff
+
 	local ln = gobj.vel:ln() > decel and gobj.vel:ln() - decel or 0
 	gobj.vel = gobj.vel:safe_unit() * ln
+
+	-- assume r = 1 for now
+	decel = decel * gobj.rot_fric_mul
+	ln = gobj.rot_vel:ln() > decel and gobj.rot_vel:ln() - decel or 0
+	gobj.rot_vel = gobj.rot_vel:safe_unit() * ln
 end

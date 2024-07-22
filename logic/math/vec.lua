@@ -84,7 +84,8 @@ end
 vec3.__sub = vec3.sub
 function vec3.mul(v1, v2)
 	if type(v1) == "number" then return vec3:new(v2.x * v1, v2.y * v1, v2.z * v1)
-	elseif type(v2) == "number" then return vec3:new(v1.x * v2, v1.y * v2, v1.z * v2) end
+	elseif type(v2) == "number" then return vec3:new(v1.x * v2, v1.y * v2, v1.z * v2)
+	else return vec3:new(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z) end
 end
 vec3.__mul = vec3.mul
 function vec3.unm(v1)
@@ -92,7 +93,8 @@ function vec3.unm(v1)
 end
 vec3.__unm = vec3.unm
 function vec3.div(v1, v2)
-	return vec3.mul(v1, 1 / (v2))
+	if type(v1) == "number" then return vec3:new(v2.x / v1, v2.y / v1, v2.z / v1)
+	elseif type(v2) == "number" then return vec3:new(v1.x / v2, v1.y / v2, v1.z / v2) end
 end
 vec3.__div = vec3.div
 
@@ -111,6 +113,10 @@ function vec3:emul(v1, v2)
 end
 function vec3:dot(v2)
 	return self.x*v2.x + self.y*v2.y + self.z*v2.z
+end
+
+function vec3:cross(v2)
+	return vec3:new(self.y*v2.z - self.z*v2.y, self.z*v2.x - self.x*v2.z, self.x*v2.y - self.y*v2.x)
 end
 
 function vec3:ln()

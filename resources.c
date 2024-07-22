@@ -43,11 +43,11 @@ sound sound_find(const char* name)
 
 /* MODELS */
 model_map map_model;
-void model_add(char* name, render_obj model)
+void model_add(char* name, voxel_model model)
 {
 	model_map_insert(&map_model, name, model);
 }
-render_obj* model_find(const char* name)
+voxel_model* model_find(const char* name)
 {
 	return model_map_find(&map_model, name);
 }
@@ -136,11 +136,11 @@ static void r_resources_scan(const char* dir_name, int scan_type)
 						char* fname = CONCAT_ENT_NAME();
 						FILE* fd = fopen(fname, "r");
 						if(fd){
-							render_obj_list list = read_qb_vxl(fd);
-							for(size_t i = 0; i < list.ln; ++i)
-								if(list.objs[i].buf_sizes[0])
-									model_add(cut_fname_ext(ent->d_name), list.objs[i]);
-							free(list.objs);
+							voxel_array arr = read_qb_vxl(fd);
+							for(size_t i = 0; i < arr.busy; ++i)
+								if(arr.data[i].model.buf_sizes[0])
+									model_add(cut_fname_ext(ent->d_name), arr.data[i]);
+							voxel_array_destroy(&arr);
 							fclose(fd);
 						}
 						else

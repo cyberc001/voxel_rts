@@ -56,7 +56,7 @@ game/logic.o: game/logic.c game/logic.h
 	$(CCO) $< -o $@
 game/pathfinding.o: game/pathfinding.c game/pathfinding.h
 	$(CCO) $< -o $@
-game/logic/render.o: game/logic/render.c game/logic/render.h game/logic.h
+game/logic/render.o: game/logic/render.c game/logic/render.h game/logic.h render/base.h
 	$(CCO) $< -o $@
 game/logic/math.o: game/logic/math.c game/logic/math.h game/logic.h
 	$(CCO) $< -o $@

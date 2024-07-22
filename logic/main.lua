@@ -17,15 +17,17 @@ require "./logic/combat/weapons/cannon"
 require "./logic/physics"
 require "./logic/math/basic"
 
+stop = false
+
 local _o1 = shootable:new({
 	pos = vec3:new(1.5, 3.8, 4.5),
 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[1],
 	robj_arr = {
-		render_object:new({model = render.model_find("grizzly_tank_base"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.7, 0.7, 0.7)}),
-		render_object:new({model = render.model_find("grizzly_tank_turret"), pos = vec3:new(0, 0.2, 0), size = vec3:new(0.7, 0.7, 0.7)}),
-		render_object:new({model = render.model_find("grizzly_tank_barrel"), pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)})
+		render_object:new({pos = vec3:new(0, -0.1, 0), size = vec3:new(0.7, 0.7, 0.7)}, "grizzly_tank_base"),
+		render_object:new({pos = vec3:new(0, 0.2, 0), size = vec3:new(0.7, 0.7, 0.7)}, "grizzly_tank_turret"),
+		render_object:new({pos = vec3:new(0, 0.2, 0), size = vec3:new(1, 1, 1)}, "grizzly_tank_barrel")
 	}
 })
 _o1:add_part(part:new({rot_axis = part_rot_axis.horizontal}), 2)
@@ -44,25 +46,21 @@ game_object_arr[_o1] = true
 
 local _o2 = shootable:new({
 	pos = vec3:new(6.5, 3.8, 2.5),
+	rot = vec4:new(0, 0.383, 0, 0.924),
 
 	base_hitbox = gmath.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
 	team = all_teams[2],
 	robj_arr = {
-		render_object:new({model = render.model_find("harvester"), pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)})
+		render_object:new({pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)}, "harvester")
 	}
 })
---game_object_arr[_o2] = true
-
-_o1.rot_vel = vec3:new(0, 3, 0)
---_o2.rot_vel = vec3:new(0, 3, 0)
+game_object_arr[_o2] = true
 
 function _first_tick()
 end
 
-local max_resolution_rot_vel = 7
-local resolution_rot_accel = 3
-
 function _tick(time_delta)
+	if stop then return end
 	controls_tick()
 	pointer_tick(time_delta)
 
@@ -81,31 +79,35 @@ function _tick(time_delta)
 
 		local clusters = cur_octree.obj_clusters[v]
 		local checked_objects = {}
-		for cluster_i in pairs(clusters) do -- for each cluster that intersects with the object
-			for v2 in pairs(cur_octree.clusters[cluster_i]) do -- check collision with objects in these clusters
-				if v ~= v2 and checked_objects[v2] == nil then
-					checked_objects[v2] = true
-					local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
-					if collided then
-						vec3:isub(v.pos, resolution)
-						v:update_hitbox()
-						if resolution.x == resolution.x then
-							resolution = vec3:new(resolution)
-							collision_response(resolution, v, v2)
-						end
+		if clusters then
+			for cluster_i in pairs(clusters) do -- for each cluster that intersects with the object
+				for v2 in pairs(cur_octree.clusters[cluster_i]) do -- check collision with objects in these clusters
+					if v ~= v2 and checked_objects[v2] == nil then
+						checked_objects[v2] = true
+						local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
+						if collided then
+							vec3:isub(v.pos, resolution)
+							v:update_hitbox()
+							if resolution.x == resolution.x then
+								resolution = vec3:new(resolution)
+								collision_response(resolution, v, v2)
+							end
 
-						v:on_object_collision(v2, resolution)
-					end
+							v:on_object_collision(v2, resolution)
+						end
 		
-					collided = gmath.bbox_check_collision(v.interaction_box, v2.interaction_box)
-					if collided then
-						game_object.decide_who_moves(v, v2)
+						collided = gmath.bbox_check_collision(v.interaction_box, v2.interaction_box)
+						if collided then
+							game_object.decide_who_moves(v, v2)
+						end
 					end
 				end
 			end
 		end
 	
-		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, v.path_forward)
+		local path_forward = v.path and v.path_forward or gmath.vec3_quat_rot(vec3:new(1, 0, 0), v.rot)
+
+		local collided, resolution, new_rot = gmath.hexahedron_check_terrain_collision(v.hitbox, path_forward)
 		if collided then
 			resolution = vec3:new(resolution)
 			vec3:isub(v.pos, resolution)
@@ -116,18 +118,14 @@ function _tick(time_delta)
 				friction_deceleration(resolution, v)
 			end
 
-			if v.path then
-				new_rot = vec4:new(new_rot)
-				local new_rot_vel = vec3:new(gmath.axis_from_quat(vec4:new(v.rot):inv() * new_rot))
-				new_rot_vel = new_rot_vel * max_resolution_rot_vel
-				local rot_vel_diff = new_rot_vel - v_total_rot_vel
-				if rot_vel_diff:ln() > resolution_rot_accel then
-					rot_vel_diff = rot_vel_diff:safe_unit() * resolution_rot_accel
-				end
-				v.resolution_rot_vel = v.resolution_rot_vel + rot_vel_diff
-			else
-				v.resolution_rot_vel = vec3:new()
+			new_rot = vec4:new(new_rot)
+			local new_rot_vel = vec3:new(gmath.axis_from_quat(vec4:new(v.rot):inv() * new_rot))
+			new_rot_vel = new_rot_vel * v.max_resolution_rot_vel
+			local rot_vel_diff = new_rot_vel - (v.path and v_total_rot_vel or v.resolution_rot_vel)
+			if rot_vel_diff:ln() > v.resolution_rot_accel then
+				rot_vel_diff = rot_vel_diff:safe_unit() * v.resolution_rot_accel
 			end
+			v.resolution_rot_vel = v.resolution_rot_vel + rot_vel_diff
 
 			v:update_hitbox()
 		end

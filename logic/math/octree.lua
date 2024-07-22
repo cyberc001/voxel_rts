@@ -15,14 +15,16 @@ function octree:new(objects)
 	local mincr = vec3:new(math.huge, math.huge, math.huge)
 	local maxcr = -mincr
 	for v,_ in pairs(objects) do
-		if v.interaction_box[1].x < mincr.x then mincr.x = v.interaction_box[1].x end
-		if v.interaction_box[1].y < mincr.y then mincr.y = v.interaction_box[1].y end
-		if v.interaction_box[1].z < mincr.z then mincr.z = v.interaction_box[1].z end
-		if v.interaction_box[2].x > maxcr.x then maxcr.x = v.interaction_box[2].x end
-		if v.interaction_box[2].y > maxcr.y then maxcr.y = v.interaction_box[2].y end
-		if v.interaction_box[2].z > maxcr.z then maxcr.z = v.interaction_box[2].z end
+		if not v.only_terrain_collision then
+			if v.interaction_box[1].x < mincr.x then mincr.x = v.interaction_box[1].x end
+			if v.interaction_box[1].y < mincr.y then mincr.y = v.interaction_box[1].y end
+			if v.interaction_box[1].z < mincr.z then mincr.z = v.interaction_box[1].z end
+			if v.interaction_box[2].x > maxcr.x then maxcr.x = v.interaction_box[2].x end
+			if v.interaction_box[2].y > maxcr.y then maxcr.y = v.interaction_box[2].y end
+			if v.interaction_box[2].z > maxcr.z then maxcr.z = v.interaction_box[2].z end
 
-		o:add_object_to_cluster(v, 1, nil, 1)
+			o:add_object_to_cluster(v, 1, nil, 1)
+		end
 	end
 
 	o.bboxes = {bbox:new(mincr, maxcr)}

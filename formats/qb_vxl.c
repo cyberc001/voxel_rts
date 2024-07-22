@@ -125,12 +125,13 @@ typedef struct {
 
 #define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
-render_obj_list read_qb_vxl(FILE* fd)
+voxel_array read_qb_vxl(FILE* fd)
 {
 	qb_hdr hdr;
 	fread(&hdr, sizeof(hdr), 1, fd);
 
-	render_obj_list obj_list = render_obj_list_create_empty();
+	voxel_array arr;
+	voxel_array_create(&arr);
 
 	for(unsigned i = 0; i < hdr.matrix_cnt; ++i){
 		READ_VAR(uint8_t, name_ln);
@@ -193,7 +194,7 @@ render_obj_list read_qb_vxl(FILE* fd)
 		}
 
 		vec3f _min = (vec3f){INFINITY, INFINITY, INFINITY};
-		vec3f _max = vec3_smul(_min, -1);
+		vec3f _max = (vec3f){-INFINITY, -INFINITY, -INFINITY};
 		for(size_t i = 0; i < model_idx/3; ++i){
 			vec3f p = (vec3f){model_vert[i*3], model_vert[i*3+1], model_vert[i*3+2]};
 			SET_MIN(_min.x, p.x);
@@ -212,12 +213,17 @@ render_obj_list read_qb_vxl(FILE* fd)
 
 		model_vert = realloc(model_vert, sizeof(GLfloat) * model_idx);
 		model_clr = realloc(model_clr, sizeof(GLfloat) * model_idx);
-		render_obj_list_add(&obj_list,
-					render_obj_create(GL_QUADS, 0, model_vert, model_idx * sizeof(GLfloat),
+		render_obj robj = render_obj_create(GL_QUADS, 0, model_vert, model_idx * sizeof(GLfloat),
 						RENDER_OBJ_COLOR, model_clr, model_idx * sizeof(GLfloat),
-						RENDER_OBJ_ATTRIBUTES_END));
+						RENDER_OBJ_ATTRIBUTES_END);
+		voxel_array_push(&arr, (voxel_model){
+					.model = robj,
+					.origin = _min,
+					.size = vec3_sub(_max, _min)
+				});
+
 		free(model_vert); free(model_clr);
 	}
 
-	return obj_list;
+	return arr;
 }

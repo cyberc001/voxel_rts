@@ -32,7 +32,13 @@ function game_object:new(o)
 
 	o.max_speed = o.speed or 2
 
-	o.team = o.team or 1
+	-- physics parameters
+	o.rot_fric_mul = o.rot_fric_mul or 1
+
+	o.max_resolution_rot_vel = o.max_resolution_rot_vel or 7
+	o.resolution_rot_accel = o.resolution_rot_accel or 3
+
+	o.team = o.team or all_teams[0]
 
 	game_object:create_tables(o)
 	setmetatable(o, self)

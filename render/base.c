@@ -169,7 +169,7 @@ void render_loop()
 
 /* Render object */
 #define __RENDER_OBJ_GENERATE()\
-	render_obj o = {.render_type = render_type, .flags = flags | RENDER_OBJ_FLAG_NOTINIT, .colorize = (vec3f){-1, -1, -1}};\
+	render_obj o = {.render_type = render_type, .flags = flags | RENDER_OBJ_FLAG_NOTINIT, .colorize = (vec3f){-1, -1, -1}, .cut_min = (vec3f){-INFINITY, -INFINITY, -INFINITY}, .cut_max = (vec3f){INFINITY, INFINITY, INFINITY}};\
 	memset(o.buf_sizes, 0, sizeof(o.buf_sizes));\
 	va_list args;\
 	va_start(args, verts_ln);\
@@ -248,6 +248,8 @@ void render_obj_draw(const render_obj* obj)
 		shader_set_colorize(obj->colorize);
 	else
 		shader_clear_colorize();
+	// Cut
+	shader_set_cut(obj->cut_min, obj->cut_max);
 
 	glBindBuffer(GL_ARRAY_BUFFER, obj->buf);
 	for(size_t i = 1; i < RENDER_OBJ_ATTRIBUTES_COUNT; ++i){
@@ -292,29 +294,4 @@ void render_obj_free(render_obj* obj)
 			if(obj->attr_data[i])
 				free(obj->attr_data[i]);
 	}
-}
-
-/* Render object list */
-
-render_obj_list render_obj_list_create_empty()
-{
-	return (render_obj_list){NULL, 0};
-}
-void render_obj_list_free(render_obj_list* list)
-{
-	for(size_t i = 0; i < list->ln; ++i)
-		render_obj_free(list->objs + i);
-	free(list->objs);
-}
-
-void render_obj_list_add(render_obj_list* list, render_obj obj)
-{
-	++list->ln;
-	list->objs = realloc(list->objs, list->ln * sizeof(render_obj));
-	list->objs[list->ln - 1] = obj;
-}
-void render_obj_list_draw(render_obj_list* list) 
-{
-	for(size_t i = 0; i < list->ln; ++i)
-		render_obj_draw(list->objs + i);
 }

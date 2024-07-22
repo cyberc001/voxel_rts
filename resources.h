@@ -6,6 +6,7 @@
 #include "audio.h"
 #include "render/base.h"
 #include "formats/font.h"
+#include "formats/qb_vxl.h"
 
 /* Helper functions */
 size_t str_hash(size_t table_sz, const char** key);
@@ -38,11 +39,11 @@ void sound_add(char* name, sound snd);
 sound sound_find(const char* name);
 
 /* MODELS */
-DEF_HTABLE_OA(model_map, char*, render_obj)
+DEF_HTABLE_OA(model_map, char*, voxel_model)
 extern model_map map_model;
 
-void model_add(char* name, render_obj model);
-render_obj* model_find(const char* name);
+void model_add(char* name, voxel_model model);
+voxel_model* model_find(const char* name);
 
 /* FONTS */
 DEF_HTABLE_OA(font_map, char*, font)

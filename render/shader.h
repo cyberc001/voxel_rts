@@ -20,4 +20,7 @@ void shader_set_atlas_textures(GLuint tex);
 void shader_set_colorize(vec3f clr);
 void shader_clear_colorize();
 
+void shader_set_cut(vec3f _min, vec3f _max);
+void shader_clear_cut();
+
 #endif

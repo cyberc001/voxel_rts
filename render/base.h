@@ -50,12 +50,15 @@ void render_pop_bbox();
 
 #define RENDER_OBJ_FLAG_ALLOCED		0x4	// all attr_data is allocated on the heap and all non-NULL attr_data should be free()ed in render_obj_load(). Should be cleared if data has been freed (past rendeer_obj_load() and before render_obj_free())
 
+#define RENDER_OBJ_FLAG_SHALLOW_COPY	0x8	// a shallow copy of another render_object that shouldn't be free'ed at all. Only used in game/logic/render.c
+
 typedef struct render_obj render_obj;
 struct render_obj {
+	int render_type;
 	int flags;
 
 	vec3f colorize;
-	int render_type;
+	vec3f cut_min, cut_max;
 
 	GLuint buf;
 	GLuint main_tex;
@@ -77,15 +80,5 @@ void render_obj_load(render_obj* obj);
 
 void render_obj_draw(const render_obj* obj);
 void render_obj_free(render_obj* obj);
-
-typedef struct {
-	render_obj* objs;
-	size_t ln;
-} render_obj_list;
-
-render_obj_list render_obj_list_create_empty();
-void render_obj_list_free(render_obj_list* list);
-void render_obj_list_add(render_obj_list* list, render_obj obj);
-void render_obj_list_draw(render_obj_list* list); 
 
 #endif

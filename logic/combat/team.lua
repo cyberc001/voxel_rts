@@ -19,3 +19,5 @@ end
 function team:is_hostile_to(other)
 	return not self.allies[other]
 end
+
+all_teams[0] = team:new({name = "neutral"})
