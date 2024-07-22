@@ -4,7 +4,7 @@ require "./logic/combat/projectile"
 cannon = weapon:new({})
 
 function cannon:get_launch_offset()
-	return 2
+	return 1
 end
 function cannon:get_launch_force()
 	return 0.1
@@ -36,6 +36,7 @@ function cannon:fire(target)
 	self.impending_proj.rot = self.gobj.rot
 	self.impending_proj.vel = self:get_launch_vel() * dir
 	self.impending_proj.team = self.gobj.team
+	self.impending_proj.shooter = self.gobj
 
 	game_object_arr[self.impending_proj] = true
 	self.impending_proj = nil

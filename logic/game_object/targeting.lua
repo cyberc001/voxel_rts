@@ -1,4 +1,4 @@
-local game_object_target_path_interval = 1
+local game_object_target_path_interval = 100
 
 function game_object:get_targeting_range()
 	return 10

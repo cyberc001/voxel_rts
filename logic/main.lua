@@ -4,8 +4,8 @@ render_hitboxes = true
 
 game_object_arr = {}
 
-all_teams[1] = team:new()
-all_teams[2] = team:new()
+all_teams[1] = team:new({name = "player"})
+all_teams[2] = team:new({name = "enemy"})
 player_team = all_teams[1]
 
 require "./logic/game_object"
@@ -82,18 +82,19 @@ function _tick(time_delta)
 		if clusters then
 			for cluster_i in pairs(clusters) do -- for each cluster that intersects with the object
 				for v2 in pairs(cur_octree.clusters[cluster_i]) do -- check collision with objects in these clusters
+					if v2.only_receive_collision then
+						checked_objects[v2] = true
+					end
 					if v ~= v2 and checked_objects[v2] == nil then
 						checked_objects[v2] = true
 						local collided, resolution = gmath.hexahedron_check_collision(v.hitbox, v2.hitbox, v.vel)
-						if collided then
+						if collided and v:on_object_collision(v2, resolution) then
 							vec3:isub(v.pos, resolution)
 							v:update_hitbox()
 							if resolution.x == resolution.x then
 								resolution = vec3:new(resolution)
 								collision_response(resolution, v, v2)
 							end
-
-							v:on_object_collision(v2, resolution)
 						end
 		
 						collided = gmath.bbox_check_collision(v.interaction_box, v2.interaction_box)
