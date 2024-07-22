@@ -24,6 +24,10 @@ end
 function part:get_rot()
 	return self.gobj.rot * self.robj.rot
 end
+function part:is_rotated_to_target()
+	local diff = gmath.axis_from_quat(self.rot:inv() * self.rot_goal)
+	return vec3:new(diff):ln() < 0.01
+end
 
 function part:rotate_to(target)
 	local prot = self.parent and self.parent.rot_goal:inv() or vec4:new(0, 0, 0, 1)

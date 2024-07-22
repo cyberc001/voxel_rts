@@ -17,9 +17,9 @@ function shootable:create_debris(min_depth, max_depth, min_size,
 					min_vel, max_vel,
 					min_rotvel, max_rotvel)
 	min_vel = min_vel or 3
-	max_vel = max_vel or 10
+	max_vel = max_vel or 12
 	min_rotvel = min_rotvel or 5
-	max_rotvel = max_rotvel or 10
+	max_rotvel = max_rotvel or 25
 
 	local center = gmath.hexahedron_get_center(self.hitbox)
 	for _,v in ipairs(self.robj_arr) do
@@ -46,8 +46,7 @@ function shootable:create_debris(min_depth, max_depth, min_size,
 
 			local pos_diff = (_pos - center):safe_unit()
 			_o.vel = pos_diff * random_range(min_vel, max_vel)
-			_o.rot_vel = pos_diff:cross(gmath.vec3_quat_rot(vec3:new(0, 1, 0), _rot)):safe_unit() * 25
-			print(_o.rot_vel)
+			_o.rot_vel = pos_diff:cross(gmath.vec3_quat_rot(vec3:new(0, 1, 0), _rot)):safe_unit() * random_range(min_rotvel, max_rotvel)
 			game_object_arr[_o] = true
 		end
 	end

@@ -21,7 +21,7 @@ function weapon:tick(time_delta)
 	local target = self.gobj.target
 	if self.attack_timer < self:get_attack_interval() then
 		self.attack_timer = self.attack_timer + time_delta
-	elseif target then
+	elseif target and self:is_rotated_to_target() then
 		self.attack_timer = 0
 		self:fire(target)
 	end
