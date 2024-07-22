@@ -18,10 +18,16 @@ static int lua_get_order_query(lua_State* L)
 	controls_order_queried = 0;
 	return 1;
 }
+static int lua_has_active_selection(lua_State* L)
+{
+	lua_pushboolean(L, !isnan(controls_selection_min.x));
+	return 1;
+}
 
 static const struct luaL_Reg cfuncs[] = {
 	{"get_selection_query", lua_get_selection_query},
 	{"get_order_query", lua_get_order_query},
+	{"has_active_selection", lua_has_active_selection},
 
 	{NULL, NULL}
 };

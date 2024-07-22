@@ -6,35 +6,42 @@ function controls_tick()
 	if selection_query == 0 then
 		return
 	end
+	local order_pos = controls.get_order_query() -- quering needs to be done on every tick regardless to reset query status
 
+	local active_selection = controls.has_active_selection()
 	local selected_something = false
-	for v,_ in pairs(game_object_arr) do
-		if gmath.hexahedron_is_selected(v.hitbox) then
-			if v.team == player_team then
-				if not selected_something then
-					player_selected_objects = {}
+	if active_selection then
+		for v,_ in pairs(game_object_arr) do
+			if gmath.hexahedron_is_selected(v.hitbox) then
+				if v.team == player_team then
+					if not selected_something then
+						player_selected_objects = {}
+						selected_something = true
+					end
+					player_selected_objects[v] = true
+				elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
 					selected_something = true
+					pointer_flash(v, "attack")
+					for k in pairs(player_selected_objects) do
+						k:set_target(v)
+					end
+					break
 				end
-				player_selected_objects[v] = true
-			elseif selection_query == 2 and not v.team.allies[player_team] then -- check for an attack order
-				selected_something = true
-				pointer_flash(v, "attack")
-				for k in pairs(player_selected_objects) do
-					k:set_target(v)
-				end
-				break
 			end
 		end
 	end
 
-	local order_pos = controls.get_order_query() -- quering needs to be done on every tick regardless to reset query status
-	if selection_query ~= 1 and order_pos and not selected_something then
-		for k in pairs(player_selected_objects) do
-			k:clear_target()
-			k:set_goal(order_pos)
-			pointer_flash(order_pos, "move")
+	if selection_query == 2 and not selected_something then
+		if order_pos then
+			for k in pairs(player_selected_objects) do
+				k:clear_target()
+				k:set_goal(order_pos)
+				pointer_flash(order_pos, "move")
+			end
+		elseif active_selection then
+			player_selected_objects = {}
 		end
-	elseif not selected_something then
+	elseif selection_query == 1 and not selected_something and active_selection then
 		player_selected_objects = {}
 	end
 end

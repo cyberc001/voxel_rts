@@ -39,6 +39,11 @@ static void selection_kb_up(key_code key, int mods)
 		else
 			sel_query = CONTROLS_SELECTION_QUERIED_SINGLE_POINT;
 	}
+	else if(check_key_bind(key, "order")){
+		controls_selection_min = (vec2f){NAN, NAN};
+		sel_query = CONTROLS_SELECTION_QUERIED_SINGLE_POINT;
+	}
+
 	if(sel_query == CONTROLS_SELECTION_QUERIED_SINGLE_POINT && check_key_bind(key, "order")){
 		vec2f mouse = get_mouse_coords();
 		TRANSLATE_ORTHO_COORDS(mouse);

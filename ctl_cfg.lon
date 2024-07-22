@@ -13,5 +13,5 @@
 	camera_zoom_out: mouse_down,
 
 	select: mouse1,
-	order: mouse1
+	order: mouse2
 }
