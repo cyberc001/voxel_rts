@@ -12,6 +12,9 @@
 #include "game/logic.h"
 #include "render/list.h"
 
+// TEST
+#include "controls.h"
+
 GLFWwindow* main_wnd;
 static vec2i wnd_shape = {0, 0};
 
@@ -57,6 +60,26 @@ static void render_display()
 	last_proj_mat = mat4f_from_gl(projection_mat);
 	
 	render_terrain();
+
+	vec2f mouse = get_mouse_coords();
+	TRANSLATE_ORTHO_COORDS(mouse);
+
+	vec3f proj = vec2f_project3(mouse);
+
+	proj = vec3_norm(proj);
+	proj = vec3_smul(proj, 100);
+
+	vec3f start = get_camera_center(),
+	      end = vec3_add(render_cam_pos, proj);
+
+	float verts[] = {
+		start.x, start.y, start.z,
+		end.x, end.y, end.z
+	};
+	render_obj ro = render_obj_create(GL_LINES, 0, verts, sizeof(verts), RENDER_OBJ_ATTRIBUTES_END);
+	render_obj_draw(&ro);
+	render_obj_free(&ro);
+
 	render_list_swap_front_and_mid();
 	for(size_t i = 0; i < render_list_front->draw.busy; ++i){
 		render_info_draw inf = render_list_front->draw.data[i];

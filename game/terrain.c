@@ -189,12 +189,12 @@ void terrain_piece_remove(terrain_piece* toremove)
 		toremove->next->prev = toremove->prev;
 }
 
-terrain_piece* __check_against_line(vec2f v, line3f* l, int x_changed)
+terrain_piece* __check_against_line(vec2f v, line3f* l)
 {
 	vec3f dir = vec3_sub(l->p2, l->p1);
 	dir = vec3_norm(dir);
+	
 	float x = floor(v.x), z = floor(v.y);
-
 	terrain_piece* tpiece = terrain_get_piece(x, z);
 	while(tpiece){
 		hexahedron h = hexahedron_from_terrain_piece(x, z, tpiece);
@@ -211,8 +211,8 @@ terrain_piece* __check_against_line(vec2f v, line3f* l, int x_changed)
 
 	return NULL;
 }
-#define CHECK_AGAINST_LINE(x, z, l, x_changed){\
-	terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l, x_changed);\
+#define CHECK_AGAINST_LINE(x, z, l){\
+	terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l);\
 	if(tpiece){\
 		if(pos) *pos = (vec3f){floor(x) + 0.5, tpiece_avg_z_ceil(*tpiece), floor(z) + 0.5};\
 		return (tpiece);\
@@ -227,7 +227,7 @@ terrain_piece* terrain_find_first_piece_in_line(line3f l, vec3f* pos)
 	float sx = (x0 < x1 ? 1 : -1), sz = (z0 < z1 ? 1 : -1);
 	float error = dx + dz;
 
-	CHECK_AGAINST_LINE(x0, z0, &l, 0);
+	CHECK_AGAINST_LINE(x0, z0, &l);
 	for(;;){
 		if(round(x0) == round(x1) && round(z0) == round(z1))
 			break;
@@ -237,14 +237,14 @@ terrain_piece* terrain_find_first_piece_in_line(line3f l, vec3f* pos)
 				break;
 			error += dz;
 			x0 += sx;
-			CHECK_AGAINST_LINE(x0, z0, &l, 1);
+			CHECK_AGAINST_LINE(x0, z0, &l);
 		}
 		if(e2 <= dx){
 			if(round(z0) == round(z1))
 				break;
 			error += dx;
 			z0 += sz;
-			CHECK_AGAINST_LINE(x0, z0, &l, 0);
+			CHECK_AGAINST_LINE(x0, z0, &l);
 		}
 	}
 

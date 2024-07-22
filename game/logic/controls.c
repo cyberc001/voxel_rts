@@ -3,8 +3,11 @@
 
 static int lua_get_selection_query(lua_State* L)
 {
-	lua_pushinteger(L, controls_selection_queried);
-	controls_selection_queried = CONTROLS_SELECTION_NOT_QUERIED;
+	int cur_query = CONTROLS_SELECTION_NOT_QUERIED;
+	asm volatile("xchg %0, %1"
+			: "+r"(cur_query), "+rm"(controls_selection_queried));
+
+	lua_pushinteger(L, cur_query);
 	return 1;
 }
 static int lua_get_order_query(lua_State* L)
