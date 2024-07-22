@@ -13,9 +13,22 @@ function shootable:on_death(killer)
 	self:create_debris()
 end
 
-function shootable:create_debris(min_depth, max_depth, min_size,
+debris = game_object:new({})
+
+function debris:tick(time_delta)
+	-- omit game_object tick to save time
+	self.lifetime = self.lifetime - time_delta
+	if self.lifetime <= 0 then
+		self:destroy()
+	end
+end
+
+function shootable:create_debris(min_lifetime, max_lifetime,
+					min_depth, max_depth, min_size,
 					min_vel, max_vel,
 					min_rotvel, max_rotvel)
+	min_lifetime = min_lifetime or 5
+	max_lifetime = max_lifetime or 20
 	min_vel = min_vel or 3
 	max_vel = max_vel or 12
 	min_rotvel = min_rotvel or 5
@@ -29,7 +42,9 @@ function shootable:create_debris(min_depth, max_depth, min_size,
 			local _rot = self.rot * v.rot
 			local _pos = self.pos + v.pos + gmath.vec3_quat_rot(d.pos + d.size*0.5, _rot) * self.size * v.size
 
-			local _o = game_object:new({
+			local _o = debris:new({
+				lifetime = random_range(min_lifetime, max_lifetime),
+
 				only_terrain_collision = true,
 				rot_fric_mul = 8,
 
