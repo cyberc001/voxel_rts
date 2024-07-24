@@ -2,6 +2,7 @@
 #include "log.h"
 #include "game/logic/render.h"
 #include "game/logic/math.h"
+#include "game/logic/body.h"
 #include "ticker.h"
 
 /* Initialization and state */
@@ -19,6 +20,7 @@ void game_logic_init()
 	game_logic_init_render(global_lua_state);
 	game_logic_init_math(global_lua_state);
 	game_logic_init_path(global_lua_state);
+	game_logic_init_body(global_lua_state);
 	game_logic_init_controls(global_lua_state);
 
 	if(luaL_loadfile(global_lua_state, base_fname) || lua_pcall(global_lua_state, 0, 0, 0)){

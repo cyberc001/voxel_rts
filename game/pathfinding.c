@@ -78,7 +78,6 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 			tnode res_node = node_buf.data[i];\
 			\
 			float max_ceil = tpiece_max_z_ceil(res_tpiece);\
-			printf("max_ceil %lu %p: %f\n", i, res_tpiece, max_ceil);\
 			/* terrain collision check dx*/\
 			if(dx){\
 				bbox3f new_bbox = h_bbox;\
@@ -86,6 +85,9 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
 				new_bbox.min.y += max_ceil;\
 				new_bbox.max.y += max_ceil;\
+				printf("check collision\n");\
+				vec3f_print(new_bbox.min);\
+				vec3f_print(new_bbox.max);\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
 				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
 			}\
@@ -121,13 +123,13 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				*new_node_ptr = res_node;\
 				tptr_set_insert(closed, res_tpiece, new_node_ptr);\
 				tnode_pqueue_push(open, new_node_ptr);\
-				printf("pushed %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, max_ceil, res_node.cost, res_node.heuristic);\
+				printf("pushed %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, res_node.y, res_node.cost, res_node.heuristic);\
 			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
 				(*old_node)->cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
 				tnode_calc_heuristic(**old_node, goal, goal_y);\
 				(*old_node)->parent = cur_node;\
 				tnode_pqueue_heapify(open);\
-				printf("updated %d %d (%f %f)\n", res_node.pos.x, res_node.pos.y, cur_node->cost, cur_node->heuristic);\
+				printf("updated %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, res_node.y, cur_node->cost, cur_node->heuristic);\
 			} else (*old_node)->parent ? printf("already in queue with parent %d %d\n", (*old_node)->parent->pos.x, (*old_node)->parent->pos.y) : printf("already in queue with no parent\n");\
 		}\
 	}\
@@ -191,9 +193,9 @@ void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
 	}
 }
 
-static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, float goal_y, bbox3f h_bbox, vec3f center)
+static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, float goal_y, bbox3f h_bbox)
 {
-	printf("start %d %d\n", _cur_node->pos.x, _cur_node->pos.y);
+	printf("start %d %d %f\n", _cur_node->pos.x, _cur_node->pos.y, _cur_node->y);
 
 	tnode_dynarray node_buf;
 	tnode_dynarray_create(&node_buf);
@@ -221,26 +223,33 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	tnode_dynarray_destroy(&node_buf);
 	printf("end\n");
 }
-path path_find(const hexahedron* h, vec3f pos, vec3f target,
+path path_find(body* b, vec3f target,
 		int pathing_type, ...)
 {
-	printf("POS: "); vec3f_print(pos);
+	printf("POS: "); vec3f_print(b->transform.pos);
 	// figure out the starting point
 	vec2i target_xz = {target.x, target.z};
-	bbox3f h_bbox = hexahedron_get_bbox(h);
+	bbox3f h_bbox = body_get_bbox(b);
+
+	h_bbox.min = vec3_sub(h_bbox.min, b->transform.pos);
+	h_bbox.max = vec3_sub(h_bbox.max, b->transform.pos);
+
 	float h_bbox_y = h_bbox.min.y;
 	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
 	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
 	h_bbox.max.x += 0.5; h_bbox.max.z += 0.5;
 
+	printf("start bbox\n");
+	vec3f_print(h_bbox.min); vec3f_print(h_bbox.max);
+
 	tnode* cur_node = malloc(sizeof(tnode));
 	cur_node->cost = 0; cur_node->parent = NULL;
-	cur_node->pos = (vec2i){floor(pos.x), floor(pos.y)};
+	cur_node->pos = (vec2i){floor(b->transform.pos.x), floor(b->transform.pos.z)};
 	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
 	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
-	cur_node->tpiece = terrain_get_nearest_piece_maxz(pos.z, cur_node->tpiece);
-	printf("CENTER: %f TPIECE: %f\n", pos.z, tpiece_max_z_ceil(cur_node->tpiece));
+	cur_node->tpiece = terrain_get_nearest_piece_maxz(b->transform.pos.y, cur_node->tpiece);
+	printf("CENTER: %f TPIECE: %f\n", b->transform.pos.y, tpiece_max_z_ceil(cur_node->tpiece));
 	if(!cur_node->tpiece) return (path){0, NULL, NULL};
 	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
 	tnode_calc_heuristic(*cur_node, target_xz, target.y);
@@ -293,7 +302,7 @@ path path_find(const hexahedron* h, vec3f pos, vec3f target,
 				break;
 			}
 		}
-		push_successors(&open, &closed, cur_node, target_xz, target.y, h_bbox, pos);
+		push_successors(&open, &closed, cur_node, target_xz, target.y, h_bbox);
 	}
 astar_end:
 

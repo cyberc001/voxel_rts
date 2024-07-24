@@ -2,6 +2,7 @@
 #define MATH_HEXAHEDRON_H
 
 #include "more_math.h"
+#include "math/body.h"
 
 typedef struct {
 	vec3f p[4];
@@ -9,10 +10,6 @@ typedef struct {
 typedef struct {
 	face3f f[6];
 } hexahedron;
-
-typedef struct {
-	vec3f min, max;
-} bbox3f;
 
 #define hexahedron_from_cube(side) (hexahedron_from_cuboid(side, side, side))
 hexahedron hexahedron_from_cuboid(float s1, float s2, float s3);
@@ -23,8 +20,16 @@ hexahedron hexahedron_from_terrain_piece(unsigned tx, unsigned ty, terrain_piece
 
 vec3f hexahedron_get_center(const hexahedron* h1);
 bbox3f hexahedron_get_bbox(const hexahedron* h);
-bbox3f hexahedron_get_interaction_box(const hexahedron* h, float expand); // expand is a fraction by how much expand in xz plane (0.1 means 10% bigger bounding box)
 
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat);
+
+/* body */
+typedef struct {
+	struct body;
+	hexahedron geom, geom_cache;
+} body_hexahedron;
+
+vec3f hexahedron_get_vertice(const hexahedron* h, size_t idx);
+axes_list hexahedron_get_separating_axes_and_edges(const hexahedron* h, size_t* normals_cnt);
 
 #endif

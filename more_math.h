@@ -15,6 +15,10 @@ typedef struct {
 	vec2f p[4];
 } face2f;
 
+typedef struct {
+	vec3f min, max;
+} bbox3f;
+
 #define min(x, y) ((x) > (y) ? (y) : (x))
 #define max(x, y) ((x) > (y) ? (x) : (y))
 #define clamp(x, _min, _max) (min(max((x), (_min)), (_max)))

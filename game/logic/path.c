@@ -2,22 +2,21 @@
 #include "math/collision.h"
 #include "game/pathfinding.h"
 #include "game/terrain.h"
+#include "game/logic/body.h"
 #include "log.h"
 
 static int lua_find_path(lua_State* L)
 {
-	hexahedron h = lua_get_hexahedron(L, 1);
-	vec3f pos = lua_get_vec3(L, 2);
-	swap(pos.y, pos.z);
-	vec3f target = lua_get_vec3(L, 3);
+	body* b = lua_get_body(L, 1);
+	vec3f target = lua_get_vec3(L, 2);
 
 	path out_p;
-	if(lua_isnumber(L, 4)){
-		vec2f pitch_range = lua_istable(L, 5) ? lua_get_vec2(L, 5) : (vec2f){-90, 90};
-		out_p = path_find(&h, pos, target, PATHING_TYPE_DISTANCE, lua_tonumber(L, 4), pitch_range);
+	if(lua_isnumber(L, 3)){
+		vec2f pitch_range = lua_istable(L, 4) ? lua_get_vec2(L, 4) : (vec2f){-90, 90};
+		out_p = path_find(b, target, PATHING_TYPE_DISTANCE, lua_tonumber(L, 4), pitch_range);
 	}
 	else
-		out_p = path_find(&h, pos, target, PATHING_TYPE_EXACT);
+		out_p = path_find(b, target, PATHING_TYPE_EXACT);
 
 	// push path node positions
 	lua_createtable(L, out_p.ln, 0);

@@ -86,20 +86,6 @@ static int lua_swap_buffers(lua_State* L)
 	return 0;
 }
 
-static int lua_render_hexahedron(lua_State* L)
-{
-	hexahedron h = lua_get_hexahedron(L, 1);
-
-	render_obj* robj = alloc_robj(L);
-	*robj = render_hexahedron(h);
-	if(!lua_isnoneornil(L, 2)){
-		luaL_checktype(L, 2, LUA_TTABLE);
-		vec3f clr = lua_get_vec3(L, 2);
-		robj->colorize = clr;
-	}
-	return 1;
-}
-
 static int lua_model_find(lua_State* L)
 {
 	const char* model_name = luaL_checkstring(L, 1);
@@ -132,10 +118,10 @@ static const struct luaL_Reg cfuncs[] = {
 	{"render_obj_draw", lua_render_obj_draw},
 
 	{"swap_buffers", lua_swap_buffers},
-	{"render_hexahedron", lua_render_hexahedron},
 
 	{"model_find", lua_model_find},
 	{"model_data_find", lua_model_data_find},
+
 	{NULL, NULL}
 };
 

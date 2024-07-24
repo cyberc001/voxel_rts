@@ -4,6 +4,6 @@
 #include "collision.h"
 #include "render/base.h"
 
-render_obj render_hexahedron(hexahedron h); // generates, not creates
+render_obj render_hexahedron(const hexahedron* h); // generates, not creates
 
 #endif

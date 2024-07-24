@@ -28,7 +28,7 @@ typedef struct {
 #define PATHING_TYPE_DISTANCE		1
 // [args] double distance
 
-path path_find(const hexahedron* h, vec3f pos, vec3f target,
+path path_find(body* b, vec3f target,
 		int pathing_type, ...);
 
 // bbox_w and bbox_h should be odd. If they aren't, increment by 1.

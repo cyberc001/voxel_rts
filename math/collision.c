@@ -117,24 +117,6 @@ int bbox_contains_bbox(const bbox3f* container, const bbox3f* containee)
 
 /* SAT */
 
-static vec2f hexahedron_project_on_axis(const hexahedron* h1, vec3f axis)
-{
-	float min = vec3_dot(axis, h1->f[0].p[0]), max = min;
-	for(size_t _p = 1; _p < 4; ++_p){
-		float proj = vec3_dot(axis, h1->f[0].p[_p]);
-		if(proj < min) min = proj;
-		else if(proj > max) max = proj;
-	}
-	for(size_t _f = 1; _f < 6; ++_f){
-		for(size_t _p = 0; _p < 4; ++_p){
-			float proj = vec3_dot(axis, h1->f[_f].p[_p]);
-			if(proj < min) min = proj;
-				else if(proj > max) max = proj;
-		}
-	}
-	return (vec2f){min, max};
-}
-
 static int do_proj_overlap(vec2f proj1, vec2f proj2)
 {
 	return proj1.x <= proj2.y && proj1.y >= proj2.x;
@@ -148,94 +130,69 @@ static int does_proj_contain(vec2f proj, vec2f tocheck)
 	return tocheck.x >= proj.x && tocheck.y <= proj.y;
 }
 
-static size_t hexahedron_get_separating_axes(const hexahedron* h1, const hexahedron* h2, vec3f* axis_arr)
+int sat_check_collision(body* b1, body* b2, vec3f* resol)
 {
-	size_t arr_i = 0;
-	// get normals to h1 and h2 faces
-	for(size_t _f = 0; _f < 6; ++_f){
-		vec3f edge1 = vec3_sub(h1->f[_f].p[1], h1->f[_f].p[0]);
-		vec3f edge2 = vec3_sub(h1->f[_f].p[2], h1->f[_f].p[1]);
-		vec3f norm = vec3_norm(vec3_cross(edge1, edge2));
-		int insert = 1;
-		for(size_t i = 0; i < arr_i; ++i)
-			if(vec3_eq(axis_arr[i], norm))
-			{ insert = 0; break; }
-		if(insert)
-			axis_arr[arr_i++] = norm;
+	size_t normals_cnt1, normals_cnt2;
+	axes_list axes1 = body_get_separating_axes_and_edges(b1, &normals_cnt1),
+		  axes2 = body_get_separating_axes_and_edges(b2, &normals_cnt2);
+	vec3f center1 = body_get_center(b1),
+	      center2 = body_get_center(b2);
 
-		edge1 = vec3_sub(h2->f[_f].p[1], h2->f[_f].p[0]);
-		edge2 = vec3_sub(h2->f[_f].p[2], h2->f[_f].p[1]);
-		norm = vec3_norm(vec3_cross(edge1, edge2));
-		insert = 1;
-		for(size_t i = 0; i < arr_i; ++i)
-			if(vec3_eq(axis_arr[i], norm))
-			{ insert = 0; break; }
-		if(insert)
-			axis_arr[arr_i++] = norm;
-	}
-	// get all edge-to-edge cases (i.e. cross-products of edges)
-	for(size_t _f = 0; _f < 6; ++_f){
-		for(size_t _p = 0; _p < 4; ++_p){
-			for(size_t _f2 = 0; _f2 < 6; ++_f2){
-				for(size_t _p2 = 0; _p2 < 4; ++_p2){
-					vec3f e1 = h1->f[_f].p[_p], e2 = h1->f[_f].p[_p == 3 ? 0 : _p + 1],
-					e3 = h2->f[_f2].p[_p2], e4 = h2->f[_f2].p[_p2 == 3 ? 0 : _p2 + 1];
-					vec3f edge1 = vec3_sub(e1, e2), edge2 = vec3_sub(e3, e4);
-					vec3f edge = vec3_cross(edge1, edge2);
-					vec3f norm = vec3_norm(edge);
-					if(!isnan(norm.x) && !isnan(norm.y) && !isnan(norm.z)){
-						int insert = 1;
-						for(size_t i = 0; i < arr_i; ++i)
-							if(vec3_eq(axis_arr[i], norm))
-							{ insert = 0; break; }
-						if(insert)
-							axis_arr[arr_i++] = norm;
-					}
-				}
+	axes_list cross_axes;
+	axes_list_create(&cross_axes);
+	for(size_t i = normals_cnt1; i < axes1.busy; ++i)
+		for(size_t j = normals_cnt2; j < axes2.busy; ++j){
+			vec3f cross = vec3_cross(axes1.data[i], axes2.data[j]);
+			vec3f norm = vec3_norm(cross);
+			if(!isnan(norm.x) && !isnan(norm.y) && !isnan(norm.z)){
+				int insert = 1;
+				for(size_t k = 0; k < cross_axes.busy; ++k)
+					if(vec3_eq(cross_axes.data[k], norm))
+					{ insert = 0; break; }
+				if(insert)
+					axes_list_push(&cross_axes, norm);
 			}
 		}
-	}
-	return arr_i;
-}
 
-int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resol)
-{
-	vec3f axes[6 + 6 + 576];
-	if(!hexahedron_check_projection_collision(h1, h2))
-		return 0;
-	size_t axes_ln = hexahedron_get_separating_axes(h1, h2, axes);
 	float overlap = INFINITY;
 	vec3f resolution;
 
-	for(size_t i = 0; i < axes_ln; ++i){
-		vec3f axis = axes[i];
-		if(vec3_ln(axis) == 0 || isnan(axis.x))
-			continue;
-		vec2f proj1 = hexahedron_project_on_axis(h1, axis),
-		      proj2 = hexahedron_project_on_axis(h2, axis);
-		if(do_proj_overlap(proj1, proj2)){
-			float o = get_proj_overlap(proj1, proj2);
-			
-			// check for containment
-			if(does_proj_contain(proj1, proj2) || does_proj_contain(proj2, proj1)){
-				float mins = fabs(proj1.x - proj2.x);
-				float maxs = fabs(proj1.y - proj2.y);
-				o += min(mins, maxs);
-			}
-
-			// get the minimally overlapping axis
-			if(o < overlap){
-				overlap = o;
-				resolution = axis;
-			}
+	for(size_t k = 0; k < 3; ++k){
+		axes_list* lst;
+		switch(k){
+			case 0: lst = &axes1; break;
+			case 1: lst = &axes2; break;
+			case 2: lst = &cross_axes; break;
 		}
-		else
-			return 0;
+		for(size_t i = 0; i < lst->busy; ++i){
+			vec3f axis = lst->data[i];
+			if(vec3_ln(axis) == 0 || isnan(axis.x))
+				continue;
+			vec2f proj1 = body_project_on_axis(b1, axis),
+			      proj2 = body_project_on_axis(b2, axis);
+			if(do_proj_overlap(proj1, proj2)){
+				float o = get_proj_overlap(proj1, proj2);
+			
+				// check for containment
+				if(does_proj_contain(proj1, proj2) || does_proj_contain(proj2, proj1)){
+					float mins = fabs(proj1.x - proj2.x);
+					float maxs = fabs(proj1.y - proj2.y);
+					o += min(mins, maxs);
+				}
+
+				// get the minimally overlapping axis
+				if(o < overlap){
+					overlap = o;
+					resolution = axis;
+				}
+			}
+			else
+				return 0;
+		}
 	}
 	resolution = vec3_smul(resolution, overlap);
-	vec3f p1 = hexahedron_get_center(h1), p2 = hexahedron_get_center(h2);
-	vec3f vd = vec3_sub(p1, p2);
-	if(vec3_dot(vd, resolution) > 0)
+	vec3f vd = vec3_sub(center1, center2);
+	if(vec3_dot(vd, resolution) < 0)
 		resolution = vec3_smul(resolution, -1);
 	*resol = resolution;
 	return 1;
@@ -280,9 +237,9 @@ int bbox_check_terrain_collision(bbox3f bbox)
 	return 0;
 }
 
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f _forward, vec4f* new_rot)
+int sat_check_terrain_collision(body* b, vec3f* resolution, vec3f _forward, vec4f* new_rot)
 {
-	bbox3f bbox = hexahedron_get_bbox(h);
+	bbox3f bbox = body_get_bbox(b);
 	vec3f terrain_min = {0, 0, 0};
 	vec3_setmin(bbox.min, terrain_min);
 	vec3_setmin(bbox.max, terrain_min);
@@ -298,45 +255,47 @@ int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, v
 			terrain_piece* piece = terrain_get_piece(tx, ty);
 
 			while(piece){
-				hexahedron tpiece_h;
+				body_hexahedron piece_body;
+				body_init((body*)&piece_body, LUA_BODY_TYPE_HEXAHEDRON, sizeof(piece_body));
 	
-				tpiece_h.f[0].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				tpiece_h.f[0].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				tpiece_h.f[0].p[2] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				tpiece_h.f[0].p[3] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				tpiece_h.f[1].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				tpiece_h.f[1].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				tpiece_h.f[1].p[2] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				tpiece_h.f[1].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-				tpiece_h.f[2].p[0] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				tpiece_h.f[2].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				tpiece_h.f[2].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				tpiece_h.f[2].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-				tpiece_h.f[3].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				tpiece_h.f[3].p[1] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				tpiece_h.f[3].p[2] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-				tpiece_h.f[3].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-				tpiece_h.f[4].p[0] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				tpiece_h.f[4].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				tpiece_h.f[4].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				tpiece_h.f[4].p[3] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				tpiece_h.f[5].p[0] = (vec3f){tx, piece->z_ceil[0], ty};
-				tpiece_h.f[5].p[1] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				tpiece_h.f[5].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				tpiece_h.f[5].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
+				piece_body.geom_cache.f[0].p[0] = (vec3f){tx, piece->z_floor[0], ty};
+				piece_body.geom_cache.f[0].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
+				piece_body.geom_cache.f[0].p[2] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
+				piece_body.geom_cache.f[0].p[3] = (vec3f){tx, piece->z_floor[3], ty + 1};
+				piece_body.geom_cache.f[1].p[0] = (vec3f){tx, piece->z_floor[0], ty};
+				piece_body.geom_cache.f[1].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
+				piece_body.geom_cache.f[1].p[2] = (vec3f){tx + 1, piece->z_ceil[1], ty};
+				piece_body.geom_cache.f[1].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
+				piece_body.geom_cache.f[2].p[0] = (vec3f){tx, piece->z_floor[3], ty + 1};
+				piece_body.geom_cache.f[2].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
+				piece_body.geom_cache.f[2].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
+				piece_body.geom_cache.f[2].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
+				piece_body.geom_cache.f[3].p[0] = (vec3f){tx, piece->z_floor[0], ty};
+				piece_body.geom_cache.f[3].p[1] = (vec3f){tx, piece->z_floor[3], ty + 1};
+				piece_body.geom_cache.f[3].p[2] = (vec3f){tx, piece->z_ceil[3], ty + 1};
+				piece_body.geom_cache.f[3].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
+				piece_body.geom_cache.f[4].p[0] = (vec3f){tx + 1, piece->z_floor[1], ty};
+				piece_body.geom_cache.f[4].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
+				piece_body.geom_cache.f[4].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
+				piece_body.geom_cache.f[4].p[3] = (vec3f){tx + 1, piece->z_ceil[1], ty};
+				piece_body.geom_cache.f[5].p[0] = (vec3f){tx, piece->z_ceil[0], ty};
+				piece_body.geom_cache.f[5].p[1] = (vec3f){tx + 1, piece->z_ceil[1], ty};
+				piece_body.geom_cache.f[5].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
+				piece_body.geom_cache.f[5].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
 
 				for(size_t _f = 0; _f < 6; ++_f)
 					for(size_t _p = 0; _p < 4; ++_p)
-						tpiece_h.f[_f].p[_p] = vec3_smul(tpiece_h.f[_f].p[_p], TERRAIN_PIECE_SIZE);
+						piece_body.geom_cache.f[_f].p[_p] = vec3_smul(piece_body.geom_cache.f[_f].p[_p], TERRAIN_PIECE_SIZE);
+
+				piece_body.geom = piece_body.geom_cache;
 
 				vec3f resol;
-				int _collided = hexahedron_check_collision(h, &tpiece_h, &resol);
+				int _collided = sat_check_collision((body*)&piece_body, b, &resol);
 				if(_collided){
 					if(vec3_ln(resol) >= vec3_ln(max_resol)){
-						max_resol = resol;
-						vec3f e1 = vec3_sub(tpiece_h.f[5].p[0], tpiece_h.f[5].p[1]), e2 = vec3_sub(tpiece_h.f[5].p[1], tpiece_h.f[5].p[2]);
+						max_resol = vec3_smul(resol, -1);
+						vec3f e1 = vec3_sub(piece_body.geom_cache.f[5].p[0], piece_body.geom_cache.f[5].p[1]), e2 = vec3_sub(piece_body.geom_cache.f[5].p[1], piece_body.geom_cache.f[5].p[2]);
 						vec3f norm = vec3_norm(vec3_cross(e1, e2));
-
 						if(new_rot){
 							mat4f trmat = mat4f_identity();
 							vec3f up = vec3_smul(norm, -1);

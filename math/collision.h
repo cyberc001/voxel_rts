@@ -1,9 +1,10 @@
 #ifndef MATH_COLLISION_H
 #define MATH_COLLISION_H
 
-#include "more_math.h"
+#include "math/vec.h"
 #include "game/terrain.h"
 #include "math/hexahedron.h"
+#include "math/body.h"
 
 float triangle3_area_heron(vec3f a, vec3f b, vec3f c); // a, b, c are points, not edge vectors
 float triangle2_area_heron(vec2f a, vec2f b, vec2f c); // a, b, c are points, not edge vectors
@@ -17,7 +18,8 @@ int bbox_check_collision(const bbox3f* b1, const bbox3f* b2);
 int bbox_contains_bbox(const bbox3f* container, const bbox3f* containee);
 
 int bbox_check_terrain_collision(bbox3f bbox);
-int hexahedron_check_collision(const hexahedron* h1, const hexahedron* h2, vec3f* resolution);
-int hexahedron_check_terrain_collision(const hexahedron* h, vec3f* resolution, vec3f forward, vec4f* new_rot);
+
+int sat_check_collision(body* b1, body* b2, vec3f* resolution);
+int sat_check_terrain_collision(body* b, vec3f* resolution, vec3f _forward, vec4f* new_rot);
 
 #endif

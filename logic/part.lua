@@ -22,11 +22,11 @@ function part:new(o)
 end
 
 function part:get_rot()
-	return self.gobj.rot * self.robj.rot
+	return self.gobj.body.rot * self.robj.rot
 end
 function part:is_rotated_to_target()
 	local diff = gmath.axis_from_quat(self.rot:inv() * self.rot_goal)
-	return vec3:new(diff):ln() < 0.01
+	return vec3:new(diff):ln() < 0.001
 end
 
 function part:rotate_to(target)

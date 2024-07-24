@@ -30,7 +30,7 @@ function pointer_render()
 			pointer_clear()
 			cur_pos = vec3:new()
 		else
-			cur_pos = pointer_pos.pos
+			cur_pos = pointer_pos.body.pos
 		end
 	end
 	render.render_obj_draw(cur_pointer_model,

@@ -10,8 +10,8 @@ end
 function game_object:set_target(target)
 	self.target = target
 	self.target_path_timer = game_object_target_path_interval
-	self:set_goal(target.pos, self:get_targeting_range(), self:get_targeting_pitch_range())
-	self:rotate_parts(target.pos)
+	self:set_goal(target.body.pos, self:get_targeting_range(), self:get_targeting_pitch_range())
+	self:rotate_parts(target.body.pos)
 end
 function game_object:clear_target()
 	self.target = nil
@@ -30,7 +30,7 @@ function game_object:targeting_tick(time_delta)
 
 	local target = self.target
 
-	self:rotate_parts(target.pos)
+	self:rotate_parts(target.body.pos)
 	if self.target_path_timer == nil then
 		self.target_path_timer = game_object_target_path_interval
 	end
@@ -38,6 +38,6 @@ function game_object:targeting_tick(time_delta)
 		self.target_path_timer = self.target_path_timer - time_delta
 	else
 		self.target_path_timer = game_object_target_path_interval
-		self:set_goal(target.pos, self:get_targeting_range(), self:get_targeting_pitch_range())
+		self:set_goal(target.body.pos, self:get_targeting_range(), self:get_targeting_pitch_range())
 	end
 end

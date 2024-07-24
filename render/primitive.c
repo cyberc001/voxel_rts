@@ -1,13 +1,13 @@
 #include "render/primitive.h"
 
-render_obj render_hexahedron(hexahedron h)
+render_obj render_hexahedron(const hexahedron* h)
 {
 	float* verts = malloc(sizeof(float)*72);
 	for(size_t i = 0; i < 6; ++i)
 		for(size_t j = 0; j < 4; ++j){
-			verts[i*4*3 + j*3] = h.f[i].p[j].x;
-			verts[i*4*3 + j*3 + 1] = h.f[i].p[j].y;
-			verts[i*4*3 + j*3 + 2] = h.f[i].p[j].z;
+			verts[i*4*3 + j*3] = h->f[i].p[j].x;
+			verts[i*4*3 + j*3 + 1] = h->f[i].p[j].y;
+			verts[i*4*3 + j*3 + 2] = h->f[i].p[j].z;
 		}
 	float* color = malloc(sizeof(float)*72);
 	for(size_t i = 0; i < 72; ++i) color[i] = 1;

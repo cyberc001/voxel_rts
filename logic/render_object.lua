@@ -22,9 +22,9 @@ function render_object:new(o, model_name)
 end
 
 function render_object:render(gobj)
-	local pos = gobj.pos + gmath.vec3_quat_rot(self.pos, gobj.rot)
-	local size = vec3:emul(self.size, gobj.size)
-	render.render_obj_draw(self.model, pos, gobj.rot * self.rot, size)
+	local pos = gobj.body.pos + gmath.vec3_quat_rot(self.pos, gobj.body.rot)
+	local size = vec3:emul(self.size, gobj.body.scale)
+	render.render_obj_draw(self.model, pos, gobj.body.rot * self.rot, size)
 end
 
 

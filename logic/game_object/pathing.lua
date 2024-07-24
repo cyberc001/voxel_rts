@@ -6,14 +6,14 @@ function game_object:set_goal(goal, distance, pitch_range)
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = nil
 	end
-	self.path, self.path_pieces = path.find_path(self.base_hitbox, self.pos, goal, distance, pitch_range)
+	self.path, self.path_pieces = path.find_path(self.body, goal, distance, pitch_range)
 	-- restore object in octree
 	for cluster_i in pairs(clusters) do
 		cur_octree.clusters[cluster_i][self] = true
 	end
 
 	local immgoal = self.path[1]
-	local diff = immgoal and vec3:new(self.pos.x - immgoal.x, 0, self.pos.z - immgoal.y) or vec3:new(math.huge, math.huge, math.huge)
+	local diff = immgoal and vec3:new(self.body.pos.x - immgoal.x, 0, self.body.pos.z - immgoal.y) or vec3:new(math.huge, math.huge, math.huge)
 	self.path_i = diff:ln() <= 1 and 2 or 1 -- skip first path point if the object is already on it (or less than a block away)
 end
 function game_object:clear_goal(goal)
@@ -35,6 +35,8 @@ function game_object:accel_to_path()
 	if math.abs(force.x / self.mass) > math.abs(diff.x) then force.x = diff.x end
 	if math.abs(force.y / self.mass) > math.abs(diff.y) then force.y = diff.y end
 	if math.abs(force.z / self.mass) > math.abs(diff.z) then force.z = diff.z end
+	--print("force", force, "diff", diff)
+	--print("path_vel", self.path_vel, "vel", self.vel, "last_resolution", self.last_resolution)
 	self:apply_force(force)
 end
 
@@ -43,10 +45,10 @@ function game_object:path_tick()
 
 	if self.path then
 		self:accel_to_path()
-		local center = gmath.hexahedron_get_center(self.hitbox)
+		local center = self.body:get_center()
 		local immgoal = self.path[self.path_i] -- immediate goal
 		if immgoal then
-			local diff = vec3:new(immgoal.x + 0.5, self.pos.y, immgoal.y + 0.5) - self.pos
+			local diff = vec3:new(immgoal.x + 0.5, self.body.pos.y, immgoal.y + 0.5) - self.body.pos
 			if(diff:ln() > 0) then
 				self.path_vel = diff:unit() * self.max_speed
 			end
@@ -54,7 +56,7 @@ function game_object:path_tick()
 				self.path_forward = diff:unit()
 			end
 
-			if self.path[self.path_i] and math.abs(self.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination	
+			if self.path[self.path_i] and math.abs(self.body.pos.x - (immgoal.x + 0.5)) < 0.1 and math.abs(self.body.pos.z - (immgoal.y + 0.5)) < 0.1 then -- set immedate destination	
 				self.path_i = self.path_i + 1
 				if(not self.path[self.path_i]) then
 					self:clear_goal()

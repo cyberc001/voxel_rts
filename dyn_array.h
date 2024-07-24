@@ -2,6 +2,7 @@
 #define DYN_ARRAY_H
 
 #include <stdlib.h>
+#include <string.h>
 
 #define DYN_ARRAY_GROWTH 4
 

@@ -91,15 +91,6 @@ bbox3f hexahedron_get_bbox(const hexahedron* h)
 		}
 	return (bbox3f){_min, _max};
 }
-bbox3f hexahedron_get_interaction_box(const hexahedron* h, float expand)
-{
-	bbox3f ibox = hexahedron_get_bbox(h);
-	ibox.min.x -= fabs(ibox.min.x)*expand;
-	ibox.min.z -= fabs(ibox.min.z)*expand;
-	ibox.max.x += fabs(ibox.max.x)*expand;
-	ibox.max.z += fabs(ibox.max.z)*expand;
-	return ibox;
-}
 
 hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat)
 {
@@ -110,3 +101,39 @@ hexahedron hexahedron_transform(const hexahedron* h, mat4f* transform_mat)
 	return _out;
 }
 
+/* body */
+
+vec3f hexahedron_get_vertice(const hexahedron* h, size_t idx)
+{
+	return idx < 24 ? h->f[idx / 4].p[idx % 4] : (vec3f){NAN, NAN, NAN};
+}
+
+axes_list hexahedron_get_separating_axes_and_edges(const hexahedron* h, size_t* normals_cnt)
+{
+	axes_list list;
+	axes_list_create(&list);
+
+	size_t n = 0;
+	// get all face normals
+	for(size_t _f = 0; _f < 6; ++_f){
+		vec3f edge1 = vec3_sub(h->f[_f].p[1], h->f[_f].p[0]);
+		vec3f edge2 = vec3_sub(h->f[_f].p[2], h->f[_f].p[1]);
+		vec3f norm = vec3_norm(vec3_cross(edge1, edge2));
+		int insert = 1;
+		for(size_t i = 0; i < list.busy; ++i)
+			if(vec3_eq(list.data[i], norm))
+			{ insert = 0; break; }
+		if(insert){
+			++n;
+			axes_list_push(&list, norm);
+		}
+	}
+	// get all edges
+	for(size_t _f = 0; _f < 6; ++_f)
+		for(size_t _p = 0; _p < 4; ++_p){
+			vec3f e1 = h->f[_f].p[_p], e2 = h->f[_f].p[_p == 3 ? 0 : _p + 1];
+			axes_list_push(&list, vec3_sub(e1, e2));
+		}
+	*normals_cnt = n;
+	return list;
+}

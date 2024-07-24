@@ -18,6 +18,8 @@ end
 function weapon:tick(time_delta)
 	part.tick(self, time_delta)
 
+	local diff = gmath.axis_from_quat(self.rot:inv() * self.rot_goal)
+
 	local target = self.gobj.target
 	if self.attack_timer < self:get_attack_interval() then
 		self.attack_timer = self.attack_timer + time_delta

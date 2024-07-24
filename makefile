@@ -16,9 +16,9 @@ clean:
 
 libvoxel_rts.a: render/base.o render/shader.o render/terrain.o render/font.o render/texture.o render/primitive.o render/list.o
 libvoxel_rts.a: formats/qb_vxl.o formats/lon.o formats/texture_atlas.o formats/texture.o formats/font.o
-libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/controls.o
+libvoxel_rts.a: game/terrain.o game/logic.o game/pathfinding.o game/logic/render.o game/logic/math.o game/logic/path.o game/logic/body.o game/logic/controls.o
 libvoxel_rts.a: ui/ui_element.o ui/elements/label.o ui/elements/button.o ui/elements/textbox.o ui/elements/scrollbar.o ui/elements/listbox.o ui/elements/itembox.o ui/elements/hslider.o ui/elements/vslider.o ui/elements/checkbox.o ui/elements/radiobox.o ui/elements/selection.o
-libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o math/quat.o
+libvoxel_rts.a: more_math.o math/collision.o math/hexahedron.o math/vec.o math/mat.o math/quat.o math/body.o
 libvoxel_rts.a: audio.o resources.o ticker.o utf.o object.o ui.o controls.o controls/camera.o controls/selection.o
 	$(CLC) $@ $^
 test: test.c libvoxel_rts.a
@@ -62,6 +62,8 @@ game/logic/math.o: game/logic/math.c game/logic/math.h game/logic.h
 	$(CCO) $< -o $@
 game/logic/path.o: game/logic/path.c game/logic/path.h game/logic.h
 	$(CCO) $< -o $@
+game/logic/body.o: game/logic/body.c game/logic/body.h game/logic.h
+	$(CCO) $< -o $@
 game/logic/controls.o: game/logic/controls.c game/logic/controls.h game/logic.h
 	$(CCO) $< -o $@
 
@@ -97,7 +99,7 @@ more_math.o: more_math.c more_math.h
 	$(CCO) $< -o $@
 math/collision.o: math/collision.c math/collision.h math/hexahedron.h
 	$(CCO) $< -o $@
-math/hexahedron.o: math/hexahedron.c math/hexahedron.h
+math/hexahedron.o: math/hexahedron.c math/hexahedron.h math/body.h
 	$(CCO) $< -o $@
 math/vec.o: math/vec.c math/vec.h
 	$(CCO) $< -o $@
@@ -105,6 +107,7 @@ math/mat.o: math/mat.c math/mat.h
 	$(CCO) $< -o $@
 math/quat.o: math/quat.c math/quat.h math/vec.h math/mat.h
 	$(CCO) $< -o $@
+math/body.o: math/body.c math/body.h
 
 audio.o: audio.c audio.h
 	$(CCO) $< -o $@

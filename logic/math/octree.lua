@@ -16,12 +16,13 @@ function octree:new(objects)
 	local maxcr = -mincr
 	for v,_ in pairs(objects) do
 		if not v.only_terrain_collision then
-			if v.interaction_box[1].x < mincr.x then mincr.x = v.interaction_box[1].x end
-			if v.interaction_box[1].y < mincr.y then mincr.y = v.interaction_box[1].y end
-			if v.interaction_box[1].z < mincr.z then mincr.z = v.interaction_box[1].z end
-			if v.interaction_box[2].x > maxcr.x then maxcr.x = v.interaction_box[2].x end
-			if v.interaction_box[2].y > maxcr.y then maxcr.y = v.interaction_box[2].y end
-			if v.interaction_box[2].z > maxcr.z then maxcr.z = v.interaction_box[2].z end
+			local ibox = v.body:get_bbox()
+			if ibox[1].x < mincr.x then mincr.x = ibox[1].x end
+			if ibox[1].y < mincr.y then mincr.y = ibox[1].y end
+			if ibox[1].z < mincr.z then mincr.z = ibox[1].z end
+			if ibox[2].x > maxcr.x then maxcr.x = ibox[2].x end
+			if ibox[2].y > maxcr.y then maxcr.y = ibox[2].y end
+			if ibox[2].z > maxcr.z then maxcr.z = ibox[2].z end
 
 			o:add_object_to_cluster(v, 1, nil, 1)
 		end
@@ -73,7 +74,7 @@ function octree:divide(cluster_i)
 		self.bboxes[new_cluster_i][2].z = math.max(corner.z, center.z)
 
 		for k in pairs(self.clusters[cluster_i]) do
-			if gmath.bbox_check_collision(self.bboxes[new_cluster_i], k.interaction_box) then
+			if gmath.bbox_check_collision(self.bboxes[new_cluster_i], k.body:get_bbox()) then
 				self:add_object_to_cluster(k, new_cluster_i, cluster_i, self.depth[cluster_i] + 1)
 			end
 		end
@@ -102,7 +103,7 @@ function _check_bbox_octree_collision(bb, cluster_i) -- is to be called by C eng
 		end
 	else -- it's a leaf cluster, check collisions between bb and all other objects inside it
 		for k in pairs(cur_octree.clusters[cluster_i]) do
-			if gmath.bbox_check_collision(bb, k.bbox) then
+			if gmath.bbox_check_collision(bb, k.body:get_bbox()) then
 				return true
 			end
 		end

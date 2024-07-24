@@ -19,7 +19,7 @@ end
 function cannon:rotate_to(target)
 	-- correct for gravity
 	local dir = vec3:new(gmath.vec3_quat_rot(vec3:new(1, 0, 0), self:get_rot()))
-	local diff = (self.gobj.pos + self:get_launch_offset() * dir) - target
+	local diff = (self.gobj.body.pos + self:get_launch_offset() * dir) - target
 
 	local travel_time = diff:ln() / self:get_launch_vel()
 	local gravity_off = gravity_accel * travel_time*travel_time / 2
@@ -32,8 +32,8 @@ function cannon:fire(target)
 	end
 
 	local dir = vec3:new(gmath.vec3_quat_rot(vec3:new(1, 0, 0), self:get_rot()))
-	self.impending_proj.pos = self.gobj.pos + self:get_launch_offset() * dir
-	self.impending_proj.rot = self.gobj.rot
+	self.impending_proj.body.pos = self.gobj.body.pos + self:get_launch_offset() * dir
+	self.impending_proj.body.rot = self.gobj.body.rot
 	self.impending_proj.vel = self:get_launch_vel() * dir
 	self.impending_proj.team = self.gobj.team
 	self.impending_proj.shooter = self.gobj
