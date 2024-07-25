@@ -10,7 +10,6 @@ typedef struct body body;
 struct body {
 	int type;
 	size_t size;
-	render_obj robj;
 
 	struct {
 		vec3f pos;

@@ -1,5 +1,6 @@
 #include "game/logic/body.h"
-#include "dyn_array.h"
+
+#include "game/logic/render.h"
 #include "render/list.h"
 
 /* Helper functions */
@@ -158,23 +159,20 @@ static int lua_body_is_selected(lua_State* L)
 	return 1;
 }
 
-static int lua_body_draw(lua_State* L)
+static int lua_body_render(lua_State* L)
 {
 	body* b = lua_get_body(L, 1);
-
-	if(!b->robj.buf && !(b->robj.flags & RENDER_OBJ_FLAG_NOTINIT))
-		b->robj = body_render(b);
 
 	vec3f wf_clr = {-1, -1, -1};
 	if(!lua_isnoneornil(L, 2)){
 		luaL_checktype(L, 2, LUA_TTABLE);
 		wf_clr = lua_get_vec3(L, 2);
 	}
-	b->robj.colorize = wf_clr;
 
-	render_info_draw inf = {&b->robj, b->transform.pos, b->transform.rot, b->transform.scale};
-	render_list_add_draw(&inf);
-	return 0;
+	render_obj* robj = alloc_robj(L);
+	*robj = body_render(b);
+	robj->colorize = wf_clr;
+	return 1;
 }
 
 
@@ -202,7 +200,7 @@ void game_logic_init_body(lua_State* _s)
 
 	lua_pushcfunction(_s, lua_body_is_selected); lua_setfield(_s, -2, "is_selected");
 
-	lua_pushcfunction(_s, lua_body_draw); lua_setfield(_s, -2, "draw");
+	lua_pushcfunction(_s, lua_body_render); lua_setfield(_s, -2, "render");
 
 	lua_pop(_s, 1);
 

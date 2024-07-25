@@ -38,6 +38,10 @@ function game_object:new(o)
 	o.team = o.team or all_teams[0]
 
 	game_object:create_tables(o)
+	if o.body ~= nil then
+		self:set_body(o.body)
+	end
+
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -50,6 +54,11 @@ function game_object:exists()
 	return game_object_arr[self] ~= nil
 end
 
+function game_object:set_body(body)
+	self.body = body
+	self.body_robj = body:render()
+	self.body_robj_sel = body:render(vec3:new(1, 0, 0))
+end
 function game_object:apply_force(force)
 	self.force = self.force + force
 end
@@ -63,8 +72,9 @@ function game_object:tick(time_delta)
 end
 
 function game_object:render()
-	if render_hitboxes then
-		self.body:draw(player_selected_objects[self] and vec3:new(1, 0, 0) or nil)
+	if render_hitboxes and self.body_robj then
+		render.render_obj_draw(player_selected_objects[self] and self.body_robj_sel or self.body_robj,
+					self.body.pos, self.body.rot, self.body.scale)
 	end
 
 	for _,v in ipairs(self.robj_arr) do

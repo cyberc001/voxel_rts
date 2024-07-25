@@ -12,7 +12,6 @@ void body_init(body* b, int type, size_t size)
 {
 	b->type = type;
 	b->size = size;
-	b->robj = RENDER_OBJ_EMPTY;
 
 	b->transform.pos = (vec3f){0, 0, 0};
 	b->transform.rot = (vec4f){0, 0, 0, 1};

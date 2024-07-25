@@ -85,9 +85,6 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
 				new_bbox.min.y += max_ceil;\
 				new_bbox.max.y += max_ceil;\
-				printf("check collision\n");\
-				vec3f_print(new_bbox.min);\
-				vec3f_print(new_bbox.max);\
 				if(bbox_check_terrain_collision(new_bbox)) continue;\
 				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
 			}\

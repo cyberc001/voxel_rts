@@ -6,9 +6,8 @@
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <render/base.h>
 
-static render_obj* get_robj(lua_State* L, int idx)
+render_obj* get_robj(lua_State* L, int idx)
 {
 	if(lua_type(L, idx) == LUA_TUSERDATA)
 		luaL_checkudata(L, idx, "render_obj");
@@ -21,7 +20,7 @@ static render_obj* get_robj(lua_State* L, int idx)
 
 	return robj;
 }
-static render_obj* alloc_robj(lua_State* L)
+render_obj* alloc_robj(lua_State* L)
 {
 	render_obj** udata_ptr = lua_newuserdata(L, sizeof(render_obj*));
 	render_obj* robj = malloc(sizeof(render_obj));

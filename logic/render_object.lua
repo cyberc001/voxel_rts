@@ -29,7 +29,7 @@ end
 
 
 function render_object:create_debris(min_depth, max_depth, min_size)
-	min_depth = min_depth or 2
+	min_depth = min_depth or 3
 	max_depth = max_depth or 6
 	self.__min_debris_size = min_size or vec3:new(0.5, 0.5, 0.5)
 
