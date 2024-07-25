@@ -50,7 +50,7 @@ function shootable:create_debris(min_lifetime, max_lifetime,
 				rot_fric_mul = 8,
 
 				size = self.body.scale * v.size,
-				body = body.hexahedron_from_cuboid_centered(d.size.x, d.size.y, d.size.z),
+				body = body.new_cuboid(d.size.x, d.size.y, d.size.z),
 				robj_arr = {
 					render_object:new({model = d.model,
 					pos = model_off * self.body.scale * v.size

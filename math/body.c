@@ -3,6 +3,7 @@
 #include "math/quat.h"
 
 #include "math/hexahedron.h"
+#include "math/box.h"
 #include "render/primitive.h"
 
 #include "controls/selection.h"
@@ -27,6 +28,18 @@ void body_generate_cache(body* b)
 		return;
 	b->transform.dirty = 0;
 	switch(b->type){
+		case LUA_BODY_TYPE_BOX: {
+			body_box* bb = (body_box*)b;
+			bb->side_cache[0] = (vec3f){bb->_size.x/2, 0, 0};
+			bb->side_cache[1] = (vec3f){0, bb->_size.y/2, 0};
+			bb->side_cache[2] = (vec3f){0, 0, bb->_size.z/2};
+
+			vec3f pos = b->transform.pos;
+			b->transform.pos = (vec3f){0, 0, 0};
+			for(size_t i = 0; i < 3; ++i)
+				bb->side_cache[i] = vec3_transform_by_body(b, bb->side_cache[i]);
+			b->transform.pos = pos;
+		} break;
 		case LUA_BODY_TYPE_HEXAHEDRON: {
 			body_hexahedron* bh = (body_hexahedron*)b;
 			bh->geom_cache = bh->geom;
@@ -43,12 +56,14 @@ void body_generate_cache(body* b)
 			mat4f_scale(&trmat, b->transform.scale);
 		
 			bh->geom_cache = hexahedron_transform(&bh->geom_cache, &trmat);
-	       } break;
+		} break;
 	}
 }
 vec3f body_get_vertice(const body* b, size_t idx)
 {
 	switch(b->type){
+		case LUA_BODY_TYPE_BOX:
+			return box_get_vertice(((body_box*)b)->_size, idx);
 		case LUA_BODY_TYPE_HEXAHEDRON:
 			return hexahedron_get_vertice(&((body_hexahedron*)b)->geom, idx);
 	}
@@ -57,6 +72,8 @@ vec3f body_get_vertice(const body* b, size_t idx)
 vec3f body_get_cached_vertice(const body* b, size_t idx)
 {
 	switch(b->type){
+		case LUA_BODY_TYPE_BOX:
+			return box_get_cached_vertice(((body_box*)b)->side_cache, b->transform.pos, idx);
 		case LUA_BODY_TYPE_HEXAHEDRON:
 			return hexahedron_get_vertice(&((body_hexahedron*)b)->geom_cache, idx);
 	}
@@ -66,8 +83,10 @@ vec3f body_get_cached_vertice(const body* b, size_t idx)
 render_obj body_render(const body* b)
 {
 	switch(b->type){
+		case LUA_BODY_TYPE_BOX:
+			return generate_box(((body_box*)b)->_size);
 		case LUA_BODY_TYPE_HEXAHEDRON:
-			return render_hexahedron(&((body_hexahedron*)b)->geom);
+			return generate_hexahedron(&((body_hexahedron*)b)->geom);
 	}
 	return RENDER_OBJ_EMPTY;
 }
@@ -76,9 +95,8 @@ vec3f body_get_center(const body* b)
 {
 	vec3f center = {0, 0, 0};
 	size_t idx = 0; vec3f p;
-	while(p = body_get_vertice(b, idx++), !isnan(p.x)){
+	while(p = body_get_vertice(b, idx++), !isnan(p.x))
 		center = vec3_add(center, p);
-	}
 	center = vec3_sdiv(center, idx - 1);
 	center = vec3_transform_by_body(b, center);
 	return center;
@@ -120,6 +138,8 @@ axes_list body_get_separating_axes_and_edges(body* b, size_t* normals_cnt)
 {
 	body_generate_cache(b);
 	switch(b->type){
+		case LUA_BODY_TYPE_BOX:
+			return box_get_separating_axes_and_edges(((body_box*)b)->side_cache, normals_cnt);
 		case LUA_BODY_TYPE_HEXAHEDRON:
 			return hexahedron_get_separating_axes_and_edges(&((body_hexahedron*)b)->geom_cache, normals_cnt);
 	}

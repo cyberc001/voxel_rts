@@ -20,7 +20,7 @@ require "./logic/math/basic"
 stop = false
 
 local _o1 = shootable:new({
-	body = body.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
+	body = body.new_cuboid(0.8),
 
 	team = all_teams[1],
 	robj_arr = {
@@ -34,7 +34,7 @@ _o1:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = _o1.parts[1
 			proj_factory = function()
 				return projectile:new({
 					mass = 0.01,
-					body = body.hexahedron_from_cuboid_centered(0.1, 0.1, 0.1),
+					body = body.new_cuboid(0.2),
 					robj_arr = {
 						render_object:new({model = render.model_find("test_projectile")})
 					}
@@ -45,7 +45,7 @@ _o1.body.pos = vec3:new(1.5, 2, 2.5)
 game_object_arr[_o1] = true
 
 local _o2 = shootable:new({
-	body = body.hexahedron_from_cuboid_centered(0.8, 0.8, 0.8),
+	body = body.new_cuboid(0.8),
 	team = all_teams[2],
 	robj_arr = {
 		render_object:new({pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)}, "harvester")

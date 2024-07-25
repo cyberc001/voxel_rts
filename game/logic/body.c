@@ -24,7 +24,13 @@ void* lua_get_body(lua_State* L, int index)
 	return luaL_checkudata(L, index, "body");
 }
 
-body_hexahedron* lua_push_hexahedron(lua_State* L, const hexahedron* h)
+body_box* lua_push_body_box(lua_State* L, vec3f _size)
+{
+	body_box* b = lua_create_body(L, LUA_BODY_TYPE_BOX, sizeof(body_box));
+	b->_size = _size;
+	return b;
+}
+body_hexahedron* lua_push_body_hexahedron(lua_State* L, const hexahedron* h)
 {
 	body_hexahedron* b = lua_create_body(L, LUA_BODY_TYPE_HEXAHEDRON, sizeof(body_hexahedron));
 	b->geom = *h;
@@ -33,28 +39,20 @@ body_hexahedron* lua_push_hexahedron(lua_State* L, const hexahedron* h)
 
 /* body API */
 
-static int lua_hexahedron_from_cuboid(lua_State* L)
+static int lua_new_cuboid(lua_State* L)
 {
-	hexahedron h = hexahedron_from_cuboid(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3));
-	lua_push_hexahedron(L, &h);
-	return 1;
-}
-static int lua_hexahedron_from_cube(lua_State* L)
-{
-	hexahedron h = hexahedron_from_cube(luaL_checknumber(L, 1));
-	lua_push_hexahedron(L, &h);
-	return 1;
-}
-static int lua_hexahedron_from_cuboid_centered(lua_State* L)
-{
-	hexahedron h = hexahedron_from_cuboid_centered(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3));
-	lua_push_hexahedron(L, &h);
-	return 1;
-}
-static int lua_hexahedron_from_cube_centered(lua_State* L)
-{
-	hexahedron h = hexahedron_from_cube_centered(luaL_checknumber(L, 1));
-	lua_push_hexahedron(L, &h);
+	vec3f _size;
+	if(lua_type(L, 2) == LUA_TNUMBER){
+		_size = (vec3f){
+			luaL_checknumber(L, 1),
+			luaL_checknumber(L, 2),
+			luaL_checknumber(L, 3)
+		};
+	} else {
+		float side = luaL_checknumber(L, 1);
+		_size = (vec3f){side, side, side};
+	}
+	lua_push_body_box(L, _size);
 	return 1;
 }
 
@@ -181,10 +179,7 @@ static int lua_body_draw(lua_State* L)
 
 
 static const struct luaL_Reg cfuncs[] = {
-	{"hexahedron_from_cuboid", lua_hexahedron_from_cuboid},
-	{"hexahedron_from_cube", lua_hexahedron_from_cube},
-	{"hexahedron_from_cuboid_centered", lua_hexahedron_from_cuboid_centered},
-	{"hexahedron_from_cube_centered", lua_hexahedron_from_cube_centered},
+	{"new_cuboid", lua_new_cuboid},
 
 	{NULL, NULL}
 };
