@@ -13,7 +13,7 @@ static int lua_find_path(lua_State* L)
 	path out_p;
 	if(lua_isnumber(L, 3)){
 		vec2f pitch_range = lua_istable(L, 4) ? lua_get_vec2(L, 4) : (vec2f){-90, 90};
-		out_p = path_find(b, target, PATHING_TYPE_DISTANCE, lua_tonumber(L, 4), pitch_range);
+		out_p = path_find(b, target, PATHING_TYPE_DISTANCE, lua_tonumber(L, 3), pitch_range);
 	}
 	else
 		out_p = path_find(b, target, PATHING_TYPE_EXACT);

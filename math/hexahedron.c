@@ -39,30 +39,30 @@ hexahedron hexahedron_from_cuboid_centered(float s1, float s2, float s3)
 hexahedron hexahedron_from_terrain_piece(unsigned tx, unsigned ty, terrain_piece* piece)
 {
 	hexahedron h;
-	h.f[0].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-	h.f[0].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-	h.f[0].p[2] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-	h.f[0].p[3] = (vec3f){tx, piece->z_floor[3], ty + 1};
-	h.f[1].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-	h.f[1].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-	h.f[1].p[2] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-	h.f[1].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-	h.f[2].p[0] = (vec3f){tx, piece->z_floor[3], ty + 1};
-	h.f[2].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-	h.f[2].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-	h.f[2].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-	h.f[3].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-	h.f[3].p[1] = (vec3f){tx, piece->z_floor[3], ty + 1};
-	h.f[3].p[2] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-	h.f[3].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-	h.f[4].p[0] = (vec3f){tx + 1, piece->z_floor[1], ty};
-	h.f[4].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-	h.f[4].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-	h.f[4].p[3] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-	h.f[5].p[0] = (vec3f){tx, piece->z_ceil[0], ty};
-	h.f[5].p[1] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-	h.f[5].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-	h.f[5].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
+	h.f[0].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+	h.f[0].p[1] = (vec3f){tx + 1, piece->y_floor[1], ty};
+	h.f[0].p[2] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+	h.f[0].p[3] = (vec3f){tx, piece->y_floor[3], ty + 1};
+	h.f[1].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+	h.f[1].p[1] = (vec3f){tx + 1, piece->y_floor[1], ty};
+	h.f[1].p[2] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+	h.f[1].p[3] = (vec3f){tx, piece->y_ceil[0], ty};
+	h.f[2].p[0] = (vec3f){tx, piece->y_floor[3], ty + 1};
+	h.f[2].p[1] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+	h.f[2].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+	h.f[2].p[3] = (vec3f){tx, piece->y_ceil[3], ty + 1};
+	h.f[3].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+	h.f[3].p[1] = (vec3f){tx, piece->y_floor[3], ty + 1};
+	h.f[3].p[2] = (vec3f){tx, piece->y_ceil[3], ty + 1};
+	h.f[3].p[3] = (vec3f){tx, piece->y_ceil[0], ty};
+	h.f[4].p[0] = (vec3f){tx + 1, piece->y_floor[1], ty};
+	h.f[4].p[1] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+	h.f[4].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+	h.f[4].p[3] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+	h.f[5].p[0] = (vec3f){tx, piece->y_ceil[0], ty};
+	h.f[5].p[1] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+	h.f[5].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+	h.f[5].p[3] = (vec3f){tx, piece->y_ceil[3], ty + 1};
 	return h;
 }
 

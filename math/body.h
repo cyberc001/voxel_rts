@@ -31,6 +31,7 @@ vec3f body_get_cached_vertice(const body* b, size_t idx);
 render_obj body_render(const body* b);
 
 vec3f body_get_center(const body* b);
+bbox3f body_get_base_bbox(body* b);
 bbox3f body_get_bbox(body* b);
 
 vec3f vec3_transform_by_body(const body* b, vec3f v);

@@ -38,12 +38,12 @@ function game_object:new(o)
 	o.team = o.team or all_teams[0]
 
 	game_object:create_tables(o)
-	if o.body ~= nil then
-		self:set_body(o.body)
-	end
-
 	setmetatable(o, self)
 	self.__index = self
+
+	if o.body ~= nil then
+		o:set_body(o.body)
+	end
 	return o
 end
 

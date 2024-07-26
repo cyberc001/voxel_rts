@@ -4,7 +4,7 @@ function game_object:get_targeting_range()
 	return 10
 end
 function game_object:get_targeting_pitch_range()
-	return vec2:new(-45, 45)
+	return vec2:new(0, 45)
 end
 
 function game_object:set_target(target)

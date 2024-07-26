@@ -1,15 +1,15 @@
 #include "game/pathfinding.h"
+#include "math/quat.h"
 #include "htable_oa.h"
 #include "pqueue.h"
-#include "game/logic/path.h"
-#include "math/quat.h"
+#include "game/logic.h"
 
 static float heuristic(vec3f v1, vec3f v2)
 {
 	vec3f dist = vec3_sub(v1, v2);
 	return dist.x*dist.x + dist.y*dist.y + dist.z*dist.z; // avoid square root - doesn't matter when comparing distances
 }
-#define tnode_calc_heuristic(t, goal, goal_y) ( (t).heuristic = heuristic((vec3f){(t).pos.x, (t).y, (t).pos.y}, (vec3f){(goal).x, (goal_y), (goal).y}) )
+#define tnode_calc_heuristic(t, goal, goal_y) ( (t).heuristic = heuristic((vec3f){(t).x, (t).y, (t).z}, (vec3f){(goal).x, (goal_y), (goal).y}) )
 
 DEF_PHTABLE_OA(tptr_set, terrain_piece*, tnode*)
 size_t tptr_hash(size_t table_sz, const terrain_piece** key)
@@ -25,188 +25,177 @@ int tnode_cmp(const tnode** t1, const tnode** t2)
 
 #define DIFF_MORE(a, b) (fabs((a) - (b)) > 0.1)
 
-#define CHECK_NEXT_TPIECE_HEIGHT(){\
-	if(isnan(next_tpiece_z))\
-		next_tpiece_z = next_z;\
-	else if(DIFF_MORE(next_z, next_tpiece_z)){\
-		continue;\
-	}\
-}
-#define PUSH_SUCCESSOR(dx, dy){\
-	printf("trying to push successor %d %d\n", _cur_node->pos.x + dx, _cur_node->pos.y + dy);\
-	int do_move = 1;\
-	float next_tpiece_z = NAN;\
-	for(int i = 0; i < buf_ln; ++i){\
-		if(!tpiece_buf[i])\
-			continue;\
-		tnode cur_node_base;\
-		cur_node_base.tpiece = tpiece_buf[i];\
-		cur_node_base.pos = (vec2i){_cur_node->pos.x + i % bbox_w - bbox_w/2, _cur_node->pos.y + i / bbox_w - bbox_h/2};\
-		printf("going from pos %d %d\n", cur_node_base.pos.x, cur_node_base.pos.y);\
-		tnode* cur_node = &cur_node_base;\
-		get_successor(dx, dy, cur_node, &node_buf);\
-		\
-		do_move = 0;\
-		for(size_t j = 0; j < node_buf.busy; ++j){\
-			terrain_piece* res_tpiece = node_buf.data[j].tpiece;\
-			float next_z = tpiece_max_z_ceil(res_tpiece);\
-			if(dx > 0){\
-				if(i % bbox_w == bbox_w - 1) /*a block with the largest x coordinate*/\
-					CHECK_NEXT_TPIECE_HEIGHT();\
-			}\
-			else if(dx < 0){\
-				if(i % bbox_w == 0) /*a block with the smallest x coordinate*/\
-					CHECK_NEXT_TPIECE_HEIGHT();\
-			}\
-			if(dy > 0){\
-				if(i / bbox_w == bbox_h - 1) /*a block with the largest y coordinate*/\
-					CHECK_NEXT_TPIECE_HEIGHT();\
-			}\
-			else if(dy < 0){\
-				if(i / bbox_w == 0) /*a block with the smallest y coordinate*/\
-					CHECK_NEXT_TPIECE_HEIGHT();\
-			}\
-			do_move = 1;\
-			break;\
-		}\
-	}\
-	if(do_move){\
-		tnode* cur_node = _cur_node;\
-		get_successor(dx, dy, cur_node, &node_buf);\
-		for(size_t i = 0; i < node_buf.busy; ++i){\
-			terrain_piece* res_tpiece = node_buf.data[i].tpiece;\
-			tnode res_node = node_buf.data[i];\
-			\
-			float max_ceil = tpiece_max_z_ceil(res_tpiece);\
-			/* terrain collision check dx*/\
-			if(dx){\
-				bbox3f new_bbox = h_bbox;\
-				new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y;\
-				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y;\
-				new_bbox.min.y += max_ceil;\
-				new_bbox.max.y += max_ceil;\
-				if(bbox_check_terrain_collision(new_bbox)) continue;\
-				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
-			}\
-			/* terrain collision check dy*/\
-			if(dy){\
-				bbox3f new_bbox = h_bbox;\
-				new_bbox.min.x += _cur_node->pos.x; new_bbox.min.z += _cur_node->pos.y + (dy);\
-				new_bbox.max.x += _cur_node->pos.x; new_bbox.max.z += _cur_node->pos.y + (dy);\
-				new_bbox.min.y += max_ceil;\
-				new_bbox.max.y += max_ceil;\
-				if(bbox_check_terrain_collision(new_bbox)) continue;\
-				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
-			}\
-			/* terrain collision check dx+dy*/\
-			if(dx && dy){\
-				bbox3f new_bbox = h_bbox;\
-				new_bbox.min.x += _cur_node->pos.x + (dx); new_bbox.min.z += _cur_node->pos.y + (dy);\
-				new_bbox.max.x += _cur_node->pos.x + (dx); new_bbox.max.z += _cur_node->pos.y + (dy);\
-				new_bbox.min.y += max_ceil;\
-				new_bbox.max.y += max_ceil;\
-				if(bbox_check_terrain_collision(new_bbox)) continue;\
-				if(check_bbox_octree_collision(global_lua_state, new_bbox)) continue;\
-			}\
-			/* add to queue */\
-			tnode** old_node;\
-			if(!(old_node = tptr_set_find(closed, res_tpiece)) || (cur_node->cost + sqrt(dx*dx + dy*dy) == (*old_node)->cost)){\
-				res_node.y = tpiece_avg_z_ceil(*res_tpiece);\
-				res_node.cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
-				tnode_calc_heuristic(res_node, goal, goal_y);\
-				res_node.parent = cur_node;\
-				res_node.tpiece = res_tpiece;\
-				tnode* new_node_ptr = malloc(sizeof(tnode));\
-				*new_node_ptr = res_node;\
-				tptr_set_insert(closed, res_tpiece, new_node_ptr);\
-				tnode_pqueue_push(open, new_node_ptr);\
-				printf("pushed %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, res_node.y, res_node.cost, res_node.heuristic);\
-			} else if(cur_node->cost + sqrt(dx*dx + dy*dy) < (*old_node)->cost){\
-				(*old_node)->cost = cur_node->cost + sqrt(dx*dx + dy*dy);\
-				tnode_calc_heuristic(**old_node, goal, goal_y);\
-				(*old_node)->parent = cur_node;\
-				tnode_pqueue_heapify(open);\
-				printf("updated %d %d %f (%f %f)\n", res_node.pos.x, res_node.pos.y, res_node.y, cur_node->cost, cur_node->heuristic);\
-			} else (*old_node)->parent ? printf("already in queue with parent %d %d\n", (*old_node)->parent->pos.x, (*old_node)->parent->pos.y) : printf("already in queue with no parent\n");\
-		}\
-	}\
-}
-
-void get_successor(int dx, int dy, tnode* cur_node, tnode_dynarray* node_buf)
+terrain_piece* get_successor(int dx, int dz, tnode* cur_node)
 {
-	node_buf->busy = 0;
+	int x = cur_node->x, z = cur_node->z;
+	terrain_piece* max_y_tpiece = NULL;
+	float max_y_ceil = -INFINITY;
 
-	tnode new_node;
-	new_node.pos = (vec2i){cur_node->pos.x + (dx), cur_node->pos.y + (dy)};
-
-	terrain_piece* tpiece = terrain_get_piece(new_node.pos.x, new_node.pos.y);
-	terrain_piece* _tpiece_x = terrain_get_piece(new_node.pos.x, cur_node->pos.y);
-	terrain_piece* _tpiece_y = terrain_get_piece(cur_node->pos.x, new_node.pos.y);
+	terrain_piece* tpiece = terrain_get_piece(x + (dx), z + (dz));
+	terrain_piece* _tpiece_x = terrain_get_piece(x + (dx), z);
+	terrain_piece* _tpiece_z = terrain_get_piece(x, z + (dz));
 
 	while(tpiece){
+		float y_ceil = tpiece_max_y_ceil(tpiece);
+		if(y_ceil < max_y_ceil){
+			tpiece = tpiece->next; continue;
+		}
+
 		/* ignore unpassable terrain */
 		if(dx > 0){
-			if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[3])){ tpiece = tpiece->next; continue; }
+			if(DIFF_MORE(cur_node->tpiece->y_ceil[1], tpiece->y_ceil[0]) || DIFF_MORE(cur_node->tpiece->y_ceil[2], tpiece->y_ceil[3])){ tpiece = tpiece->next; continue; }
 		}
 		else if(dx < 0){
-			if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+			if(DIFF_MORE(cur_node->tpiece->y_ceil[0], tpiece->y_ceil[1]) || DIFF_MORE(cur_node->tpiece->y_ceil[3], tpiece->y_ceil[2])) { tpiece = tpiece->next; continue; }
 		}
-		if(dy > 0){
-			if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece->z_ceil[1])){ tpiece = tpiece->next; continue; }
+		if(dz > 0){
+			printf("%f %f %f %f\n", cur_node->tpiece->y_ceil[3], tpiece->y_ceil[0], cur_node->tpiece->y_ceil[2], tpiece->y_ceil[1]);
+			if(DIFF_MORE(cur_node->tpiece->y_ceil[3], tpiece->y_ceil[0]) || DIFF_MORE(cur_node->tpiece->y_ceil[2], tpiece->y_ceil[1])){ tpiece = tpiece->next; continue; }
 		}
-		else if(dy < 0){
-			if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece->z_ceil[2])) { tpiece = tpiece->next; continue; }
+		else if(dz < 0){
+			if(DIFF_MORE(cur_node->tpiece->y_ceil[0], tpiece->y_ceil[3]) || DIFF_MORE(cur_node->tpiece->y_ceil[1], tpiece->y_ceil[2])) { tpiece = tpiece->next; continue; }
 		}
-		if(dx != 0 && dy != 0){/*check x and y neighbours of a diagonal destination*/
+		if(dx != 0 && dz != 0){/*check x and y neighbours of a diagonal destination*/
 			terrain_piece* tpiece_x = _tpiece_x;
 			int cont = 0;
 			while(tpiece_x){
 				if(dx > 0){
-					if(DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_x->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_x->z_ceil[3])){ cont = 1; break; }
+					if(DIFF_MORE(cur_node->tpiece->y_ceil[1], tpiece_x->y_ceil[0]) || DIFF_MORE(cur_node->tpiece->y_ceil[2], tpiece_x->y_ceil[3])){ cont = 1; break; }
 				}
 				else if(dx < 0){
-					if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_x->z_ceil[1]) || DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_x->z_ceil[2])) { cont = 1; break; }
+					if(DIFF_MORE(cur_node->tpiece->y_ceil[0], tpiece_x->y_ceil[1]) || DIFF_MORE(cur_node->tpiece->y_ceil[3], tpiece_x->y_ceil[2])) { cont = 1; break; }
 				}
 				tpiece_x = tpiece_x->next;
 			}
 			if(cont) { tpiece = tpiece->next; continue; }	
 		
-			terrain_piece* tpiece_y = _tpiece_y;
+			terrain_piece* tpiece_z = _tpiece_z;
 			cont = 0;
-			while(tpiece_y){
-				if(dy > 0){
-					if(DIFF_MORE(cur_node->tpiece->z_ceil[3], tpiece_y->z_ceil[0]) || DIFF_MORE(cur_node->tpiece->z_ceil[2], tpiece_y->z_ceil[1])){ cont = 1; break; }\
+			while(tpiece_z){
+				if(dz > 0){
+					if(DIFF_MORE(cur_node->tpiece->y_ceil[3], tpiece_z->y_ceil[0]) || DIFF_MORE(cur_node->tpiece->y_ceil[2], tpiece_z->y_ceil[1])){ cont = 1; break; }\
 				}
-				else if(dy < 0){
-					if(DIFF_MORE(cur_node->tpiece->z_ceil[0], tpiece_y->z_ceil[3]) || DIFF_MORE(cur_node->tpiece->z_ceil[1], tpiece_y->z_ceil[2])) { cont = 1; break; }
+				else if(dz < 0){
+					if(DIFF_MORE(cur_node->tpiece->y_ceil[0], tpiece_z->y_ceil[3]) || DIFF_MORE(cur_node->tpiece->y_ceil[1], tpiece_z->y_ceil[2])) { cont = 1; break; }
 				}
-				tpiece_y = tpiece_y->next;
+				tpiece_z = tpiece_z->next;
 			}
 			if(cont) { tpiece = tpiece->next; continue; }
 		}
-		new_node.tpiece = tpiece;
-		tnode_dynarray_push(node_buf, new_node);
+
+		max_y_ceil = y_ceil;
+		max_y_tpiece = tpiece;
 		tpiece = tpiece->next;
+	}
+	return max_y_tpiece;
+}
+
+static void push_successor(tnode_pqueue* open, tptr_set* closed,
+				body* b,
+				vec2i goal, float goal_y,
+				tnode* cur_node, int dx, int dz)
+{
+	printf("trying to push successor %d %d (%g)\n", cur_node->x + dx, cur_node->z + dz, cur_node->y);
+
+	// check for collision
+	terrain_piece* suc = get_successor(dx, dz, cur_node);
+	if(!suc)
+		return;
+	float new_y = tpiece_avg_y_ceil(*suc);
+
+	// get upper surface normal
+	vec3f p1 = {cur_node->x + dx, suc->y_ceil[0], cur_node->z + dz};
+	vec3f p2 = {cur_node->x + dx + 1, suc->y_ceil[1], cur_node->z + dz};
+	vec3f p3 = {cur_node->x + dx + 1, suc->y_ceil[2], cur_node->z + dz + 1};
+	vec3f e1 = vec3_sub(p1, p2), e2 = vec3_sub(p2, p3);
+	vec3f norm = vec3_norm(vec3_cross(e1, e2));
+	printf("norm: "); vec3f_print(norm);
+
+	mat4f trmat = mat4f_identity();
+	vec3f up = vec3_smul(norm, -1);
+	vec3f forward = (vec3f){dx, 0, dz};
+	forward = vec3_norm(forward);
+	vec3f n = (vec3f){0, 1, 0};
+	float forward_ang = rad_to_ang(acos(vec3_dot(n, up)));
+	vec3f forward_axis = vec3_norm(vec3_cross(n, up));
+	mat4f forward_trmat = mat4f_identity();
+	if(!isnan(forward_axis.x))
+	mat4f_rotate(&forward_trmat, forward_ang, forward_axis);
+	forward = vec3_norm(mat4f_mul_vec3f(&forward_trmat, forward));
+	vec3f right = vec3_norm(vec3_cross(forward, up));
+
+	trmat.e[0][0] = forward.x;
+	trmat.e[0][1] = forward.y;
+	trmat.e[0][2] = forward.z;
+	trmat.e[1][0] = up.x;
+	trmat.e[1][1] = up.y;
+	trmat.e[1][2] = up.z;
+	trmat.e[2][0] = right.x;
+	trmat.e[2][1] = right.y;
+	trmat.e[2][2] = right.z;
+
+	
+	//if(dx){
+		body* newb = malloc(b->size);
+		memcpy(newb, b, b->size);
+		newb->transform.pos = (vec3f){0, 0, 0};
+		newb->transform.rot = quat_from_rot_mat(&trmat);
+		newb->transform.dirty = 1;
+
+		bbox3f base_bbox = body_get_bbox(newb);
+		float base_y_off = base_bbox.min.y;
+
+		newb->transform.pos = (vec3f){cur_node->x + dx + 0.5, new_y - base_y_off, cur_node->z + dz + 0.5};
+		newb->transform.dirty = 1;
+
+		printf("new pos: "); vec3f_print(newb->transform.pos);
+		printf("new rot: "); vec4f_print(newb->transform.rot);
+
+		vec3f resol;
+		if(sat_check_terrain_collision(newb, &resol, (vec3f){1, 0, 0}, NULL)
+				&& vec3_ln(resol) >= 0.1){
+			printf("resol: "); vec3f_print(resol);
+			return;
+		}
+		printf("resol: "); vec3f_print(resol);
+		bbox3f bbox = body_get_bbox(newb);
+		if(check_bbox_octree_collision(global_lua_state, bbox))
+			return;
+	//}
+	
+	// add to queue
+	tnode** old_node;
+	float dcost = sqrt(dx*dx + dz*dz);
+	if(!(old_node = tptr_set_find(closed, suc)) || (cur_node->cost + dcost == (*old_node)->cost)){ // tpiece wasn't encountered yet or has the same cost
+		tnode rn = {
+			.x = cur_node->x + dx, .z = cur_node->z + dz,
+			.y = tpiece_max_y_ceil(suc),
+			.cost = cur_node->cost + dcost,
+			.parent = cur_node,
+			.tpiece = suc
+		};
+		tnode_calc_heuristic(rn, goal, goal_y);
+
+		tnode* rn_ptr = malloc(sizeof(tnode));
+		*rn_ptr = rn;
+		tptr_set_insert(closed, suc, rn_ptr);
+		tnode_pqueue_push(open, rn_ptr);
+		printf("pushed %d %f %d (%f %f)\n", rn.x, rn.y, rn.z, rn.cost, rn.heuristic);
+	} else if(cur_node->cost + dcost < (*old_node)->cost){ // tpiece is already in closed set and node has a different cost; update cost and the parent
+		(*old_node)->cost = cur_node->cost + dcost;
+		tnode_calc_heuristic(**old_node, goal, goal_y);
+		(*old_node)->parent = cur_node;
+		tnode_pqueue_heapify(open);
+	printf("pushed %d %f %d (%f %f)\n", (*old_node)->x, (*old_node)->y, (*old_node)->z, (*old_node)->cost, (*old_node)->heuristic);
 	}
 }
 
-static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_node, vec2i goal, float goal_y, bbox3f h_bbox)
+#define PUSH_SUCCESSOR(dx, dz)\
+	push_successor(open, closed, b, (vec2i){goal_x, goal_z}, goal_y, cur_node, (dx), (dz));
+static void process_node(tnode_pqueue* open, tptr_set* closed, body* b, tnode* cur_node, int goal_x, float goal_y, int goal_z)
 {
-	printf("start %d %d %f\n", _cur_node->pos.x, _cur_node->pos.y, _cur_node->y);
-
-	tnode_dynarray node_buf;
-	tnode_dynarray_create(&node_buf);
-
-	int bbox_w = ceil(h_bbox.max.x - h_bbox.min.x),
-	    bbox_h = ceil(h_bbox.max.z - h_bbox.min.z);
-	if(bbox_w % 2 == 0) ++bbox_w;
-	if(bbox_h % 2 == 0) ++bbox_h;
-
-	int buf_ln = bbox_w*bbox_h;
-	terrain_piece** tpiece_buf = malloc(buf_ln * sizeof(terrain_piece*));
-	memset(tpiece_buf, 0, buf_ln * sizeof(terrain_piece*));
-	get_all_occupied_tpieces(bbox_w, bbox_h, _cur_node->pos, _cur_node->tpiece, tpiece_buf, &node_buf);
-
+	printf("start %d %d\n", cur_node->x, cur_node->z);
+	
 	PUSH_SUCCESSOR(1, 0)
 	PUSH_SUCCESSOR(0, 1)
 	PUSH_SUCCESSOR(-1, 0)
@@ -215,42 +204,28 @@ static void push_successors(tnode_pqueue* open, tptr_set* closed, tnode* _cur_no
 	PUSH_SUCCESSOR(-1, 1)
 	PUSH_SUCCESSOR(1, -1)
 	PUSH_SUCCESSOR(-1, -1)
-
-	free(tpiece_buf);
-	tnode_dynarray_destroy(&node_buf);
-	printf("end\n");
 }
-path path_find(body* b, vec3f target,
-		int pathing_type, ...)
+
+path path_find(body* b, vec3f target, int pathing_type, ...)
 {
-	printf("POS: "); vec3f_print(b->transform.pos);
-	// figure out the starting point
-	vec2i target_xz = {target.x, target.z};
-	bbox3f h_bbox = body_get_bbox(b);
-
-	h_bbox.min = vec3_sub(h_bbox.min, b->transform.pos);
-	h_bbox.max = vec3_sub(h_bbox.max, b->transform.pos);
-
-	float h_bbox_y = h_bbox.min.y;
-	h_bbox.min.y -= h_bbox_y; h_bbox.max.y -= h_bbox_y;
-	h_bbox.min.x += 0.5; h_bbox.min.z += 0.5;
-	h_bbox.max.x += 0.5; h_bbox.max.z += 0.5;
-
-	printf("start bbox\n");
-	vec3f_print(h_bbox.min); vec3f_print(h_bbox.max);
-
+	/* Determine current position */
 	tnode* cur_node = malloc(sizeof(tnode));
 	cur_node->cost = 0; cur_node->parent = NULL;
-	cur_node->pos = (vec2i){floor(b->transform.pos.x), floor(b->transform.pos.z)};
-	cur_node->tpiece = terrain_get_piece(cur_node->pos.x, cur_node->pos.y);
-	printf("PATH FIND START %d %d\n", cur_node->pos.x, cur_node->pos.y);
-	if(!cur_node->tpiece) return (path){0, NULL, NULL};
-	cur_node->tpiece = terrain_get_nearest_piece_maxz(b->transform.pos.y, cur_node->tpiece);
-	printf("CENTER: %f TPIECE: %f\n", b->transform.pos.y, tpiece_max_z_ceil(cur_node->tpiece));
-	if(!cur_node->tpiece) return (path){0, NULL, NULL};
-	cur_node->y = tpiece_avg_z_ceil(*cur_node->tpiece);
+	cur_node->x = floor(b->transform.pos.x); cur_node->z = floor(b->transform.pos.z);
+	cur_node->tpiece = terrain_get_piece(cur_node->x, cur_node->z);
+	if(!cur_node->tpiece){
+		free(cur_node);
+		return (path){0, NULL, NULL};
+	}
+	cur_node->tpiece = terrain_get_nearest_piece_maxy(b->transform.pos.y, cur_node->tpiece);
+	cur_node->y = tpiece_max_y_ceil(cur_node->tpiece);
+	printf("PATH FIND START %d %g %d\n", cur_node->x, cur_node->y, cur_node->z);
+
+	/* Determine target position */
+	vec2i target_xz = {target.x, target.z};
 	tnode_calc_heuristic(*cur_node, target_xz, target.y);
 
+	/* Initialize closed set and open priority queue */
 	tptr_set closed;
 	tptr_set_create(&closed, 16, tptr_hash);
 	tnode_pqueue open;
@@ -258,9 +233,9 @@ path path_find(body* b, vec3f target,
 	tptr_set_insert(&closed, cur_node->tpiece, cur_node);
 	tnode_pqueue_push(&open, cur_node);
 
+	/* Initialize conditional pathing */
 	float goal_distance;
 	vec2f pitch_range;
-
 	va_list args;
 	va_start(args, pathing_type);
 	switch(pathing_type){
@@ -276,20 +251,25 @@ path path_find(body* b, vec3f target,
 		cur_node = tnode_pqueue_pop(&open);
 		switch(pathing_type){
 			case PATHING_TYPE_EXACT:
-				if(vec2_eq(cur_node->pos, target_xz) && !DIFF_MORE(cur_node->y, target.y)){
+				if(cur_node->x == target_xz.x && fabs(cur_node->y - target.y) <= 0.6 && cur_node->z == target_xz.y){
 					reached_goal = 1;
 					goto astar_end;
 				}
 				break;
 			case PATHING_TYPE_DISTANCE: {
-				vec3f cur_pos = (vec3f){cur_node->pos.x, cur_node->y, cur_node->pos.y};
+				vec3f cur_pos = (vec3f){cur_node->x + 0.5, cur_node->y, cur_node->z + 0.5};
 				vec3f diff = vec3_sub(target, cur_pos);
 
-				vec3f rot = rot_from_quat(quat_from_rot_between(diff, (vec3f){1, 0, 0}));
+				printf("diff "); vec3f_print(diff);
+				vec3f rot = rot_from_quat(quat_from_rot_between(diff, (vec3f){diff.x, 0, diff.z}));
+				printf("rot"); vec3f_print(rot);
 				float pitch = rot.y;
 				if(isnan(pitch)) pitch = 0;
 				if(pitch > 90) pitch = 180 - pitch;
 				if(pitch < -90) pitch = -(180 + pitch);
+
+				printf("PITCH %f < %f < %f\n", pitch_range.x, pitch, pitch_range.y);
+				printf("DIST %f %f\n", vec3_ln(diff), goal_distance);
 
 				if(vec3_ln(diff) <= goal_distance
 				&& in_range(pitch, pitch_range.x, pitch_range.y)){
@@ -299,7 +279,7 @@ path path_find(body* b, vec3f target,
 				break;
 			}
 		}
-		push_successors(&open, &closed, cur_node, target_xz, target.y, h_bbox);
+		process_node(&open, &closed, b, cur_node, target_xz.x, target.y, target_xz.y);
 	}
 astar_end:
 
@@ -322,8 +302,8 @@ astar_end:
 	out_p.points = malloc(sizeof(vec3f) * out_p.ln);
 	out_p.tpieces = malloc(sizeof(terrain_piece*) * out_p.ln);
 	for(size_t i = 0; n; ++i){
-		printf("%d %d\n", n->pos.x, n->pos.y);
-		out_p.points[out_p.ln - i - 1] = (vec2f){n->pos.x, n->pos.y};
+		printf("%d %f %d\n", n->x, n->y, n->z);
+		out_p.points[out_p.ln - i - 1] = (vec2f){n->x, n->z};
 		out_p.tpieces[out_p.ln - i - 1] = n->tpiece;
 		n = n->parent;
 	}
@@ -335,69 +315,4 @@ astar_end:
 	tptr_set_destroy(&closed);
 
 	return out_p;
-}
-
-#define PUT_TPIECE_BUF(dx, dy){\
-	int _x = cur_pos.x + x, _y = cur_pos.y + y;\
-	size_t buf_i = (x + bbox_w/2) + (y + bbox_h/2)*bbox_w;\
-	if(abs(x) < bbox_w/2+1 && abs(y) < bbox_h/2+1 && !tpiece_buf[buf_i]){\
-		size_t buf_prev_i = (x + bbox_w/2 + (dx)) + (y + bbox_h/2 + (dy))*bbox_w;\
-		if(abs(x + (dx)) < bbox_w/2+1 && abs(y + (dy)) < bbox_h/2+1){\
-			tnode cur_node_base = {.tpiece = tpiece_buf[buf_prev_i]};\
-			if(cur_node_base.tpiece){\
-				cur_node_base.pos = (vec2i){_x + (dx), _y + (dy)};\
-				tnode* cur_node = &cur_node_base;\
-				get_successor(-(dx), -(dy), cur_node, node_buf);\
-				for(size_t i = 0; i < node_buf->busy; ++i){\
-					terrain_piece* res_tpiece = node_buf->data[i].tpiece;\
-					if(!DIFF_MORE(tpiece_max_z_ceil(res_tpiece), tpiece_max_z_ceil(tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w]))){\
-						cur_node_base.tpiece = res_tpiece;\
-						cur_node_base.pos.y += _y;\
-						tpiece_buf[buf_i] = res_tpiece;\
-						cur_node_base.pos.x += _x;\
-						break;\
-					}\
-				}\
-			}\
-		}\
-	}\
-}
-
-void get_all_occupied_tpieces(int bbox_w, int bbox_h,
-				vec2i cur_pos, terrain_piece* cur_tpiece,
-				terrain_piece** tpiece_buf, tnode_dynarray* node_buf)
-{
-	int bbox_max_side = max(bbox_w, bbox_h);
-	tpiece_buf[bbox_w/2 + bbox_h/2*bbox_w] = cur_tpiece;
-	for(int square_side = 3; square_side <= bbox_max_side; square_side += 2){
-		// TODO optimize by breaking early if square didn't yield any blocks?
-		// left side
-		for(int y = -square_side/2 + 1; y < square_side/2; ++y){
-			int x = -square_side/2;
-			PUT_TPIECE_BUF(1, 0)
-			PUT_TPIECE_BUF(1, -1)
-			PUT_TPIECE_BUF(1, 1)
-		}
-		// right side
-		for(int y = -square_side/2 + 1; y < square_side/2; ++y){
-			int x = square_side/2;
-			PUT_TPIECE_BUF(-1, 0)
-			PUT_TPIECE_BUF(-1, -1)
-			PUT_TPIECE_BUF(-1, 1)
-		}
-		// top side
-		for(int x = -square_side/2; x <= square_side/2; ++x){
-			int y = square_side/2;
-			PUT_TPIECE_BUF(0, -1)
-			PUT_TPIECE_BUF(-1, -1)
-			PUT_TPIECE_BUF(1, -1)
-		}
-		// bottom side
-		for(int x = -square_side/2; x <= square_side/2; ++x){
-			int y = -square_side/2;
-			PUT_TPIECE_BUF(0, 1)
-			PUT_TPIECE_BUF(-1, 1)
-			PUT_TPIECE_BUF(1, 1)
-		}
-	}
 }

@@ -26,11 +26,11 @@ void render_terrain()
 				size_t model_idx = 0;
 
 				uint32_t chnk_x = KEY_COORD_X(chunks.keys[i]);
-				uint32_t chnk_y = KEY_COORD_Y(chunks.keys[i]);
+				uint32_t chnk_z = KEY_COORD_Z(chunks.keys[i]);
 				for(size_t j = 0; j < TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE; ++j){
 					terrain_piece* piece = chnk->data[j];
 					uint32_t world_x = chnk_x * TERRAIN_CHUNK_SIZE + j % TERRAIN_CHUNK_SIZE;
-					uint32_t world_y = chnk_y * TERRAIN_CHUNK_SIZE + j / TERRAIN_CHUNK_SIZE;
+					uint32_t world_z = chnk_z * TERRAIN_CHUNK_SIZE + j / TERRAIN_CHUNK_SIZE;
 					while(piece){
 						atlas_texture** atex = piece->atex;
 						if(model_idx + 12*6 >= model_ln){
@@ -39,35 +39,35 @@ void render_terrain()
 							model_tex = realloc(model_tex, (model_ln / 3) * sizeof(GLuint));
 							model_uv = realloc(model_uv, (model_ln / 3 * 2) * sizeof(GLfloat));
 						}
-						MODEL_SET_DATA(world_x, piece->z_floor[0], world_y, atex[0]->atlas_layer, atex[0]->coords[0], atex[0]->coords[1]);
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[1], world_y, atex[0]->atlas_layer, atex[0]->coords[2], atex[0]->coords[3]);
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[2], world_y + 1, atex[0]->atlas_layer, atex[0]->coords[4], atex[0]->coords[5]);
-						MODEL_SET_DATA(world_x, piece->z_floor[3], world_y + 1, atex[0]->atlas_layer, atex[0]->coords[6], atex[0]->coords[7]);
+						MODEL_SET_DATA(world_x, piece->y_floor[0], world_z, atex[0]->atlas_layer, atex[0]->coords[0], atex[0]->coords[1]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[1], world_z, atex[0]->atlas_layer, atex[0]->coords[2], atex[0]->coords[3]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[2], world_z + 1, atex[0]->atlas_layer, atex[0]->coords[4], atex[0]->coords[5]);
+						MODEL_SET_DATA(world_x, piece->y_floor[3], world_z + 1, atex[0]->atlas_layer, atex[0]->coords[6], atex[0]->coords[7]);
 
-						MODEL_SET_DATA(world_x, piece->z_floor[0], world_y, atex[1]->atlas_layer, atex[1]->coords[0], atex[1]->coords[1]);
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[1], world_y, atex[1]->atlas_layer, atex[1]->coords[2], atex[1]->coords[3]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[1], world_y, atex[1]->atlas_layer, atex[1]->coords[4], atex[1]->coords[5]);
-						MODEL_SET_DATA(world_x, piece->z_ceil[0], world_y, atex[1]->atlas_layer, atex[1]->coords[6], atex[1]->coords[7]);
+						MODEL_SET_DATA(world_x, piece->y_floor[0], world_z, atex[1]->atlas_layer, atex[1]->coords[0], atex[1]->coords[1]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[1], world_z, atex[1]->atlas_layer, atex[1]->coords[2], atex[1]->coords[3]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[1], world_z, atex[1]->atlas_layer, atex[1]->coords[4], atex[1]->coords[5]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[0], world_z, atex[1]->atlas_layer, atex[1]->coords[6], atex[1]->coords[7]);
 
-						MODEL_SET_DATA(world_x, piece->z_floor[3], world_y + 1, atex[2]->atlas_layer, atex[2]->coords[0], atex[2]->coords[1]);
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[2], world_y + 1, atex[2]->atlas_layer, atex[2]->coords[2], atex[2]->coords[3]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[2], world_y + 1, atex[2]->atlas_layer, atex[2]->coords[4], atex[2]->coords[5]);
-						MODEL_SET_DATA(world_x, piece->z_ceil[3], world_y + 1, atex[2]->atlas_layer, atex[2]->coords[6], atex[2]->coords[7]);
+						MODEL_SET_DATA(world_x, piece->y_floor[3], world_z + 1, atex[2]->atlas_layer, atex[2]->coords[0], atex[2]->coords[1]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[2], world_z + 1, atex[2]->atlas_layer, atex[2]->coords[2], atex[2]->coords[3]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[2], world_z + 1, atex[2]->atlas_layer, atex[2]->coords[4], atex[2]->coords[5]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[3], world_z + 1, atex[2]->atlas_layer, atex[2]->coords[6], atex[2]->coords[7]);
 
-						MODEL_SET_DATA(world_x, piece->z_floor[0], world_y, atex[3]->atlas_layer, atex[3]->coords[0], atex[3]->coords[1]);
-						MODEL_SET_DATA(world_x, piece->z_floor[3], world_y + 1, atex[3]->atlas_layer, atex[3]->coords[2], atex[3]->coords[3]);
-						MODEL_SET_DATA(world_x, piece->z_ceil[3], world_y + 1, atex[3]->atlas_layer, atex[3]->coords[4], atex[3]->coords[5]);
-						MODEL_SET_DATA(world_x, piece->z_ceil[0], world_y, atex[3]->atlas_layer, atex[3]->coords[6], atex[3]->coords[7]);
+						MODEL_SET_DATA(world_x, piece->y_floor[0], world_z, atex[3]->atlas_layer, atex[3]->coords[0], atex[3]->coords[1]);
+						MODEL_SET_DATA(world_x, piece->y_floor[3], world_z + 1, atex[3]->atlas_layer, atex[3]->coords[2], atex[3]->coords[3]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[3], world_z + 1, atex[3]->atlas_layer, atex[3]->coords[4], atex[3]->coords[5]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[0], world_z, atex[3]->atlas_layer, atex[3]->coords[6], atex[3]->coords[7]);
 
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[1], world_y, atex[4]->atlas_layer, atex[4]->coords[0], atex[4]->coords[1]);
-						MODEL_SET_DATA(world_x + 1, piece->z_floor[2], world_y + 1, atex[4]->atlas_layer, atex[4]->coords[2], atex[4]->coords[3]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[2], world_y + 1, atex[4]->atlas_layer, atex[4]->coords[4], atex[4]->coords[5]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[1], world_y, atex[4]->atlas_layer, atex[4]->coords[6], atex[4]->coords[7]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[1], world_z, atex[4]->atlas_layer, atex[4]->coords[0], atex[4]->coords[1]);
+						MODEL_SET_DATA(world_x + 1, piece->y_floor[2], world_z + 1, atex[4]->atlas_layer, atex[4]->coords[2], atex[4]->coords[3]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[2], world_z + 1, atex[4]->atlas_layer, atex[4]->coords[4], atex[4]->coords[5]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[1], world_z, atex[4]->atlas_layer, atex[4]->coords[6], atex[4]->coords[7]);
 
-						MODEL_SET_DATA(world_x, piece->z_ceil[0], world_y, atex[5]->atlas_layer, atex[5]->coords[0], atex[5]->coords[1]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[1], world_y, atex[5]->atlas_layer, atex[5]->coords[2], atex[5]->coords[3]);
-						MODEL_SET_DATA(world_x + 1, piece->z_ceil[2], world_y + 1, atex[5]->atlas_layer, atex[5]->coords[4], atex[5]->coords[5]);
-						MODEL_SET_DATA(world_x, piece->z_ceil[3], world_y + 1, atex[5]->atlas_layer, atex[5]->coords[6], atex[5]->coords[7]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[0], world_z, atex[5]->atlas_layer, atex[5]->coords[0], atex[5]->coords[1]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[1], world_z, atex[5]->atlas_layer, atex[5]->coords[2], atex[5]->coords[3]);
+						MODEL_SET_DATA(world_x + 1, piece->y_ceil[2], world_z + 1, atex[5]->atlas_layer, atex[5]->coords[4], atex[5]->coords[5]);
+						MODEL_SET_DATA(world_x, piece->y_ceil[3], world_z + 1, atex[5]->atlas_layer, atex[5]->coords[6], atex[5]->coords[7]);
 
 						piece = piece->next;
 					}

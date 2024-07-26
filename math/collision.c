@@ -186,8 +186,8 @@ int sat_check_collision(body* b1, body* b2, vec3f* resol)
 					resolution = axis;
 				}
 			}
-			else
-				return 0;
+			else 
+				return 0; 
 		}
 	}
 	resolution = vec3_smul(resolution, overlap);
@@ -219,12 +219,12 @@ int bbox_check_terrain_collision(bbox3f bbox)
 
 				tpiece_bbox.min.y = INFINITY;
 				for(size_t i = 0; i < 4; ++i)
-					if(piece->z_floor[i] < tpiece_bbox.min.y)
-						tpiece_bbox.min.y = piece->z_floor[i];
+					if(piece->y_floor[i] < tpiece_bbox.min.y)
+						tpiece_bbox.min.y = piece->y_floor[i];
 				tpiece_bbox.max.y = -INFINITY;
 				for(size_t i = 0; i < 4; ++i)
-					if(piece->z_ceil[i] > tpiece_bbox.max.y)
-						tpiece_bbox.max.y = piece->z_ceil[i];
+					if(piece->y_ceil[i] > tpiece_bbox.max.y)
+						tpiece_bbox.max.y = piece->y_ceil[i];
 
 				tpiece_bbox.min = vec3_smul(tpiece_bbox.min, TERRAIN_PIECE_SIZE);
 				tpiece_bbox.max = vec3_smul(tpiece_bbox.max, TERRAIN_PIECE_SIZE);
@@ -258,30 +258,30 @@ int sat_check_terrain_collision(body* b, vec3f* resolution, vec3f _forward, vec4
 				body_hexahedron piece_body;
 				body_init((body*)&piece_body, LUA_BODY_TYPE_HEXAHEDRON, sizeof(piece_body));
 	
-				piece_body.geom_cache.f[0].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				piece_body.geom_cache.f[0].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				piece_body.geom_cache.f[0].p[2] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				piece_body.geom_cache.f[0].p[3] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				piece_body.geom_cache.f[1].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				piece_body.geom_cache.f[1].p[1] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				piece_body.geom_cache.f[1].p[2] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				piece_body.geom_cache.f[1].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-				piece_body.geom_cache.f[2].p[0] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				piece_body.geom_cache.f[2].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				piece_body.geom_cache.f[2].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				piece_body.geom_cache.f[2].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-				piece_body.geom_cache.f[3].p[0] = (vec3f){tx, piece->z_floor[0], ty};
-				piece_body.geom_cache.f[3].p[1] = (vec3f){tx, piece->z_floor[3], ty + 1};
-				piece_body.geom_cache.f[3].p[2] = (vec3f){tx, piece->z_ceil[3], ty + 1};
-				piece_body.geom_cache.f[3].p[3] = (vec3f){tx, piece->z_ceil[0], ty};
-				piece_body.geom_cache.f[4].p[0] = (vec3f){tx + 1, piece->z_floor[1], ty};
-				piece_body.geom_cache.f[4].p[1] = (vec3f){tx + 1, piece->z_floor[2], ty + 1};
-				piece_body.geom_cache.f[4].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				piece_body.geom_cache.f[4].p[3] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				piece_body.geom_cache.f[5].p[0] = (vec3f){tx, piece->z_ceil[0], ty};
-				piece_body.geom_cache.f[5].p[1] = (vec3f){tx + 1, piece->z_ceil[1], ty};
-				piece_body.geom_cache.f[5].p[2] = (vec3f){tx + 1, piece->z_ceil[2], ty + 1};
-				piece_body.geom_cache.f[5].p[3] = (vec3f){tx, piece->z_ceil[3], ty + 1};
+				piece_body.geom_cache.f[0].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+				piece_body.geom_cache.f[0].p[1] = (vec3f){tx + 1, piece->y_floor[1], ty};
+				piece_body.geom_cache.f[0].p[2] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+				piece_body.geom_cache.f[0].p[3] = (vec3f){tx, piece->y_floor[3], ty + 1};
+				piece_body.geom_cache.f[1].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+				piece_body.geom_cache.f[1].p[1] = (vec3f){tx + 1, piece->y_floor[1], ty};
+				piece_body.geom_cache.f[1].p[2] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+				piece_body.geom_cache.f[1].p[3] = (vec3f){tx, piece->y_ceil[0], ty};
+				piece_body.geom_cache.f[2].p[0] = (vec3f){tx, piece->y_floor[3], ty + 1};
+				piece_body.geom_cache.f[2].p[1] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+				piece_body.geom_cache.f[2].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+				piece_body.geom_cache.f[2].p[3] = (vec3f){tx, piece->y_ceil[3], ty + 1};
+				piece_body.geom_cache.f[3].p[0] = (vec3f){tx, piece->y_floor[0], ty};
+				piece_body.geom_cache.f[3].p[1] = (vec3f){tx, piece->y_floor[3], ty + 1};
+				piece_body.geom_cache.f[3].p[2] = (vec3f){tx, piece->y_ceil[3], ty + 1};
+				piece_body.geom_cache.f[3].p[3] = (vec3f){tx, piece->y_ceil[0], ty};
+				piece_body.geom_cache.f[4].p[0] = (vec3f){tx + 1, piece->y_floor[1], ty};
+				piece_body.geom_cache.f[4].p[1] = (vec3f){tx + 1, piece->y_floor[2], ty + 1};
+				piece_body.geom_cache.f[4].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+				piece_body.geom_cache.f[4].p[3] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+				piece_body.geom_cache.f[5].p[0] = (vec3f){tx, piece->y_ceil[0], ty};
+				piece_body.geom_cache.f[5].p[1] = (vec3f){tx + 1, piece->y_ceil[1], ty};
+				piece_body.geom_cache.f[5].p[2] = (vec3f){tx + 1, piece->y_ceil[2], ty + 1};
+				piece_body.geom_cache.f[5].p[3] = (vec3f){tx, piece->y_ceil[3], ty + 1};
 
 				for(size_t _f = 0; _f < 6; ++_f)
 					for(size_t _p = 0; _p < 4; ++_p)

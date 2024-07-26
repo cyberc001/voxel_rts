@@ -20,7 +20,7 @@ require "./logic/math/basic"
 stop = false
 
 local _o1 = shootable:new({
-	body = body.new_cuboid(0.8),
+	body = body.new_cuboid(1.2, 0.8, 0.8),
 
 	team = all_teams[1],
 	robj_arr = {
@@ -41,7 +41,7 @@ _o1:add_part(cannon:new({rot_axis = part_rot_axis.vertical, parent = _o1.parts[1
 				})
 			end
 		}), 3)
-_o1.body.pos = vec3:new(1.5, 2, 2.5)
+_o1.body.pos = vec3:new(2.5, 2, 1.5)
 game_object_arr[_o1] = true
 
 local _o2 = shootable:new({
@@ -51,7 +51,7 @@ local _o2 = shootable:new({
 		render_object:new({pos = vec3:new(0, -0.1, 0), size = vec3:new(0.5, 0.5, 0.5)}, "harvester")
 	}
 })
-_o2.body.pos = vec3:new(1.5, 4, 4.5)
+_o2.body.pos = vec3:new(1.5, 2, 4.5)
 game_object_arr[_o2] = true
 
 function _first_tick()

@@ -12,7 +12,7 @@ static size_t chunk_hash(size_t table_sz, const uint64_t* key)
 
 #define TEST_ADD_TPIECE()\
 	terrain_piece* add2 = malloc(sizeof(terrain_piece));\
-	add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1;\
+	add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 1;\
 	for(size_t j = 0; j < 6; ++j)\
 		add2->atex[j] = atlas_texture_find("gravel");\
 
@@ -20,151 +20,151 @@ void terrain_init()
 {
 	chunk_dict_create(&chunks, 16, chunk_hash);
 	for(size_t x = 0; x < 10; ++x)
-		for(size_t y = 0; y < 10; ++y){
-			terrain_piece* p = terrain_get_piece_anyway(x, y);
+		for(size_t z = 0; z < 10; ++z){
+			terrain_piece* p = terrain_get_piece_anyway(x, z);
 
-			p->z_floor[0] = p->z_floor[1] = p->z_floor[2] = p->z_floor[3] = 0;
-			p->z_ceil[0] = 1;
-			p->z_ceil[1] = 1;
-			p->z_ceil[2] = 1;
-			p->z_ceil[3] = 1;
+			p->y_floor[0] = p->y_floor[1] = p->y_floor[2] = p->y_floor[3] = 0;
+			p->y_ceil[0] = 1;
+			p->y_ceil[1] = 1;
+			p->y_ceil[2] = 1;
+			p->y_ceil[3] = 1;
 
 			for(size_t j = 1; j < 5; ++j)
 				p->atex[j] = atlas_texture_find("grass_side");
 			p->atex[5] = atlas_texture_find("grass_top");
 			p->atex[0] = atlas_texture_find("dirt");
 
-			if(x >= 2 && x <= 4 && y == 2){
+			if(x >= 2 && x <= 4 && z == 2){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 1 + (x - 2);
-				add2->z_ceil[0] = 1 + (x - 2);
-				add2->z_ceil[1] = 2 + (x - 2);
-				add2->z_ceil[2] = 2 + (x - 2);
-				add2->z_ceil[3] = 1 + (x - 2);
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 1 + (x - 2);
+				add2->y_ceil[0] = 1 + (x - 2);
+				add2->y_ceil[1] = 2 + (x - 2);
+				add2->y_ceil[2] = 2 + (x - 2);
+				add2->y_ceil[3] = 1 + (x - 2);
 				terrain_piece_add(p, add2);
 			}
-			if(x == 5 && y == 2){
+			if(x >= 5 && x <= 6 && z >= 2 && z <= 3){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 3;
-				add2->z_ceil[0] = 4;
-				add2->z_ceil[1] = 4;
-				add2->z_ceil[2] = 4;
-				add2->z_ceil[3] = 4;
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 3;
+				add2->y_ceil[0] = 4;
+				add2->y_ceil[1] = 4;
+				add2->y_ceil[2] = 4;
+				add2->y_ceil[3] = 4;
 				terrain_piece_add(p, add2);
 			}
-			if(x == 5 && y >= 3 && y <= 5){
+			if(x == 5 && z >= 4 && z <= 6){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 4 + (y - 3);
-				add2->z_ceil[0] = 4 + (y - 3);
-				add2->z_ceil[1] = 4 + (y - 3);
-				add2->z_ceil[2] = 5 + (y - 3);
-				add2->z_ceil[3] = 5 + (y - 3);
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 4 + (z - 4);
+				add2->y_ceil[0] = 4 + (z - 4);
+				add2->y_ceil[1] = 4 + (z - 4);
+				add2->y_ceil[2] = 5 + (z - 4);
+				add2->y_ceil[3] = 5 + (z - 4);
 				terrain_piece_add(p, add2);
 			}
-			if(x == 5 && y == 6){
+			if(x == 5 && z >= 7 && z <= 8){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 6;
-				add2->z_ceil[0] = 7;
-				add2->z_ceil[1] = 7;
-				add2->z_ceil[2] = 7;
-				add2->z_ceil[3] = 7;
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 6;
+				add2->y_ceil[0] = 7;
+				add2->y_ceil[1] = 7;
+				add2->y_ceil[2] = 7;
+				add2->y_ceil[3] = 7;
 				terrain_piece_add(p, add2);
 			}
-			if(x >= 2 && x <= 4 && y == 6){
+			if(x >= 2 && x <= 4 && z == 6){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 7 + (4 - x);
-				add2->z_ceil[0] = 8 + (4 - x);
-				add2->z_ceil[1] = 7 + (4 - x);
-				add2->z_ceil[2] = 7 + (4 - x);
-				add2->z_ceil[3] = 8 + (4 - x);
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 7 + (4 - x);
+				add2->y_ceil[0] = 8 + (4 - x);
+				add2->y_ceil[1] = 7 + (4 - x);
+				add2->y_ceil[2] = 7 + (4 - x);
+				add2->y_ceil[3] = 8 + (4 - x);
 				terrain_piece_add(p, add2);
 			}
-			if(x == 1 && y == 6){
+			if(x == 1 && z == 6){
 				TEST_ADD_TPIECE()
-				add2->z_floor[0] = add2->z_floor[1] = add2->z_floor[2] = add2->z_floor[3] = 9;
-				add2->z_ceil[0] = 10;
-				add2->z_ceil[1] = 10;
-				add2->z_ceil[2] = 10;
-				add2->z_ceil[3] = 10;
+				add2->y_floor[0] = add2->y_floor[1] = add2->y_floor[2] = add2->y_floor[3] = 9;
+				add2->y_ceil[0] = 10;
+				add2->y_ceil[1] = 10;
+				add2->y_ceil[2] = 10;
+				add2->y_ceil[3] = 10;
 				terrain_piece_add(p, add2);
 			}
 
-			terrain_mark_changed_piece(x, y);
+			terrain_mark_changed_piece(x, z);
 		}
 }
 
-terrain_chunk* terrain_get_chunk(uint32_t x, uint32_t y)
+terrain_chunk* terrain_get_chunk(uint32_t x, uint32_t z)
 {
-	return chunk_dict_find(&chunks, COORD_KEY(x, y));
+	return chunk_dict_find(&chunks, COORD_KEY(x, z));
 }
-terrain_chunk* terrain_get_chunk_anyway(uint32_t x, uint32_t y)
+terrain_chunk* terrain_get_chunk_anyway(uint32_t x, uint32_t z)
 {
-	terrain_chunk* chnk = chunk_dict_find(&chunks, COORD_KEY(x, y));
+	terrain_chunk* chnk = chunk_dict_find(&chunks, COORD_KEY(x, z));
 	if(chnk)
 		return chnk;
 	else
-		return terrain_create_chunk(x, y);
+		return terrain_create_chunk(x, z);
 }
-terrain_chunk* terrain_create_chunk(uint32_t x, uint32_t y)
+terrain_chunk* terrain_create_chunk(uint32_t x, uint32_t z)
 {
 	terrain_chunk chnk = {.data = memset(malloc(sizeof(terrain_piece*) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), 0, sizeof(terrain_piece*) * TERRAIN_CHUNK_SIZE * TERRAIN_CHUNK_SIZE), .flags = TERRAIN_CHUNK_FLAG_RENDER_CHANGED};
-	return chunk_dict_insert(&chunks, COORD_KEY(x, y), chnk);
+	return chunk_dict_insert(&chunks, COORD_KEY(x, z), chnk);
 }
-void terrain_mark_changed_chunk(uint32_t x, uint32_t y)
+void terrain_mark_changed_chunk(uint32_t x, uint32_t z)
 {
-	terrain_chunk* chnk = terrain_get_chunk(x, y);
+	terrain_chunk* chnk = terrain_get_chunk(x, z);
 	if(chnk)
 		chnk->flags |= TERRAIN_CHUNK_FLAG_RENDER_CHANGED;
 }
 
-terrain_piece* terrain_get_chunk_piece(terrain_chunk* chnk, uint32_t x, uint32_t y)
+terrain_piece* terrain_get_chunk_piece(terrain_chunk* chnk, uint32_t x, uint32_t z)
 {
-	return chnk->data[y * TERRAIN_CHUNK_SIZE + x];
+	return chnk->data[z * TERRAIN_CHUNK_SIZE + x];
 }
-terrain_piece* terrain_get_piece(uint32_t x, uint32_t y)
+terrain_piece* terrain_get_piece(uint32_t x, uint32_t z)
 {
-	terrain_chunk* chnk = terrain_get_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
+	terrain_chunk* chnk = terrain_get_chunk(x / TERRAIN_CHUNK_SIZE, z / TERRAIN_CHUNK_SIZE);
 	if(chnk)
-		return terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, y % TERRAIN_CHUNK_SIZE);
+		return terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, z % TERRAIN_CHUNK_SIZE);
 	return NULL;
 }
-terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t y)
+terrain_piece* terrain_get_piece_anyway(uint32_t x, uint32_t z)
 {
-	terrain_chunk* chnk = terrain_get_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
+	terrain_chunk* chnk = terrain_get_chunk(x / TERRAIN_CHUNK_SIZE, z / TERRAIN_CHUNK_SIZE);
 	terrain_piece* tpiece = NULL;
 	if(!chnk)
-		chnk = terrain_create_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
-	tpiece = terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, y % TERRAIN_CHUNK_SIZE);
+		chnk = terrain_create_chunk(x / TERRAIN_CHUNK_SIZE, z / TERRAIN_CHUNK_SIZE);
+	tpiece = terrain_get_chunk_piece(chnk, x % TERRAIN_CHUNK_SIZE, z % TERRAIN_CHUNK_SIZE);
 	if(tpiece)
 		return tpiece;
 
 	tpiece = malloc(sizeof(terrain_piece));
 	tpiece->prev = NULL;
 	tpiece->next = NULL;
-	chnk->data[y * TERRAIN_CHUNK_SIZE + x] = tpiece;
+	chnk->data[z * TERRAIN_CHUNK_SIZE + x] = tpiece;
 	return tpiece;
 }
-void terrain_mark_changed_piece(uint32_t x, uint32_t y)
+void terrain_mark_changed_piece(uint32_t x, uint32_t z)
 {
-	terrain_mark_changed_chunk(x / TERRAIN_CHUNK_SIZE, y / TERRAIN_CHUNK_SIZE);
+	terrain_mark_changed_chunk(x / TERRAIN_CHUNK_SIZE, z / TERRAIN_CHUNK_SIZE);
 }
 
-float tpiece_max_z_ceil(terrain_piece* tpiece)
+float tpiece_max_y_ceil(terrain_piece* tpiece)
 {
-	float _max = tpiece->z_ceil[0];
+	float _max = tpiece->y_ceil[0];
 	for(size_t i = 1; i < 4; ++i)
-		if(tpiece->z_ceil[i] > _max)
-			_max = tpiece->z_ceil[i];
+		if(tpiece->y_ceil[i] > _max)
+			_max = tpiece->y_ceil[i];
 	return _max;
 }
-terrain_piece* terrain_get_nearest_piece_maxz(float z, terrain_piece* tpiece)
+terrain_piece* terrain_get_nearest_piece_maxy(float y, terrain_piece* tpiece)
 {
 	float min_diff = INFINITY;
 	terrain_piece* nearest_tpiece = NULL;
 	while(tpiece){
-		float max_z = tpiece_max_z_ceil(tpiece);
-		if(fabs(max_z - z) < min_diff){
-			min_diff = fabs(max_z - z);
+		float max_y = tpiece_max_y_ceil(tpiece);
+		if(fabs(max_y - y) < min_diff){
+			min_diff = fabs(max_y - y);
 			nearest_tpiece = tpiece;
 		}
 		tpiece = tpiece->next;
@@ -214,7 +214,7 @@ terrain_piece* __check_against_line(vec2f v, line3f* l)
 #define CHECK_AGAINST_LINE(x, z, l){\
 	terrain_piece* tpiece = __check_against_line((vec2f){x, z}, l);\
 	if(tpiece){\
-		if(pos) *pos = (vec3f){floor(x) + 0.5, tpiece_avg_z_ceil(*tpiece), floor(z) + 0.5};\
+		if(pos) *pos = (vec3f){floor(x) + 0.5, tpiece_avg_y_ceil(*tpiece), floor(z) + 0.5};\
 		return (tpiece);\
 	}\
 }

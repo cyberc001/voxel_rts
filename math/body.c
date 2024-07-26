@@ -102,6 +102,23 @@ vec3f body_get_center(const body* b)
 }
 #define SET_MIN(where, what) {if((what) < (where)) (where) = (what);}
 #define SET_MAX(where, what) {if((what) > (where)) (where) = (what);}
+bbox3f body_get_base_bbox(body* b)
+{
+	bbox3f bbox = {
+		.min = {INFINITY, INFINITY, INFINITY},
+		.max = {-INFINITY, -INFINITY, -INFINITY}
+	};
+	size_t idx = 0; vec3f p;
+	while(p = body_get_vertice(b, idx++), !isnan(p.x)){
+		SET_MIN(bbox.min.x, p.x);
+		SET_MIN(bbox.min.y, p.y);
+		SET_MIN(bbox.min.z, p.z);
+		SET_MAX(bbox.max.x, p.x);
+		SET_MAX(bbox.max.y, p.y);
+		SET_MAX(bbox.max.z, p.z);
+	}
+	return bbox;
+}
 bbox3f body_get_bbox(body* b)
 {
 	body_generate_cache(b);
@@ -152,14 +169,14 @@ vec2f body_project_on_axis(body* b, vec3f axis)
 {
 	body_generate_cache(b);
 
-	float min = INFINITY, max = -INFINITY;
+	float _min = INFINITY, _max = -INFINITY;
 	size_t idx = 0; vec3f p;
 	while(p = body_get_cached_vertice(b, idx++), !isnan(p.x)){
 		float proj = vec3_dot(axis, p);
-		if(proj < min) min = proj;
-		else if(proj > max) max = proj;
+		if(proj < _min) _min = proj;
+		if(proj > _max) _max = proj;
 	}
-	return (vec2f){min, max};
+	return (vec2f){_min, _max};
 }
 int body_is_selected(body* b)
 {
